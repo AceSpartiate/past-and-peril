@@ -1,0 +1,12 @@
+# Store and check out every file byte-for-byte.
+#
+# Git on Windows defaults to core.autocrlf=true, which rewrites line endings
+# on checkout. This project ships its working copy verbatim — tools/make-release
+# zips the files as they sit on disk — so a clone that differs from what was
+# tested is a clone nobody tested. `-text` turns EOL conversion off entirely.
+#
+# It also keeps the mixed endings already here honest: server/serve.js and
+# app/js/play.js are CRLF, app/js/hexmap.js and tools/ are LF. Nothing depends
+# on that, but silently rewriting 400 files on every clone would bury real
+# changes in noise.
+* -text

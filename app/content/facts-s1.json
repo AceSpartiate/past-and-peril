@@ -1,0 +1,455 @@
+{
+  "session": 1,
+  "note": "THE FACTS ARE FREE (design/02 §6). Every fact carries a fallback action so no student can fail their way out of the content. The engine refuses to converge a scene until every student has been OFFERED each must_teach fact — design/08.",
+  "facts": [
+    {
+      "id": "FACT_EMPRESARIO_OATH",
+      "teks": [
+        "7.2(D)"
+      ],
+      "short": "the empresario oath",
+      "statement": "To take land here your family swore an oath: become Mexican citizens, and become Catholic. Most of the people in this square swore it. Some meant it.",
+      "source": "handouts/01-turtle-bayou.md",
+      "handout": "01",
+      "fallback": {
+        "id": "FB_OATH",
+        "verb": "SEEK",
+        "label": "Ask what you had to promise to get this land.",
+        "detail": "Somebody's father swore it in front of a priest and remembers the wording."
+      }
+    },
+    {
+      "id": "FACT_LAW_APRIL_6_1830",
+      "teks": [
+        "7.3(A)"
+      ],
+      "short": "the Law of April 6, 1830",
+      "statement": "The Law of April 6, 1830 shut off immigration from the United States. Families who came after it — and plenty did — hold land titles that are legally void.",
+      "source": "handouts/02-law-april-6-1830.md",
+      "handout": "02",
+      "fallback": {
+        "id": "FB_1830",
+        "verb": "SEEK",
+        "label": "Ask who in this town has no legal title.",
+        "detail": "It is not a secret. It is just not said out loud very often."
+      }
+    },
+    {
+      "id": "FACT_ZACATECAS",
+      "teks": [
+        "7.3(A)",
+        "7.20(D)"
+      ],
+      "short": "Zacatecas",
+      "statement": "In May, Zacatecas refused to give up its state militia. Santa Anna marched on it himself, beat them in about two hours, and let his soldiers have the city for two days. Four months ago. Everyone here understood it as a message, because it was one.",
+      "source": "research/history-dossier.md",
+      "fallback": {
+        "id": "FB_ZACATECAS",
+        "verb": "SEEK",
+        "label": "Ask what happened to the last town that said no.",
+        "detail": "Somebody will say the word Zacatecas and then stop talking."
+      }
+    },
+    {
+      "id": "FACT_POWDER_TWELVE",
+      "teks": [
+        "7.3(A)"
+      ],
+      "short": "twelve rounds of powder",
+      "statement": "There are twelve rounds of powder in Gonzales. Not twelve barrels. Twelve.",
+      "source": "gm-materials/gonzales-ledger.md",
+      "fallback": {
+        "id": "FB_POWDER",
+        "verb": "SEEK",
+        "label": "Count the powder yourself.",
+        "detail": "It does not take long."
+      }
+    },
+    {
+      "id": "FACT_SEVENTY_MILES",
+      "teks": [
+        "7.9(A)"
+      ],
+      "short": "seventy miles to Béxar",
+      "statement": "Béxar is seventy miles west. Two days by fast horse, four by oxcart. Nothing you decide today can be answered any sooner than that.",
+      "source": "design/11-map-data.md",
+      "fallback": {
+        "id": "FB_SEVENTY",
+        "verb": "SEEK",
+        "label": "Ask how far it is to Béxar, and how long that takes.",
+        "detail": "Everyone here has made the trip or knows somebody who has."
+      }
+    },
+    {
+      "id": "FACT_CANNON_LENT",
+      "teks": [
+        "7.3(A)"
+      ],
+      "short": "the cannon was lent, not given",
+      "statement": "The government lent that cannon to DeWitt's colony in 1831, for defence against Comanche raids. It is theirs. Asking for it back is entirely legal, and every adult here knows it.",
+      "source": "research/history-dossier.md",
+      "fallback": {
+        "id": "FB_CANNON",
+        "verb": "SEEK",
+        "label": "Ask where the cannon actually came from.",
+        "detail": "The answer is more awkward than the story people tell."
+      }
+    },
+    {
+      "id": "FACT_PONTON_STALLED",
+      "teks": [
+        "7.3(A)"
+      ],
+      "short": "Ponton stalled, and it worked",
+      "statement": "Alcalde Andrew Ponton answered the demand by saying the alcalde was away and he could not act without him. It was a stalling tactic, it was not brave, and it bought the town the days it needed.",
+      "source": "gm-materials/session-1-loyal-subjects.md",
+      "fallback": {
+        "id": "FB_PONTON",
+        "verb": "SEEK",
+        "label": "Watch what Ponton actually writes.",
+        "detail": "He takes a long time over a very short letter."
+      }
+    },
+    {
+      "id": "FACT_TOWN_DIVIDED",
+      "teks": [
+        "7.20(B)"
+      ],
+      "short": "the town does not agree",
+      "statement": "Nobody in this square agrees about what to do. Most of them do not want a war. Wanting to stay out of it is the ordinary position here, not the cowardly one.",
+      "source": "design/03-companies-and-roster.md",
+      "fallback": {
+        "id": "FB_DIVIDED",
+        "verb": "SEEK",
+        "label": "Stand still and listen to what people are actually saying.",
+        "detail": "Not what they say to you. What they say to each other."
+      }
+    },
+    {
+      "id": "FACT_1824_CONSTITUTION",
+      "teks": [
+        "7.20(D)"
+      ],
+      "short": "the Constitution of 1824",
+      "statement": "The argument is not independence. It is the Constitution of 1824 — the federal one, with power in the states — which Santa Anna has been taking apart. Texians and Tejano federalists want the same thing here.",
+      "source": "handouts/01-turtle-bayou.md",
+      "handout": "01",
+      "fallback": {
+        "id": "FB_1824",
+        "verb": "SEEK",
+        "label": "Ask what people mean when they say “the constitution.”",
+        "detail": "They mean a specific one, from a specific year, and it matters."
+      }
+    },
+    {
+      "id": "FACT_TEJANO_FEDERALISTS",
+      "teks": [
+        "7.20(B)",
+        "7.21(B)"
+      ],
+      "short": "Tejano federalists",
+      "statement": "The ranchero families along the Guadalupe are federalists too. Their objection to Santa Anna is older than yours, and their land titles are older than the colony.",
+      "source": "player-materials/person-cards-gonzales.md",
+      "fallback": {
+        "id": "FB_TEJANO",
+        "verb": "SEEK",
+        "label": "Ask the ranchos where they stand.",
+        "detail": "Somebody in this square is about to assume they know. They do not."
+      }
+    },
+    {
+      "id": "FACT_EIGHTEEN_MEN",
+      "teks": [
+        "7.3(A)"
+      ],
+      "short": "eighteen men",
+      "statement": "There are perhaps eighteen men in Gonzales who can hold a rifle. Twenty if you count two boys and a man with one good arm.",
+      "source": "gm-materials/session-1-loyal-subjects.md",
+      "fallback": {
+        "id": "FB_EIGHTEEN",
+        "verb": "SEEK",
+        "label": "Count who here can actually fight.",
+        "detail": "Not who says they can."
+      }
+    },
+    {
+      "id": "FACT_COMMITTEES_OF_SAFETY",
+      "teks": [
+        "7.3(A)",
+        "7.20(D)"
+      ],
+      "short": "committees of safety",
+      "statement": "Towns across Texas had set up Committees of Safety — local bodies that corresponded with each other and decided things the government was not deciding. They are how a rumour in Gonzales becomes a mobilisation in San Felipe.",
+      "source": "research/history-dossier.md",
+      "fallback": {
+        "id": "FB_COMMITTEES",
+        "verb": "SEEK",
+        "label": "Ask who you are even supposed to write to.",
+        "detail": "There is an answer, and it is not the government."
+      }
+    },
+    {
+      "id": "FACT_NO_TELEGRAPH",
+      "teks": [
+        "7.9(A)"
+      ],
+      "short": "news moves at a horse",
+      "statement": "There is no telegraph. News moves exactly as fast as a horse, and not one minute faster. Everything anybody believes today is at least two days old.",
+      "source": "design/11-map-data.md",
+      "fallback": {
+        "id": "FB_NEWS",
+        "verb": "SEEK",
+        "label": "Ask how anyone would even find out.",
+        "detail": "The answer is: somebody rides, and it takes days."
+      }
+    },
+    {
+      "id": "FACT_WHO_CANNOT_LEAVE",
+      "teks": [
+        "7.21(B)"
+      ],
+      "short": "who cannot leave",
+      "statement": "Whatever this town decides, some people cannot act on it. The old, the sick, the very young, and whoever must stay to mind them. That list is longer than the list of men with rifles.",
+      "source": "design/03-companies-and-roster.md",
+      "fallback": {
+        "id": "FB_WHOSTAYS",
+        "verb": "SEEK",
+        "label": "Ask who in this town could not leave if they had to.",
+        "detail": "Somebody has already worked it out and not said it."
+      }
+    },
+    {
+      "id": "FACT_DRAGOON_IS_CITIZEN",
+      "teks": [
+        "7.20(B)"
+      ],
+      "short": "he is a fellow citizen",
+      "statement": "The dragoon riding up your road is a Mexican soldier, and in September 1835 so are you. He is a fellow citizen doing a legal job, and half this square has already forgotten that.",
+      "source": "gm-materials/session-1-loyal-subjects.md",
+      "fallback": {
+        "id": "FB_DRAGOON",
+        "verb": "SEEK",
+        "label": "Ask what this man actually is, legally.",
+        "detail": "The answer is awkward and it is not complicated."
+      }
+    },
+    {
+      "id": "FACT_OLD_EIGHTEEN",
+      "teks": [
+        "7.3(A)"
+      ],
+      "short": "the Old Eighteen",
+      "statement": "Eighteen men signed the refusal to hand back the cannon. They were called the Old Eighteen afterwards. At the time they were eighteen men in a square who could not agree with their neighbours.",
+      "source": "research/history-dossier.md",
+      "fallback": {
+        "id": "FB_EIGHTEEN18",
+        "verb": "SEEK",
+        "label": "Ask who is actually willing to put their name on it.",
+        "detail": "Names on paper are a different thing from shouting."
+      }
+    },
+    {
+      "id": "FACT_FLAG_APOCRYPHAL",
+      "teks": [
+        "7.20(F)",
+        "7.21(A)"
+      ],
+      "short": "the flag story is apocryphal",
+      "statement": "The story that Sarah DeWitt sewed the COME AND TAKE IT flag from her daughter's wedding dress is apocryphal — the Texas State Historical Association says so itself. Somebody made that flag. We do not know who. Ask yourself why THAT story is the one that stuck.",
+      "source": "research/history-dossier.md",
+      "fallback": {
+        "id": "FB_FLAG",
+        "verb": "SEEK",
+        "label": "Ask who actually made the flag.",
+        "detail": "You will get a confident answer. Check it."
+      }
+    },
+    {
+      "id": "FACT_SLAVERY_ILLEGAL",
+      "teks": [
+        "7.20(F)"
+      ],
+      "short": "slavery was illegal and evaded",
+      "statement": "Mexico had moved against slavery, and colonists evaded it — rewriting enslaved people as indentured servants on ninety-nine-year contracts. Historians disagree about how much this caused the revolution. They do not disagree that it was happening.",
+      "source": "design/01-campaign-spine.md",
+      "fallback": {
+        "id": "FB_SLAVERY",
+        "verb": "SEEK",
+        "label": "Ask what the law here says about slavery.",
+        "detail": "The law and the practice are not the same thing, and everyone knows it."
+      }
+    },
+    {
+      "id": "FACT_BURY_THE_CANNON",
+      "teks": [
+        "7.3(A)"
+      ],
+      "short": "they buried the cannon",
+      "statement": "Gonzales buried the cannon in a peach orchard while Ponton stalled. It was not defiance yet. It was a small town hiding a thing it had been asked to give back.",
+      "source": "research/history-dossier.md",
+      "fallback": {
+        "id": "FB_BURY",
+        "verb": "SEEK",
+        "label": "Ask where you would even put a cannon.",
+        "detail": "Somewhere soft, and out of sight of the road."
+      }
+    },
+    {
+      "id": "FACT_CASTANEDA_FEDERALIST",
+      "teks": [
+        "7.20(B)",
+        "7.20(D)"
+      ],
+      "short": "Castañeda was a federalist too",
+      "statement": "Castañeda sent word that he was himself a federalist, that he did not approve of what Santa Anna had done to the Constitution — and that he had his orders. He chose to withdraw rather than force a battle. The war began because a man with orders he disliked decided to go home instead of fight.",
+      "source": "gm-materials/session-2-come-and-take-it.md",
+      "fallback": {
+        "id": "FB_CASTANEDA",
+        "verb": "SEEK",
+        "label": "Ask what the man across the river actually wants.",
+        "detail": "Somebody over there has an opinion about Santa Anna too."
+      }
+    },
+    {
+      "id": "FACT_SKIRMISH_NOT_BATTLE",
+      "teks": [
+        "7.3(A)",
+        "7.20(F)"
+      ],
+      "short": "it was a skirmish, not a battle",
+      "statement": "The Battle of Gonzales was not a heroic pitched battle. It was a skirmish with roughly one or two casualties. The war started small, mostly by accident, and the man on the other side agreed with you about the Constitution.",
+      "source": "research/history-dossier.md",
+      "fallback": {
+        "id": "FB_SKIRMISH",
+        "verb": "SEEK",
+        "label": "Count who was actually hurt today.",
+        "detail": "The number is much smaller than the story will be."
+      }
+    },
+    {
+      "id": "FACT_SCRAP_IRON",
+      "teks": [
+        "7.3(A)"
+      ],
+      "short": "the cannon fired scrap iron",
+      "statement": "There was no proper shot for that cannon. They loaded it with scrap iron and chain cut up for the purpose. It is not clear it hit anything.",
+      "source": "research/history-dossier.md",
+      "fallback": {
+        "id": "FB_SCRAP",
+        "verb": "SEEK",
+        "label": "Ask what they are going to load the cannon with.",
+        "detail": "There is no shot for it. There never was."
+      }
+    },
+    {
+      "id": "FACT_AUSTIN_CHANGED",
+      "teks": [
+        "7.20(D)",
+        "7.3(C)"
+      ],
+      "short": "Austin changed his mind",
+      "statement": "Stephen F. Austin spent years telling colonists to stay loyal, obey Mexican law, and avoid war. He wrote that war was the only recourse after eighteen months in a Mexican prison. Ask what changed — the situation, or the man.",
+      "source": "handouts/03-austin-letters.md",
+      "handout": "03",
+      "fallback": {
+        "id": "FB_AUSTIN",
+        "verb": "SEEK",
+        "label": "Ask what Austin used to say about all this.",
+        "detail": "He said the opposite, for years, in writing."
+      }
+    },
+    {
+      "id": "FACT_GRASS_FIGHT",
+      "teks": [
+        "7.3(A)"
+      ],
+      "short": "the Grass Fight",
+      "statement": "Texian scouts intercepted what they were certain was a Mexican silver payroll. It was grass, cut for the horses in Béxar. That is how good the intelligence was.",
+      "source": "research/history-dossier.md",
+      "fallback": {
+        "id": "FB_GRASS",
+        "verb": "SEEK",
+        "label": "Ask what was actually in the pack train.",
+        "detail": "Everyone is very confident about this. They are wrong."
+      }
+    },
+    {
+      "id": "FACT_BEN_MILAM",
+      "teks": [
+        "7.3(A)",
+        "7.13(A)"
+      ],
+      "short": "Ben Milam",
+      "statement": "Ben Milam stood up in the plaza on 4 December and asked who would go with him into San Antonio. Three hundred men followed. On 7 December a sniper shot him in the head in the Veramendi yard. Two days later Cos surrendered. Milam never knew he had won.",
+      "source": "gm-materials/session-2-come-and-take-it.md",
+      "fallback": {
+        "id": "FB_MILAM",
+        "verb": "SEEK",
+        "label": "Ask who is going to lead men into those streets.",
+        "detail": "One man is about to volunteer."
+      }
+    },
+    {
+      "id": "FACT_COS_SURRENDERED",
+      "teks": [
+        "7.3(A)"
+      ],
+      "short": "Cos surrendered and marched south",
+      "statement": "General Cos surrendered Béxar on 9 December 1835 and marched his army south under parole. For a few weeks there was no Mexican army in Texas at all, and the war looked over.",
+      "source": "research/history-dossier.md",
+      "fallback": {
+        "id": "FB_COS",
+        "verb": "SEEK",
+        "label": "Ask what happens to the garrison now.",
+        "detail": "They march south. That is the whole answer, and it will not last."
+      }
+    },
+    {
+      "id": "FACT_MATAMOROS",
+      "teks": [
+        "7.3(A)",
+        "7.20(C)"
+      ],
+      "short": "the Matamoros expedition",
+      "statement": "A plan to take the army south to Matamoros and carry the revolution into Mexico split the provisional government and stripped Béxar of men and supplies — before Santa Anna ever came north. The Alamo was undermanned in February because of arguments held in December.",
+      "source": "research/history-dossier.md",
+      "fallback": {
+        "id": "FB_MATAMOROS",
+        "verb": "SEEK",
+        "label": "Ask what the plan for the army actually is.",
+        "detail": "There are two plans and they cannot both happen."
+      }
+    },
+    {
+      "id": "FACT_CONSULTATION",
+      "teks": [
+        "7.3(A)",
+        "7.20(C)"
+      ],
+      "short": "the Consultation",
+      "statement": "The Consultation met on 1 November 1835 and created a provisional government that spent the next three months arguing with itself. It could not agree whether it was fighting for the Constitution of 1824 or for independence.",
+      "source": "research/history-dossier.md",
+      "fallback": {
+        "id": "FB_CONSULT",
+        "verb": "SEEK",
+        "label": "Ask who is actually in charge of any of this.",
+        "detail": "The honest answer is nobody, and it matters."
+      }
+    },
+    {
+      "id": "FACT_WINTER_FARMS",
+      "teks": [
+        "7.21(B)"
+      ],
+      "short": "most of them wanted to go home",
+      "statement": "The war looked over, it was winter, and there were farms. Most of the men wanted to go home, and most of them did. That is not cowardice; it is what an army of farmers is.",
+      "source": "gm-materials/session-2-come-and-take-it.md",
+      "fallback": {
+        "id": "FB_WINTER",
+        "verb": "SEEK",
+        "label": "Ask the men around you what they mean to do now.",
+        "detail": "Most of them are thinking about their own fields."
+      }
+    }
+  ]
+}

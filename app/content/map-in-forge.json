@@ -1,0 +1,92 @@
+{
+  "id": "forge",
+  "title": "The blacksmith's shop",
+  "scale": "1 hex ≈ 4 feet",
+  "indoors": true,
+  "entry": "C4",
+  "parent": {
+    "place": "gonzales_town",
+    "hex": "J9"
+  },
+  "cols": 6,
+  "rows": 4,
+  "_about": "The forge on the back wall with the bellows behind it, the anvil exactly one stride in front of it — four feet, which is what the trade prescribes — the slack tub within reach, and an open shed front so the smoke has somewhere to go.",
+  "_honesty": "Noah Smithwick worked in the Sowells' Gonzales shop in September and October 1835, which is as close to documented as this gets. Almeron Dickinson's shop is the other candidate. There was NO COAL in Gonzales — boys burned charcoal for the fire, which is why there is a charcoal heap and not a coal bunker. Two things made in a shop like this went to the war: lance heads forged from worn-out files, and the cannon's wooden trucks, cross-sections sawn from a tree trunk with holes bored for wooden axles.",
+  "grid": [
+    "WnFWnW",
+    "W_n__W",
+    "Wn__nW",
+    "WWDddW"
+  ],
+  "landmarks": [
+    {
+      "hex": "C1",
+      "label": "THE FORGE",
+      "key": true,
+      "note": "The fire is never out. Charcoal, not coal — there is no coal in this colony."
+    },
+    {
+      "hex": "B1",
+      "label": "THE BELLOWS",
+      "note": "Worked from behind. Somebody has to do it, and it is usually somebody young."
+    },
+    {
+      "hex": "C2",
+      "label": "THE ANVIL",
+      "note": "One stride from the fire. That distance is not an accident."
+    },
+    {
+      "hex": "B3",
+      "label": "THE SLACK TUB",
+      "note": "Where hot iron goes to stop being hot."
+    },
+    {
+      "hex": "E3",
+      "label": "THE BENCH",
+      "note": "The vise, and the tools worth having."
+    },
+    {
+      "hex": "D4",
+      "label": "THE SHED FRONT",
+      "note": "Open to the yard. Half this trade happens standing in the doorway."
+    }
+  ],
+  "features": [
+    {
+      "id": "DOOR_FORGE_OUT",
+      "kind": "door",
+      "hex": "C4",
+      "open": true,
+      "label": "Out to the yard",
+      "to": {
+        "place": "gonzales_town",
+        "hex": "J9",
+        "label": "OUT"
+      }
+    },
+    {
+      "id": "CHEST_FORGE_BENCH",
+      "kind": "chest",
+      "hex": "E3",
+      "label": "The forge chest",
+      "searched": false,
+      "contents": [
+        "ITEM_GOOD_TOOLS"
+      ],
+      "note": "Files, punches, and a hammer that fits your hand.",
+      "searchLabel": "Go through the forge chest."
+    },
+    {
+      "id": "CHEST_FORGE_FILES",
+      "kind": "chest",
+      "hex": "E1",
+      "label": "The iron rack",
+      "searched": false,
+      "contents": [
+        "ITEM_WORN_FILES"
+      ],
+      "note": "A bundle of files too blunt for iron. The right steel for a lance head, though.",
+      "searchLabel": "Sort through the iron rack."
+    }
+  ]
+}

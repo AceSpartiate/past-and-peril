@@ -1,0 +1,83 @@
+{
+  "id": "zumwalt_store",
+  "title": "Zumwalt's store",
+  "scale": "1 hex ≈ 4 feet",
+  "indoors": true,
+  "entry": "C5",
+  "parent": {
+    "place": "gonzales_town",
+    "hex": "N5"
+  },
+  "cols": 6,
+  "rows": 5,
+  "_about": "A counter across the middle of the room. Customers on this side, everything worth having on the other. The counter costs two to climb, and people notice.",
+  "_honesty": "That Adam Zumwalt's place faced the plaza is documented; the floor plan is period-typical reconstruction. Zumwalt's was actually TWO buildings — a residence and a separate attached kitchen that did duty as a restaurant and boarding house — and this map is only the store side. The shelf stock is taken from a real Texas store advertisement: coffee, sugar, tea, salt, chocolate, soap, candles, tobacco, letter paper, crackers, dried apples, hats, shoes and cheap cotton cloth, plus powder, lead, flints and nails. Not the Madeira and Bologna sausage — that was a Brazos port town's stock, not a frontier village's.",
+  "grid": [
+    "WnnnnW",
+    "W___hW",
+    "WnnnnW",
+    "W___nW",
+    "WWDWWW"
+  ],
+  "landmarks": [
+    {
+      "hex": "C3",
+      "label": "THE COUNTER",
+      "key": true,
+      "note": "Everything this town has bought on credit is written in the book lying on it."
+    },
+    {
+      "hex": "C1",
+      "label": "THE SHELVES",
+      "note": "Coffee, calico, candles, nails. The two things a family saves for are a bolt of cloth and a paper of nails."
+    },
+    {
+      "hex": "E2",
+      "label": "THE FIRE",
+      "note": "The clerk's side of the room, and the warm side."
+    },
+    {
+      "hex": "D4",
+      "label": "THE FLOOR",
+      "note": "Where the town stands, argues, and finds out what the government wants."
+    }
+  ],
+  "features": [
+    {
+      "id": "DOOR_STORE_OUT",
+      "kind": "door",
+      "hex": "C5",
+      "open": true,
+      "label": "Out to the square",
+      "to": {
+        "place": "gonzales_town",
+        "hex": "N5",
+        "label": "OUT"
+      }
+    },
+    {
+      "id": "CHEST_LEDGER",
+      "kind": "chest",
+      "hex": "C3",
+      "label": "Zumwalt's ledger",
+      "searched": false,
+      "contents": [
+        "ITEM_LEDGER_BOOK"
+      ],
+      "note": "Who owes what, and to whom. Nobody in this room is comfortable about it.",
+      "searchLabel": "Open Zumwalt's ledger."
+    },
+    {
+      "id": "CHEST_BEHIND_COUNTER",
+      "kind": "chest",
+      "hex": "C2",
+      "label": "Behind the counter",
+      "searched": false,
+      "contents": [
+        "ITEM_KEG_POWDER"
+      ],
+      "note": "The powder keg, the bars of lead, and the salt. Where a customer cannot reach.",
+      "searchLabel": "Look behind the counter."
+    }
+  ]
+}

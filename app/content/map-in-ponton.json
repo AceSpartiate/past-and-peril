@@ -1,0 +1,89 @@
+{
+  "id": "ponton_house",
+  "title": "Ponton's house",
+  "scale": "1 hex ≈ 6 feet",
+  "indoors": true,
+  "entry": "D5",
+  "parent": {
+    "place": "gonzales_town",
+    "hex": "I5"
+  },
+  "cols": 7,
+  "rows": 5,
+  "_about": "A DOGTROT: two square pens with an open breezeway between them, front and back both open, which is how a Texas house was air-conditioned in 1835. You walk in along the breezeway and choose a side.",
+  "_honesty": "Andrew Ponton's own house is NOT DOCUMENTED — not its plan, not its site. This is a period-typical dogtrot. One Gonzales-specific correction worth making to a student: Captain Sharpe recorded that the houses here were mostly FRAME, walled with riven oak clapboards — thin split boards — and not the round chinked logs everyone pictures. There was also no church building in Gonzales in 1835, which is why the colony's records are on this table and not in a vestry.",
+  "grid": [
+    "WWWPWWW",
+    "Wh_P_nW",
+    "WnDPD_W",
+    "W_LPhnW",
+    "WWWPWWW"
+  ],
+  "landmarks": [
+    {
+      "hex": "D3",
+      "label": "THE BREEZEWAY",
+      "note": "Open at both ends. Shade, and a draught, and where people stand to talk."
+    },
+    {
+      "hex": "B2",
+      "label": "THE HEARTH",
+      "note": "Light and heat, and the rifle on pegs above it."
+    },
+    {
+      "hex": "B3",
+      "label": "THE TABLE",
+      "key": true,
+      "note": "Riven boards and backless stools. Where the alcalde writes, and where Ugartechea's demand is lying right now."
+    },
+    {
+      "hex": "C4",
+      "label": "THE LOFT",
+      "note": "Up the ladder. Where the children sleep."
+    },
+    {
+      "hex": "E4",
+      "label": "THE KITCHEN",
+      "note": "The other pen: the cooking fire, the bed, and the corn barrel."
+    }
+  ],
+  "features": [
+    {
+      "id": "DOOR_PONTON_OUT",
+      "kind": "door",
+      "hex": "D5",
+      "open": true,
+      "label": "Out to the square",
+      "note": "The square is thirty feet that way, and a hundred people are in it.",
+      "to": {
+        "place": "gonzales_town",
+        "hex": "I5",
+        "label": "OUT"
+      }
+    },
+    {
+      "id": "CHEST_PONTON_TABLE",
+      "kind": "chest",
+      "hex": "B3",
+      "label": "The alcalde's papers",
+      "searched": false,
+      "contents": [
+        "ITEM_COLONY_PAPERS"
+      ],
+      "note": "Land titles, the empresario grant, and the oath every one of these families swore.",
+      "searchLabel": "Read what is on the alcalde's table."
+    },
+    {
+      "id": "CHEST_PONTON_HEARTH",
+      "kind": "chest",
+      "hex": "B2",
+      "label": "The pegs above the fire",
+      "searched": false,
+      "contents": [
+        "ITEM_POWDER_HORN"
+      ],
+      "note": "A rifle, and a horn beside it. Every house in this colony has both.",
+      "searchLabel": "Take down what is on the pegs above the fire."
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Stage — Gonzales</title>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body class="stage">
+
+<div class="stage-root">
+
+  <div class="flagline">
+    <span class="fl-mark">GONZALES</span>
+    <span id="fl-date">30 SEPTEMBER 1835</span>
+    <span class="fl-right" id="fl-right">SESSION ONE</span>
+  </div>
+
+  <div class="stage-body">
+
+    <!-- title card: also the stub-rule fallback from design/12 -->
+    <div class="view v-idle on" id="v-idle">
+      <div class="idle-title" id="idle-title">The Gonzales Company</div>
+      <div class="idle-sub" id="idle-sub">Loyal Subjects of a Federal Republic</div>
+      <div class="idle-note" id="idle-note">waiting for the room</div>
+    </div>
+
+    <div class="view v-read" id="v-read">
+      <div class="eyebrow" id="read-eyebrow"></div>
+      <div class="read-text" id="read-text"></div>
+      <div class="speaker" id="read-speaker"></div>
+    </div>
+
+    <div class="view v-beat" id="v-beat">
+      <div class="beat-label" id="beat-label">DECLARE</div>
+      <div class="beat-count mono" id="beat-count">1:30</div>
+      <div class="beat-instruction" id="beat-instruction"></div>
+      <div class="dice" id="beat-dice" hidden>
+        <svg class="die" id="die-a" viewBox="0 0 48 48"></svg>
+        <svg class="die" id="die-b" viewBox="0 0 48 48"></svg>
+      </div>
+      <div class="beat-bar"><i id="beat-bar"></i></div>
+    </div>
+
+    <div class="view v-seq" id="v-seq">
+      <div class="seq-wrap">
+        <canvas id="kb"></canvas>
+        <div class="seq-caption">
+          <div class="speaker" id="seq-speaker"></div>
+          <div class="cap-text" id="seq-caption"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="view v-list" id="v-list">
+      <div class="eyebrow" id="list-eyebrow"></div>
+      <div class="list-title" id="list-title"></div>
+      <ul class="list-items" id="list-items"></ul>
+    </div>
+
+    <div class="view v-tally" id="v-tally">
+      <div class="tally-q" id="tally-q"></div>
+      <div class="tally-rows" id="tally-rows"></div>
+    </div>
+
+    <div class="view v-record" id="v-record">
+      <div class="rec-head" id="rec-head"></div>
+      <div class="rec-body" id="rec-body"></div>
+      <div class="rec-exit" id="rec-exit" hidden></div>
+    </div>
+
+    <div class="paused" id="paused">
+      <b>Hold.</b>
+      <span>eyes up front</span>
+    </div>
+  </div>
+
+  <div class="board">
+    <div class="board-clocks" id="board-clocks"></div>
+    <div class="board-ledger" id="board-ledger"></div>
+  </div>
+
+</div>
+
+<script src="js/net.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/kenburns.js"></script>
+<script src="js/stage.js"></script>
+</body>
+</html>

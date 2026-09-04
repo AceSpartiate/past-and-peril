@@ -1,0 +1,463 @@
+{
+  "id": "S2.1",
+  "session": 2,
+  "title": "The River Between Them",
+  "date": "1835-10-02",
+  "map": "gonzales_town",
+  "kind": "MARCH",
+  "must_teach": [
+    "FACT_CASTANEDA_FEDERALIST",
+    "FACT_SCRAP_IRON",
+    "FACT_AUSTIN_CHANGED",
+    "FACT_FLAG_APOCRYPHAL"
+  ],
+  "npcs": [
+    {
+      "id": "NPC_CASTANEDA",
+      "hex": "A8",
+      "name": "Castañeda, across the water"
+    },
+    {
+      "id": "NPC_PONTON",
+      "hex": "K6",
+      "name": "Alcalde Andrew Ponton"
+    },
+    {
+      "id": "NPC_FERRY",
+      "hex": "E7",
+      "name": "The ferry landing"
+    }
+  ],
+  "depth_reserve": [
+    "S21_WATCH_THE_FOG",
+    "S21_MIND_THE_BOATS",
+    "S21_SIT_WITH_THE_YOUNG"
+  ],
+  "actions": [
+    {
+      "id": "S21_REACH_CASTANEDA",
+      "verb": "SPEAK",
+      "label": "Send word across to Castañeda himself.",
+      "detail": "The ranchos have a cousin in Béxar. He is a federalist. He may not want this either.",
+      "requires": {},
+      "cost": {
+        "word": 1
+      },
+      "roll": {
+        "stat": "talk",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Word comes back. He says he is himself a federalist. He says he does not approve of what Santa Anna has done to the Constitution. He says he has his orders. Sit with that.",
+          "teach": [
+            "FACT_CASTANEDA_FEDERALIST",
+            "FACT_1824_CONSTITUTION"
+          ],
+          "set_flags": [
+            "SPOKE_TO_CASTANEDA"
+          ],
+          "standing": {
+            "ranchos": 1
+          },
+          "legacy": 3,
+          "broadcast": "{name} got an answer from across the river. Castañeda is a federalist too."
+        },
+        "partial": {
+          "narrate": "Word comes back that he has his orders and regrets the necessity. He means both halves of that.",
+          "teach": [
+            "FACT_CASTANEDA_FEDERALIST"
+          ],
+          "set_flags": [
+            "SPOKE_TO_CASTANEDA"
+          ],
+          "legacy": 1
+        },
+        "weak": {
+          "narrate": "The messenger is turned back at the water. Whatever he would have said, you will not hear it.",
+          "teach": [
+            "FACT_CASTANEDA_FEDERALIST"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S21_CROSS_IN_FOG",
+      "verb": "ACT",
+      "label": "Cross the river in the fog and find their camp.",
+      "detail": "Before dawn, before anyone can see you do it.",
+      "requires": {},
+      "cost": {
+        "move": 2
+      },
+      "roll": {
+        "stat": "land",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "A hundred dragoons, cold, and not expecting anybody. You could count their fires. You come back knowing exactly what this town is facing.",
+          "teach": [
+            "FACT_SKIRMISH_NOT_BATTLE"
+          ],
+          "set_flags": [
+            "SCOUTED_THE_CAMP"
+          ],
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "You find them. You are not sure they did not find you first.",
+          "teach": [
+            "FACT_SKIRMISH_NOT_BATTLE"
+          ],
+          "set_flags": [
+            "SCOUTED_THE_CAMP"
+          ]
+        },
+        "weak": {
+          "narrate": "The fog is thicker than the plan was. You come back wet and no wiser.",
+          "teach": [
+            "FACT_SKIRMISH_NOT_BATTLE"
+          ],
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S21_MAKE_THE_FLAG",
+      "verb": "ACT",
+      "label": "Make the flag.",
+      "detail": "Somebody in this town is going to. Nobody has said who.",
+      "requires": {
+        "world_flag_absent": [
+          "FLAG_MADE"
+        ]
+      },
+      "roll": {
+        "stat": "word",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "A cannon, a star, and four words. The whole town sees it go up and something in the square changes. Remember that YOU made it — because the story that will be told about who made it is not going to be about you.",
+          "teach": [
+            "FACT_FLAG_APOCRYPHAL"
+          ],
+          "world": {
+            "FLAG_MADE": true
+          },
+          "set_flags": [
+            "MADE_THE_FLAG"
+          ],
+          "legacy": 2,
+          "broadcast": "{name} made the flag, and it went up over the cannon."
+        },
+        "partial": {
+          "narrate": "It is crude and it is hurried and it flies.",
+          "teach": [
+            "FACT_FLAG_APOCRYPHAL"
+          ],
+          "world": {
+            "FLAG_MADE": true
+          },
+          "set_flags": [
+            "MADE_THE_FLAG"
+          ],
+          "legacy": 1
+        },
+        "weak": {
+          "narrate": "Somebody mocks the lettering. It flies anyway, which is the only thing about it that matters.",
+          "teach": [
+            "FACT_FLAG_APOCRYPHAL"
+          ],
+          "world": {
+            "FLAG_MADE": true
+          },
+          "set_flags": [
+            "MADE_THE_FLAG"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S21_FIND_SHOT",
+      "verb": "ACT",
+      "label": "Find something to fire out of a cannon with no shot.",
+      "detail": "There is no ball for it. There never was.",
+      "requires": {},
+      "roll": {
+        "stat": "arms",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Scrap iron, chain, nails, and a broken plough share, cut to length. It is not artillery. It will do exactly once and everybody knows it.",
+          "teach": [
+            "FACT_SCRAP_IRON"
+          ],
+          "world": {
+            "GUN_LOADED": true
+          },
+          "set_flags": [
+            "LOADED_THE_GUN"
+          ],
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "Enough for one load if nobody looks too closely at what is in it.",
+          "teach": [
+            "FACT_SCRAP_IRON"
+          ],
+          "world": {
+            "GUN_LOADED": true
+          }
+        },
+        "weak": {
+          "narrate": "You spend an hour on it and produce a bucket of metal that may burst the barrel.",
+          "teach": [
+            "FACT_SCRAP_IRON"
+          ],
+          "world": {
+            "GUN_LOADED": true
+          },
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S21_READ_AUSTIN",
+      "verb": "SEEK",
+      "label": "Read what Austin is writing now, and what he wrote before.",
+      "detail": "Two letters, one man, and eighteen months in a Mexican prison between them.",
+      "requires": {},
+      "outcomes": {
+        "all": {
+          "narrate": "He spent years telling colonists to stay loyal, obey the law, and avoid a war. Now he writes that war is the only recourse. Ask yourself what changed — the situation, or the man.",
+          "teach": [
+            "FACT_AUSTIN_CHANGED",
+            "FACT_1824_CONSTITUTION"
+          ],
+          "set_flags": [
+            "READ_AUSTIN"
+          ],
+          "legacy": 1
+        }
+      }
+    },
+    {
+      "id": "S21_TAKE_THE_BOATS",
+      "verb": "ACT",
+      "label": "Make sure every boat on this river is on our side of it.",
+      "detail": "A hundred dragoons and no way across is a different problem than a hundred dragoons.",
+      "requires": {
+        "adjacent_npc": "NPC_FERRY"
+      },
+      "cost": {
+        "move": 1
+      },
+      "roll": {
+        "stat": "land",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Every boat, every ferry, every skiff, on this bank and guarded. The river is now doing more work than the eighteen men are.",
+          "teach": [
+            "FACT_EIGHTEEN_MEN"
+          ],
+          "world": {
+            "BOATS_HELD": true
+          },
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "Most of them. There is a skiff somewhere downstream you never found.",
+          "teach": [
+            "FACT_EIGHTEEN_MEN"
+          ],
+          "world": {
+            "BOATS_HELD": true
+          }
+        },
+        "weak": {
+          "narrate": "You get wet, and two boats are still on the wrong bank at first light.",
+          "teach": [
+            "FACT_EIGHTEEN_MEN"
+          ],
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S21_DRAFT_THE_JUSTIFICATION",
+      "verb": "ACT",
+      "label": "Draft what this town says when the shooting starts.",
+      "detail": "Somebody has to justify this, in writing, before it happens.",
+      "requires": {
+        "adjacent_npc": "NPC_PONTON"
+      },
+      "roll": {
+        "stat": "word",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Loyal citizens of Mexico, defending the Constitution of 1824 against a government that has abandoned it. Every word of that is arguable and every word of it is what they believed.",
+          "teach": [
+            "FACT_1824_CONSTITUTION"
+          ],
+          "set_flags": [
+            "DREW_THE_JUSTIFICATION"
+          ],
+          "legacy": 2
+        },
+        "partial": {
+          "narrate": "It says what they are fighting for. It is vaguer than you wanted about who they are fighting.",
+          "teach": [
+            "FACT_1824_CONSTITUTION"
+          ],
+          "set_flags": [
+            "DREW_THE_JUSTIFICATION"
+          ]
+        },
+        "weak": {
+          "narrate": "It reads like a declaration of independence, which is not what anybody in this square has agreed to yet.",
+          "teach": [
+            "FACT_1824_CONSTITUTION"
+          ],
+          "set_flags": [
+            "DREW_THE_JUSTIFICATION"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S21_COUNT_WHO_CAME",
+      "verb": "SEEK",
+      "label": "Count how many have ridden in since the couriers went out.",
+      "detail": "Eighteen was the number a week ago.",
+      "requires": {},
+      "outcomes": {
+        "all": {
+          "narrate": "About a hundred and eighty, from Mina and Bastrop and the Colorado. The couriers worked. Every one of those men rode here because somebody in this town got on a horse.",
+          "teach": [
+            "FACT_COMMITTEES_OF_SAFETY",
+            "FACT_EIGHTEEN_MEN"
+          ],
+          "set_flags": [
+            "SAW_THEM_ARRIVE"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S21_ASK_WHY_WE_ARE_HERE",
+      "verb": "SPEAK",
+      "label": "Ask, out loud, what exactly is worth this.",
+      "detail": "It is a small bad cannon and there are a hundred men across the water.",
+      "requires": {},
+      "cost": {
+        "word": 1
+      },
+      "roll": {
+        "stat": "word",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "You get an honest answer from three people and none of them agree. That is the truest thing that will be said in this town today.",
+          "teach": [
+            "FACT_TOWN_DIVIDED",
+            "FACT_CANNON_LENT"
+          ],
+          "legacy": 2,
+          "broadcast": "{name} asked what exactly this is worth, and got three different answers."
+        },
+        "partial": {
+          "narrate": "Two people answer and one of them is only saying it to end the question.",
+          "teach": [
+            "FACT_TOWN_DIVIDED"
+          ],
+          "legacy": 1
+        },
+        "weak": {
+          "narrate": "You are told this is not the moment. The sun is coming up.",
+          "teach": [
+            "FACT_TOWN_DIVIDED"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S21_WATCH_THE_FOG",
+      "verb": "SEEK",
+      "depth": true,
+      "label": "Stand at the water and watch the fog.",
+      "detail": "You have done your part. This is the last quiet hour.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "Somewhere in that whiteness are a hundred men who would rather be somewhere else, commanded by a man who agrees with you about the Constitution. In about an hour you will not be able to think about them that way.",
+          "teach": [
+            "FACT_CASTANEDA_FEDERALIST"
+          ],
+          "legacy": 2
+        }
+      }
+    },
+    {
+      "id": "S21_MIND_THE_BOATS",
+      "verb": "GUARD",
+      "depth": true,
+      "label": "Sit with the boats so nobody takes one back.",
+      "detail": "Somebody in this town still wants to talk instead.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "Nobody crosses. You are not sure, afterwards, whether that was the right thing to have prevented.",
+          "teach": [
+            "FACT_CASTANEDA_FEDERALIST"
+          ],
+          "legacy": 1,
+          "set_flags": [
+            "HELD_THE_BOATS"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S21_SIT_WITH_THE_YOUNG",
+      "verb": "AID",
+      "depth": true,
+      "label": "Sit with the youngest ones before dawn.",
+      "detail": "Sixteen and seventeen, and they have not slept.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "You do not tell them it will be fine. You sit there, which is the only honest thing available.",
+          "teach": [
+            "FACT_WHO_CANNOT_LEAVE"
+          ],
+          "legacy": 3,
+          "clear_resolve": 1,
+          "aid_target": true
+        }
+      }
+    }
+  ],
+  "time": "NIGHT",
+  "weather": "CLEAR",
+  "clock": "the small hours — there is a moon"
+}

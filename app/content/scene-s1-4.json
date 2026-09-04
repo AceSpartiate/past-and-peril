@@ -1,0 +1,403 @@
+{
+  "id": "S1.4",
+  "session": 1,
+  "title": "The Peach Orchard",
+  "date": "1835-10-01",
+  "map": "gonzales_town",
+  "kind": "COUNCIL",
+  "must_teach": [
+    "FACT_PONTON_STALLED",
+    "FACT_BURY_THE_CANNON",
+    "FACT_CANNON_LENT",
+    "FACT_ZACATECAS"
+  ],
+  "npcs": [
+    {
+      "id": "NPC_PONTON",
+      "hex": "K6",
+      "name": "Alcalde Andrew Ponton"
+    }
+  ],
+  "depth_reserve": [
+    "S4_FILL_THE_HOLE",
+    "S4_MIND_THE_ORCHARD",
+    "S4_LOOK_AT_IT"
+  ],
+  "actions": [
+    {
+      "id": "S4_BURY_IT",
+      "verb": "ACT",
+      "label": "Bury the cannon in the peach orchard.",
+      "detail": "Somewhere soft, out of sight of the road, and quickly.",
+      "requires": {
+        "hex_in": [
+          "L12",
+          "M12",
+          "L13",
+          "M13",
+          "K12"
+        ],
+        "_note": "George Davis’s peach orchard, southeast of town. Updated when the grid was redrawn — the old list pointed at hexes that are now river bottom."
+      },
+      "cost": {
+        "move": 1
+      },
+      "roll": {
+        "stat": "land",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Down, covered, and the ground raked over so it does not read as a grave. This is what Gonzales actually did, and it was not defiance yet — it was a small town hiding a thing it had been asked to give back.",
+          "teach": [
+            "FACT_BURY_THE_CANNON",
+            "FACT_CANNON_LENT"
+          ],
+          "world": {
+            "CANNON_BURIED": true
+          },
+          "set_flags": [
+            "BURIED_THE_CANNON"
+          ],
+          "legacy": 1,
+          "broadcast": "{name} put the cannon in the ground in the peach orchard."
+        },
+        "partial": {
+          "narrate": "It is down. The hole is obvious to anybody who thinks to look at the orchard.",
+          "teach": [
+            "FACT_BURY_THE_CANNON"
+          ],
+          "world": {
+            "CANNON_BURIED": true
+          },
+          "set_flags": [
+            "BURIED_THE_CANNON"
+          ],
+          "resolve": 1
+        },
+        "weak": {
+          "narrate": "It takes four of you and most of the light, and half the town watches you do it.",
+          "teach": [
+            "FACT_BURY_THE_CANNON"
+          ],
+          "world": {
+            "CANNON_BURIED": true
+          },
+          "set_flags": [
+            "BURIED_THE_CANNON"
+          ],
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S4_STALLING_REPLY",
+      "verb": "ACT",
+      "label": "Write the reply that stalls without insulting anyone.",
+      "detail": "This is the historically accurate move. Ponton really did stall.",
+      "requires": {
+        "adjacent_npc": "NPC_PONTON",
+        "world_flag_absent": [
+          "REPLY_SENT"
+        ]
+      },
+      "roll": {
+        "stat": "word",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "The alcalde is away, you cannot act without him, and you would of course be delighted to assist once he returns. It is not brave. It buys four days, and four days is what this town needs.",
+          "teach": [
+            "FACT_PONTON_STALLED"
+          ],
+          "world": {
+            "REPLY_SENT": true
+          },
+          "set_flags": [
+            "PLAYED_FOR_TIME"
+          ],
+          "legacy": 2,
+          "broadcast": "{name} wrote the letter that stalls. It worked in 1835 too."
+        },
+        "partial": {
+          "narrate": "It stalls. It also reads, faintly, as stalling.",
+          "teach": [
+            "FACT_PONTON_STALLED"
+          ],
+          "world": {
+            "REPLY_SENT": true
+          },
+          "set_flags": [
+            "PLAYED_FOR_TIME"
+          ]
+        },
+        "weak": {
+          "narrate": "You are too clever by half and it comes out sounding like a refusal in a good coat.",
+          "teach": [
+            "FACT_PONTON_STALLED"
+          ],
+          "world": {
+            "REPLY_SENT": true
+          },
+          "set_flags": [
+            "STOOD_FOR_THE_CANNON"
+          ],
+          "clocks": {
+            "DEMAND": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "S4_SEEK_ZACATECAS",
+      "verb": "SEEK",
+      "label": "Ask what happened to the last town that defied a garrison.",
+      "detail": "Before anybody decides anything, somebody should ask this.",
+      "requires": {},
+      "outcomes": {
+        "all": {
+          "narrate": "Zacatecas. In May. Santa Anna beat their militia in about two hours and gave the city to his soldiers for two days. Four months ago. Everyone in Texas heard, and everyone understood it as a message, because it was one.",
+          "teach": [
+            "FACT_ZACATECAS"
+          ],
+          "set_flags": [
+            "HEARD_ZACATECAS"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S4_ARGUE_FOR_GIVING_IT_BACK",
+      "verb": "SPEAK",
+      "label": "Argue that the cannon should go back.",
+      "detail": "It is theirs. It is a bad gun. And this is the majority position.",
+      "requires": {},
+      "cost": {
+        "word": 1
+      },
+      "roll": {
+        "stat": "word",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "You say the quiet thing at full volume: it is their cannon, it barely works, and no one in this square has explained what is worth dying for about it. Several people are visibly relieved somebody said it.",
+          "teach": [
+            "FACT_CANNON_LENT",
+            "FACT_TOWN_DIVIDED"
+          ],
+          "set_flags": [
+            "SPOKE_FOR_PEACE"
+          ],
+          "legacy": 2,
+          "broadcast": "{name} argued the cannon should go back, and got heard."
+        },
+        "partial": {
+          "narrate": "You are heard. Two men tell you afterwards, privately, that you were right.",
+          "teach": [
+            "FACT_CANNON_LENT"
+          ],
+          "set_flags": [
+            "SPOKE_FOR_PEACE"
+          ],
+          "legacy": 1
+        },
+        "weak": {
+          "narrate": "Somebody calls you a coward. It is the easiest word in the square today and it ends the discussion.",
+          "teach": [
+            "FACT_CANNON_LENT"
+          ],
+          "set_flags": [
+            "SPOKE_FOR_PEACE"
+          ],
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S4_HIDE_IT_INSTEAD",
+      "verb": "ACT",
+      "label": "Hide it somewhere nobody would dig.",
+      "detail": "Under the floor of the forge. In the river mud. Anywhere but the orchard.",
+      "requires": {
+        "world_flag_absent": [
+          "CANNON_BURIED"
+        ]
+      },
+      "cost": {
+        "move": 1
+      },
+      "roll": {
+        "stat": "arms",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Gone, and gone somewhere that will not occur to a man with a shovel and an afternoon.",
+          "teach": [
+            "FACT_BURY_THE_CANNON"
+          ],
+          "world": {
+            "CANNON_BURIED": true
+          },
+          "set_flags": [
+            "HID_THE_CANNON"
+          ],
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "Hidden. Three people know where and one of them talks in his sleep.",
+          "teach": [
+            "FACT_BURY_THE_CANNON"
+          ],
+          "world": {
+            "CANNON_BURIED": true
+          },
+          "set_flags": [
+            "HID_THE_CANNON"
+          ]
+        },
+        "weak": {
+          "narrate": "It is a six-hundred-pound bronze gun and you are one person. It goes about forty feet.",
+          "teach": [
+            "FACT_CANNON_LENT"
+          ],
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S4_ASK_ABOUT_THE_FLAG",
+      "verb": "SEEK",
+      "label": "Ask who is making a flag, and who told you so.",
+      "detail": "Somebody in this square already has a confident answer.",
+      "requires": {},
+      "outcomes": {
+        "all": {
+          "narrate": "You will be told Sarah DeWitt sewed it from her daughter’s wedding dress. That story is apocryphal — the Texas State Historical Association says so itself. Somebody made that flag. We do not know who. Ask yourself why THAT story is the one that stuck.",
+          "teach": [
+            "FACT_FLAG_APOCRYPHAL"
+          ],
+          "set_flags": [
+            "CHECKED_THE_STORY"
+          ],
+          "legacy": 1
+        }
+      }
+    },
+    {
+      "id": "S4_ASK_ABOUT_THE_LAW_ON_SLAVERY",
+      "verb": "SEEK",
+      "label": "Ask what the law here says about slavery.",
+      "detail": "It comes up, in an argument about loyalty, and it is not a small thing.",
+      "requires": {},
+      "outcomes": {
+        "all": {
+          "narrate": "Mexico had moved against it. Colonists evaded it — rewriting enslaved people as indentured servants on ninety-nine-year contracts. Historians disagree about how much this caused what is coming. They do not disagree that it was happening.",
+          "teach": [
+            "FACT_SLAVERY_ILLEGAL"
+          ],
+          "set_flags": [
+            "ASKED_ABOUT_SLAVERY"
+          ],
+          "legacy": 1
+        }
+      }
+    },
+    {
+      "id": "S4_HELP_DARST",
+      "verb": "AID",
+      "label": "Give a blacksmith your hands for an hour.",
+      "detail": "Somebody has to work the bellows, and it is usually somebody young.",
+      "requires": {
+        "adjacent_calling": [
+          "SMITH"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "Hot, loud, and useful. You will not be mentioned in anybody’s account of today.",
+          "teach": [
+            "FACT_CANNON_LENT"
+          ],
+          "legacy": 1,
+          "aid_target": true
+        }
+      }
+    },
+    {
+      "id": "S4_FILL_THE_HOLE",
+      "verb": "HOLD",
+      "depth": true,
+      "label": "Go back and make the ground look untouched.",
+      "detail": "The digging was the loud part. This is the part that matters.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "Raked, scattered, and a few windfall peaches kicked over the top. It will pass a look from the road, which is all it has to do.",
+          "teach": [
+            "FACT_BURY_THE_CANNON"
+          ],
+          "legacy": 2,
+          "set_flags": [
+            "COVERED_THE_TRACES"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S4_MIND_THE_ORCHARD",
+      "verb": "GUARD",
+      "depth": true,
+      "label": "Keep the children out of the orchard.",
+      "detail": "There are forty adults arguing and nobody is watching them.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "Nobody thanks you. Somebody would have, later, if it had gone differently.",
+          "teach": [
+            "FACT_WHO_CANNOT_LEAVE"
+          ],
+          "legacy": 2,
+          "set_flags": [
+            "MINDED_THE_CHILDREN"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S4_LOOK_AT_IT",
+      "verb": "SEEK",
+      "depth": true,
+      "label": "Stand and look at the thing everyone is arguing about.",
+      "detail": "A small bronze gun, on a rotten carriage, under a tarpaulin.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "It is not much of a cannon. It was lent for Comanche raids and it has never been fired at anybody. Everything that happens for the next six months starts with this object, and it is smaller than you expected.",
+          "teach": [
+            "FACT_CANNON_LENT",
+            "FACT_BURY_THE_CANNON"
+          ],
+          "legacy": 1
+        }
+      }
+    }
+  ],
+  "time": "AFTERNOON",
+  "weather": "CLEAR",
+  "clock": "afternoon"
+}

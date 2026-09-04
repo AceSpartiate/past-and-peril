@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Console — The Gonzales Company</title>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body class="console">
+
+<div class="c-mast">
+  <div>
+    <div class="brand">THE GONZALES COMPANY</div>
+    <div class="sess" id="m-sess">Session 1</div>
+  </div>
+  <div class="c-bell">
+    <div class="c-cap">bell in</div>
+    <div class="n mono" id="m-bell">47:00</div>
+    <div class="c-cap" id="n-behind" style="margin-top:3px">ON PACE</div>
+  </div>
+</div>
+<div class="ambient idle" id="ambient"></div>
+
+<!-- ===================== START GATE ===================== -->
+<div class="gate" id="gate">
+  <div class="gate-in">
+    <h1>Loyal Subjects of a Federal Republic</h1>
+    <p id="gate-sub">Session 1 · Gonzales, DeWitt Colony · late September 1835</p>
+
+    <div class="pre" id="preflight"></div>
+
+    <div class="row" style="justify-content:center">
+      <button class="btn big primary" id="b-start" style="flex-grow:1">Open the room &nbsp;&#9654;</button>
+    </div>
+    <div class="row" style="justify-content:center;margin-top:10px">
+      <a class="btn" id="b-stage" href="stage.html" target="_blank" rel="noopener"
+         style="display:flex;align-items:center;text-decoration:none">Stage in a second window &#8599;</a>
+      <button class="btn" id="b-stage-inline">Stage on this screen</button>
+    </div>
+    <div class="note" style="margin-top:18px;text-align:left" id="gate-note"></div>
+  </div>
+</div>
+
+<!-- ===================== RUNNING ===================== -->
+<div class="c-body" id="running" hidden>
+  <div class="c-main">
+
+    <div class="now">
+      <div class="kind">
+        <b id="n-kind">—</b>
+        <span class="c-cap" id="n-pos"></span>
+        <span class="c-cap" id="n-extra" style="margin-left:auto"></span>
+      </div>
+      <div class="title" id="n-title">—</div>
+      <div class="clockline mono" id="n-clock">0:00</div>
+      <div class="say" id="n-say" hidden>
+        <div class="c-cap" style="color:var(--d-oxide);margin-bottom:7px" id="n-say-cap">narrator is reading</div>
+        <div class="t" id="n-say-text"></div>
+      </div>
+    </div>
+
+    <div class="row">
+      <button class="btn primary" id="b-pause" style="width:150px;height:52px">Pause</button>
+      <button class="btn" id="b-extend" style="height:52px">Extend +30s</button>
+      <button class="btn" id="b-back" style="height:52px">&#9664; Back</button>
+      <button class="btn" id="b-next" style="height:52px">Skip &#9654;</button>
+      <button class="btn" id="b-replay" style="height:52px">Replay beat</button>
+      <button class="btn" id="b-roll" style="height:52px">Roll 2d6</button>
+      <button class="btn" id="b-mute" style="height:52px">I&rsquo;ll read it</button>
+    </div>
+
+    <div class="tnote" id="t-note" hidden></div>
+
+    <div id="cov-box" hidden>
+      <div class="panel-h">
+        <span class="c-cap" style="color:var(--d-oxide)">fact coverage</span>
+        <span class="c-cap" id="cov-sum" style="margin-left:auto"></span>
+      </div>
+      <div id="coverage"></div>
+    </div>
+
+    <div>
+      <div class="panel-h"><span class="c-cap">the period</span><span class="c-cap" id="ol-budget" style="margin-left:auto"></span></div>
+      <div class="outline" id="outline"></div>
+    </div>
+
+  </div>
+
+  <div class="c-side">
+    <div id="tally-box" hidden style="margin-bottom:22px">
+      <div class="panel-h"><span class="c-cap" style="color:var(--d-oxide)">the vote</span></div>
+      <div id="tally-rows"></div>
+    </div>
+
+    <div class="panel-h">
+      <span class="c-cap">the room</span>
+      <span class="mono" id="room-count" style="font-size:11px;color:var(--d-teal);margin-left:auto">0 connected</span>
+    </div>
+    <div class="mono" id="caught-up" hidden style="font-size:9.5px;letter-spacing:.08em;color:var(--wheat);border-left:2px solid var(--wheat);padding:6px 9px;margin:0 0 10px;line-height:1.5"></div>
+    <div id="room" style="margin-bottom:22px"></div>
+
+    <div class="panel-h"><span class="c-cap">clocks</span></div>
+    <div id="clocks"></div>
+
+    <div class="panel-h" style="margin-top:22px"><span class="c-cap">the ledger</span></div>
+    <div id="ledger"></div>
+
+    <div class="panel-h" style="margin-top:24px"><span class="c-cap">this screen</span></div>
+    <div class="note" id="side-note"></div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn" id="b-focus" style="flex-grow:1">Hide / show the Stage</button>
+      <a class="btn" href="stage.html" target="_blank" rel="noopener"
+         style="display:flex;align-items:center;text-decoration:none">Second window &#8599;</a>
+    </div>
+  </div>
+</div>
+
+<div id="stage-inline" hidden></div>
+
+<script src="js/net.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/console.js"></script>
+</body>
+</html>

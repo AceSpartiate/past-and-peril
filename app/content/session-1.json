@@ -1,0 +1,402 @@
+{
+  "session": 1,
+  "title": "Loyal Subjects of a Federal Republic",
+  "subtitle": "Gonzales, DeWitt Colony · late September 1835",
+  "datestamp": "30 SEPTEMBER 1835",
+  "periodMinutes": 47,
+  "bellSlackMin": 2,
+  "teks": "7.2(D)(E)(F) · 7.3(A) · 7.20(A)(B)(D)(F)",
+  "clocks": [
+    {
+      "id": "DEMAND",
+      "label": "THE DEMAND",
+      "segments": 4,
+      "filled": 0,
+      "note": "Ugartechea's patience. When it fills, Castañeda marches. It will fill."
+    },
+    {
+      "id": "WORD",
+      "label": "THE WORD SPREADS",
+      "segments": 6,
+      "filled": 0,
+      "note": "Neighbours who know and are coming. Players want this one full."
+    }
+  ],
+  "ledger": [
+    {
+      "id": "stores",
+      "label": "Stores",
+      "value": 40,
+      "unit": "days"
+    },
+    {
+      "id": "powder",
+      "label": "Powder",
+      "value": 12,
+      "unit": "rounds"
+    }
+  ],
+  "timeline": [
+    {
+      "id": "recall",
+      "kind": "checklist",
+      "seconds": 180,
+      "eyebrow": "BEFORE WE START",
+      "title": "Slates out.",
+      "items": [
+        "Character sheet in front of you",
+        "Two Words each — take them now",
+        "Slate and a dry-erase pen"
+      ],
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "Last time you became someone. Today that person finds out what the government wants from them. Take two Words. You will spend them before the bell."
+      }
+    },
+    {
+      "id": "cold_open",
+      "handout": "01",
+      "kind": "sequence",
+      "seconds": 240,
+      "eyebrow": "COLD OPEN",
+      "shots": [
+        {
+          "image": "dewitt_colony_map_1831.jpg",
+          "tier": 1,
+          "provenance": "Map of the DeWitt Colony, 1831 · Texas General Land Office · public domain",
+          "move": "TRACK",
+          "from": [
+            0.72,
+            0.44,
+            0.38
+          ],
+          "to": [
+            0.28,
+            0.44,
+            0.38
+          ],
+          "voice": {
+            "speaker": "NARRATOR",
+            "text": "Gonzales sits on the Guadalupe, seventy miles east of Béxar. Four days by oxcart. Two by fast horse. Everything that happens today happens at that distance."
+          }
+        },
+        {
+          "image": "ugartechea_demand_letter.jpg",
+          "tier": 1,
+          "provenance": "Ugartechea to Ponton, 1835 · Texas State Library and Archives Commission",
+          "move": "HOLD",
+          "from": [
+            0.5,
+            0.38,
+            0.52
+          ],
+          "to": [
+            0.5,
+            0.38,
+            0.52
+          ],
+          "voice": {
+            "speaker": "UGARTECHEA",
+            "text": "Colonel Domingo de Ugartechea, commanding at Béxar, presents his compliments. The bronze cannon lent to your town for defence against the Comanche is the property of the government. You will return it. I await your answer."
+          }
+        },
+        {
+          "image": "linati_lancier_mexicain_1828.jpg",
+          "tier": 1,
+          "provenance": "Claudio Linati, 'Lancier Mexicain', 1828 · public domain",
+          "move": "PUSH",
+          "from": [
+            0.5,
+            0.46,
+            0.94
+          ],
+          "to": [
+            0.5,
+            0.42,
+            0.78
+          ],
+          "voice": {
+            "speaker": "NARRATOR",
+            "text": "He is entitled to it. The cannon does belong to the government. Nothing about this demand is illegal, and every adult in Gonzales knows it."
+          }
+        }
+      ],
+      "teacherNote": "Hand the Turtle Bayou Resolutions (handout 01) to the Schoolmaster. Have them read the operative passage aloud, then ask: who are they saying they're loyal to?"
+    },
+    {
+      "id": "t1_situation",
+      "kind": "read",
+      "seconds": 45,
+      "turn": 1,
+      "eyebrow": "TURN 1 · THE LETTER ON THE TABLE · COUNCIL",
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "Ponton has the letter in his hand. A hundred people are in the square. The cannon is thirty feet away under a tarpaulin. Ugartechea wants an answer by the time his rider gets back. What do you do right now?"
+      },
+      "scene": "S1.1"
+    },
+    {
+      "id": "t1_path",
+      "kind": "beat",
+      "seconds": 240,
+      "turn": 1,
+      "label": "YOUR MOVE",
+      "roll": true,
+      "instruction": "Move. Choose. Keep going until the timer runs out.",
+      "window": true,
+      "scene": "S1.1"
+    },
+    {
+      "id": "t1_consequence",
+      "kind": "read",
+      "seconds": 45,
+      "turn": 1,
+      "eyebrow": "CONSEQUENCE",
+      "clocks": {
+        "DEMAND": 1
+      },
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "The rider is still watering his horse at the public trough, and he has not dismounted. Whatever this town says, he will carry it back word for word."
+      },
+      "scene": "S1.1"
+    },
+    {
+      "id": "t2_situation",
+      "kind": "read",
+      "seconds": 45,
+      "turn": 2,
+      "eyebrow": "TURN 2 · SEVENTY MILES OF ROAD · MARCH",
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "Whatever this town decides, it cannot decide it alone. Mina is forty miles. San Felipe is eighty. There are maybe eighteen men in Gonzales who can hold a rifle. The nearest help is two days away and does not know anything is happening."
+      },
+      "scene": "S1.2"
+    },
+    {
+      "id": "t2_path",
+      "kind": "beat",
+      "seconds": 240,
+      "turn": 2,
+      "label": "YOUR MOVE",
+      "roll": true,
+      "instruction": "Whatever you do, this town cannot do it alone. Seventy miles is seventy miles.",
+      "window": true,
+      "scene": "S1.2"
+    },
+    {
+      "id": "t2_consequence",
+      "kind": "read",
+      "seconds": 45,
+      "turn": 2,
+      "eyebrow": "CONSEQUENCE",
+      "clocks": {
+        "DEMAND": 1
+      },
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "Riders are on the road. Somewhere east of here a man you will never meet is being handed a letter about your town."
+      },
+      "scene": "S1.2"
+    },
+    {
+      "id": "t3_situation",
+      "kind": "read",
+      "seconds": 45,
+      "turn": 3,
+      "eyebrow": "TURN 3 · THE DRAGOON · COUNCIL",
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "A rider comes up the Béxar road at a walk. He is not a courier. He is a dragoon, and he is counting your houses."
+      },
+      "scene": "S1.3"
+    },
+    {
+      "id": "t3_path",
+      "kind": "beat",
+      "seconds": 240,
+      "turn": 3,
+      "label": "YOUR MOVE",
+      "roll": true,
+      "instruction": "One unarmed man, doing something perfectly legal. Watch what this town does.",
+      "window": true,
+      "scene": "S1.3"
+    },
+    {
+      "id": "t3_consequence",
+      "kind": "read",
+      "seconds": 45,
+      "turn": 3,
+      "eyebrow": "CONSEQUENCE",
+      "clocks": {
+        "DEMAND": 1
+      },
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "The dragoon rides back the way he came, at the same walk, having counted everything he needed to count."
+      },
+      "scene": "S1.3"
+    },
+    {
+      "id": "t4_situation",
+      "kind": "read",
+      "seconds": 45,
+      "turn": 4,
+      "eyebrow": "TURN 4 · THE PEACH ORCHARD · COUNCIL",
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "Ponton's reply has to go tonight, and the cannon has to be somewhere. Both of those things are decided in the next ten minutes."
+      },
+      "scene": "S1.4"
+    },
+    {
+      "id": "t4_path",
+      "kind": "beat",
+      "seconds": 240,
+      "turn": 4,
+      "label": "YOUR MOVE",
+      "roll": true,
+      "instruction": "The reply goes tonight and the cannon has to be somewhere. Both, in the next few minutes.",
+      "window": true,
+      "scene": "S1.4"
+    },
+    {
+      "id": "t4_consequence",
+      "kind": "read",
+      "seconds": 45,
+      "turn": 4,
+      "eyebrow": "CONSEQUENCE",
+      "clocks": {
+        "DEMAND": 1
+      },
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "THE DEMAND is full, or one segment from it. Say what that means out loud, and then say that Andrew Ponton really did stall, and that it really did work."
+      },
+      "scene": "S1.4"
+    },
+    {
+      "id": "t5_situation",
+      "kind": "read",
+      "seconds": 45,
+      "turn": 5,
+      "eyebrow": "TURN 5 · THE VOTE · COUNCIL",
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "Everyone is in the square. Do we return the cannon?"
+      },
+      "scene": "S1.5"
+    },
+    {
+      "id": "t5_path",
+      "kind": "beat",
+      "seconds": 240,
+      "turn": 5,
+      "label": "SPEAK",
+      "roll": true,
+      "instruction": "SPEAK costs a Word. The people who banked one now hold the floor.",
+      "window": true,
+      "scene": "S1.5"
+    },
+    {
+      "id": "t5_tally",
+      "kind": "tally",
+      "seconds": 90,
+      "turn": 5,
+      "question": "Do we return the cannon?",
+      "options": [
+        {
+          "key": "A",
+          "label": "They can come get it"
+        },
+        {
+          "key": "B",
+          "label": "It isn't worth a war"
+        },
+        {
+          "key": "C",
+          "label": "Be polite. Be slow."
+        },
+        {
+          "key": "D",
+          "label": "Somebody fed the horses"
+        }
+      ],
+      "instruction": "Call it company by company. Delegate last.",
+      "scene": "S1.5"
+    },
+    {
+      "id": "t5_consequence",
+      "kind": "read",
+      "seconds": 45,
+      "turn": 5,
+      "eyebrow": "CONSEQUENCE",
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "Whatever this town just voted, the cannon is still in the square and the young men of the Ranging Company have their own ideas about it. Sixteen-year-olds with a cannon do not take votes."
+      },
+      "scene": "S1.5"
+    },
+    {
+      "id": "dispatch",
+      "kind": "checklist",
+      "seconds": 240,
+      "eyebrow": "DISPATCH",
+      "title": "Write it in character.",
+      "items": [
+        "Four sentences, from your Turn Log",
+        "To someone who is not here",
+        "Sign it with your person's name"
+      ],
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "Write four sentences to someone who is not in Gonzales tonight. Tell them what happened here today. Sign it with your own name — the real one, the one on your card."
+      }
+    },
+    {
+      "id": "record",
+      "kind": "record",
+      "seconds": 240,
+      "eyebrow": "SET THE RECORD STRAIGHT",
+      "blocks": [
+        {
+          "head": "Here's what was real today",
+          "body": "The cannon. Ugartechea's demand. Andrew Ponton stalling. The Turtle Bayou Resolutions are a real document, and those men really did insist they were loyal Mexicans defending Mexico's own constitution. Zacatecas really happened, and Texans really did hear about it and understand exactly what it meant.",
+          "voice": {
+            "speaker": "HISTORIAN"
+          }
+        },
+        {
+          "head": "Here's what's contested",
+          "body": "Historians still argue about why the colonists rebelled. Eugene Barker and Randolph Campbell say slavery was a minor factor next to politics and culture. Paul Lack and Andrew Torget argue the Texas economy ran on cotton and slavery, and that Mexico moving against slavery was a structural cause. You don't have to pick today. You do have to know that serious people disagree, and why.",
+          "voice": {
+            "speaker": "HISTORIAN"
+          }
+        },
+        {
+          "head": "Here's what I made up",
+          "body": "Two things. The arguments made in this room today, and the parts of your character the record left blank — your Mark, and what you decided your person was like.",
+          "voice": {
+            "speaker": "HISTORIAN"
+          }
+        },
+        {
+          "head": "Your names are real. Your people are real.",
+          "body": "The town, the cannon, the stalling, the forty days of food and the twelve rounds of powder are all real. That's the deal for the next five classes. I'll tell you every time which is which.",
+          "voice": {
+            "speaker": "HISTORIAN"
+          }
+        }
+      ],
+      "exitLine": "Nobody in this room voted for a war. You're going to get one anyway. Ask yourself who actually decides these things."
+    }
+  ],
+  "actionsPerWindow": 0,
+  "recap": [
+    "A colonel in Béxar wrote to Gonzales and asked for the town cannon back. He was entitled to it — the government had lent it, in writing, in 1831.",
+    "The town did not say no. It said the alcalde was away. Then it said the letter needed checking. It stalled for four days.",
+    "While it stalled, riders went out to the other colonies, and the cannon went into the ground in a peach orchard.",
+    "By the second of October there were a hundred and forty men in Gonzales, and a hundred Mexican dragoons across the river."
+  ],
+  "_recap_note": "What a student who was absent is told about this session. FIXED HISTORY ONLY — what this particular class chose is generated from its own record, because that part is different every period. Highlights, not a summary: four sentences that make the next hour make sense."
+}

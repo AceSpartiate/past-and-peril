@@ -1,0 +1,328 @@
+{
+  "id": "gonzales_town",
+  "title": "Gonzales, DeWitt Colony",
+  "scale": "1 hex ≈ 60 yards",
+  "entry": "K7",
+  "cols": 17,
+  "rows": 13,
+  "_geography": "THE RIVER IS ON THE WEST, AND THAT IS THE WHOLE POINT. Gonzales stands on the east bank of the Guadalupe. Béxar is seventy miles west. So Castañeda's hundred dragoons came from the west and arrived on the FAR bank, with the river between them and the town — the Guadalupe was up after rain and the Texians had taken the ferry away. An earlier draft of this map put the river on the east side, which quietly made nonsense of scene S1.3 and of the whole of S2.1: the dragoons would have ridden straight into the square. If you redraw this map, keep the water west of the town. Column A is the far bank and it is deliberately reachable ONLY through the ford at row 7, so a student who wants to talk to the Mexican officer has to go to the one place in the world where that is possible.",
+  "_honesty": "The street grid, the seven public squares, the river and Water Street are documented. Individual building placement is RECONSTRUCTED — we know Zumwalt faced the plaza and the hotel was on Water Street, not which lot. Say so if a student asks. Two specific corrections worth knowing: there was no church building in Gonzales in 1835, so the colony records sit in the alcalde's house and not in a vestry; and the blacksmith shop here is the one Noah Smithwick worked in during September and October 1835 — the Sowells' — with Almeron Dickinson's shop the other candidate. Jacob Darst's shop, which an earlier draft named, is only 'possibly' his.",
+  "grid": [
+    "b~~bT'''''::::c''",
+    "b~~bTt''''::::c''",
+    "b~~bw'---=::::c''",
+    "b~~b''-=#...,#c''",
+    "b~~bb'-=#...,#c''",
+    "b~~b''-=#...,#'''",
+    "bfff============'",
+    "b~~b''-=#...,,#''",
+    "b~~bT'--=#x-,#'''",
+    "b~~bT'--==,-,''''",
+    "b~~bTt''--,-'''^'",
+    "b~~bTT'''\"\"oo''^^",
+    "b~~bTTT'\"\"\"oo''^^"
+  ],
+  "landmarks": [
+    {
+      "hex": "K5",
+      "label": "THE CANNON",
+      "key": true,
+      "note": "Under a tarpaulin in the square, where it has sat for years. The whole session orbits this hex."
+    },
+    {
+      "hex": "I5",
+      "label": "PONTON",
+      "note": "The alcalde's house. Where the reply gets written, and where the colony's papers are kept."
+    },
+    {
+      "hex": "N5",
+      "label": "ZUMWALT",
+      "note": "Store and boarding house, facing the plaza on St. James Street. Documented as facing the plaza."
+    },
+    {
+      "hex": "J9",
+      "label": "THE FORGE",
+      "note": "The blacksmith's shop. Smithwick worked in the Sowells' shop here in September and October 1835."
+    },
+    {
+      "hex": "O8",
+      "label": "TURNER'S",
+      "note": "The hotel, on Water Street. Sources disagree whether it was Turner's or Davis's — show students both."
+    },
+    {
+      "hex": "I6",
+      "label": "LAND OFFICE",
+      "note": "Where a title to land in this colony is written down. Reconstructed placement."
+    },
+    {
+      "hex": "D7",
+      "label": "THE FORD",
+      "key": true,
+      "note": "The Béxar road crossing. The river is up. This is the only place a wagon gets over, and Castañeda is on the far side of it."
+    },
+    {
+      "hex": "L12",
+      "label": "PEACH ORCHARD",
+      "key": true,
+      "note": "George Davis's orchard. Where the cannon gets buried."
+    },
+    {
+      "hex": "K9",
+      "label": "THE PEN",
+      "note": "A rail-fenced lot. Stock, and a garden somebody is protecting."
+    },
+    {
+      "hex": "P11",
+      "label": "THE RISE",
+      "note": "High ground southeast of town. You can see the ford from here."
+    },
+    {
+      "hex": "O2",
+      "label": "THE FIELDS",
+      "note": "Corn, already in by the end of September. What is left is stubble."
+    },
+    {
+      "hex": "D10",
+      "label": "FERRY",
+      "note": "The ferry landing. THE FERRY IS NOT HERE — the town took it away so the dragoons could not cross. Documented."
+    },
+    {
+      "hex": "A8",
+      "label": "THE FAR BANK",
+      "key": true,
+      "note": "The west side of the Guadalupe. Béxar is seventy miles that way, and on the first of October there are a hundred dragoons standing here looking at you across the water."
+    },
+    {
+      "hex": "L10",
+      "label": "THE ORCHARD PATH",
+      "note": "Worn between the square and George Davis’s peach orchard. People have been walking down here all week, and on the first of October a cannon goes down it."
+    }
+  ],
+  "westRoad": {
+    "hexes": [
+      "A7",
+      "B7",
+      "C7",
+      "D7"
+    ],
+    "note": "The Béxar road, west across the ford. Seventy miles. Four days by oxcart, two by fast horse. Everything in Session 1 happens at that distance."
+  },
+  "eastRoad": {
+    "hexes": [
+      "P7",
+      "Q7"
+    ],
+    "note": "The road east, toward San Felipe and the other colonies. Where a rider for help would go."
+  },
+  "features": [
+    {
+      "id": "CANNON",
+      "kind": "cannon",
+      "hex": "K5",
+      "label": "The cannon",
+      "note": "Small bronze, rotten carriage, under a tarpaulin."
+    },
+    {
+      "id": "DOOR_PONTON",
+      "kind": "door",
+      "hex": "I5",
+      "open": false,
+      "label": "Ponton's door",
+      "note": "The alcalde's house. Shut while he writes.",
+      "to": {
+        "place": "ponton_house",
+        "hex": "D5",
+        "label": "PONTON'S"
+      }
+    },
+    {
+      "id": "DOOR_STORE",
+      "kind": "door",
+      "hex": "N5",
+      "open": true,
+      "label": "Zumwalt's door",
+      "note": "Propped open. Half the town is in and out of it.",
+      "to": {
+        "place": "zumwalt_store",
+        "hex": "C5",
+        "label": "THE STORE"
+      }
+    },
+    {
+      "id": "DOOR_FORGE",
+      "kind": "door",
+      "hex": "J9",
+      "open": true,
+      "label": "The forge",
+      "note": "Never closed. The fire is never out.",
+      "to": {
+        "place": "forge",
+        "hex": "C4",
+        "label": "THE FORGE"
+      }
+    },
+    {
+      "id": "DOOR_HOTEL",
+      "kind": "door",
+      "hex": "O8",
+      "open": true,
+      "label": "The hotel door",
+      "note": "Travellers are how news reaches Gonzales.",
+      "to": {
+        "place": "hotel",
+        "hex": "D5",
+        "label": "THE HOTEL"
+      }
+    },
+    {
+      "id": "WELL_PLAZA",
+      "kind": "well",
+      "hex": "K6",
+      "label": "The well",
+      "note": "Water, and the place people stand when they want to hear something."
+    },
+    {
+      "id": "CACHE_ORCHARD",
+      "kind": "chest",
+      "hex": "L12",
+      "label": "Something buried",
+      "searched": false,
+      "contents": [
+        "ITEM_SPADE"
+      ],
+      "note": "Somebody has been digging here already.",
+      "searchLabel": "Dig where somebody has already been digging."
+    },
+    {
+      "id": "CACHE_FORD",
+      "kind": "chest",
+      "hex": "D7",
+      "label": "A pack left at the ford",
+      "searched": false,
+      "contents": [
+        "ITEM_GOOD_HORSE"
+      ],
+      "note": "Whoever left it was in a hurry, and did not come back for it.",
+      "searchLabel": "Go through the pack left at the ford."
+    }
+  ],
+  "items": [
+    {
+      "id": "ITEM_POWDER_HORN",
+      "name": "A full powder horn",
+      "slot": "carried",
+      "effect": {
+        "stat": {
+          "arms": 1
+        }
+      },
+      "blurb": "Dry powder, properly stoppered. Worth more than money here."
+    },
+    {
+      "id": "ITEM_LEDGER_BOOK",
+      "name": "Zumwalt's ledger",
+      "slot": "carried",
+      "effect": {
+        "stat": {
+          "talk": 1
+        }
+      },
+      "blurb": "Every debt in this town, in one book. People are careful around whoever is holding it."
+    },
+    {
+      "id": "ITEM_GOOD_TOOLS",
+      "name": "A smith's good tools",
+      "slot": "carried",
+      "effect": {
+        "stat": {
+          "arms": 1
+        }
+      },
+      "blurb": "Files, punches, and a hammer that fits your hand."
+    },
+    {
+      "id": "ITEM_COLONY_PAPERS",
+      "name": "The colony papers",
+      "slot": "carried",
+      "effect": {
+        "stat": {
+          "word": 1
+        }
+      },
+      "blurb": "Titles, grants, and the oath everybody swore. Hard to argue with somebody holding these."
+    },
+    {
+      "id": "ITEM_SPADE",
+      "name": "A good spade",
+      "slot": "carried",
+      "effect": {
+        "move": 1
+      },
+      "blurb": "Somebody left it in the orchard. You can see why."
+    },
+    {
+      "id": "ITEM_GOOD_HORSE",
+      "name": "A sound horse",
+      "slot": "carried",
+      "effect": {
+        "move": 2
+      },
+      "blurb": "Fed, shod, and left tied at the ford by somebody who did not come back for it."
+    },
+    {
+      "id": "ITEM_WORN_FILES",
+      "name": "A bundle of worn-out files",
+      "slot": "carried",
+      "effect": {
+        "stat": {
+          "arms": 1
+        }
+      },
+      "blurb": "Blunt for iron, but the right steel. This is what the town's lance heads were made from — documented."
+    },
+    {
+      "id": "ITEM_TORTILLA_STONE",
+      "name": "A flat baking stone",
+      "slot": "carried",
+      "effect": {
+        "stat": {
+          "talk": 1
+        }
+      },
+      "blurb": "You bake on it, and you share what comes off it. That is most of how anybody gets anything done."
+    },
+    {
+      "id": "ITEM_SADDLEBAGS",
+      "name": "A stranger's saddlebags",
+      "slot": "carried",
+      "effect": {
+        "stat": {
+          "word": 1
+        }
+      },
+      "blurb": "Letters and a newspaper from San Felipe. Somebody upstairs knows something this town does not."
+    },
+    {
+      "id": "ITEM_KEG_POWDER",
+      "name": "A keg of powder",
+      "slot": "carried",
+      "effect": {
+        "stat": {
+          "arms": 2
+        }
+      },
+      "blurb": "From behind Zumwalt's counter, where the customers cannot reach it."
+    }
+  ],
+  "stations": {
+    "SMITH": "J9",
+    "TRADER": "N4",
+    "CLERK": "K6",
+    "RANCHERO": "E7",
+    "RIDER": "O7",
+    "HEALER": "K7",
+    "HOUSEHOLDER": "M8",
+    "RIFLEMAN": "P11",
+    "_note": "Where each trade stands when no student is playing them. The smith is at the forge, the storekeeper beside his own door, the clerk at the well where the alcalde reads things out, the rancheros out on the Béxar road, the riders on the road east."
+  }
+}

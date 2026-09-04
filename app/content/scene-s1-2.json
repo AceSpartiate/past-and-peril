@@ -1,0 +1,409 @@
+{
+  "id": "S1.2",
+  "session": 1,
+  "title": "Seventy Miles of Road",
+  "date": "1835-09-30",
+  "map": "gonzales_town",
+  "kind": "MARCH",
+  "must_teach": [
+    "FACT_SEVENTY_MILES",
+    "FACT_EIGHTEEN_MEN",
+    "FACT_COMMITTEES_OF_SAFETY",
+    "FACT_NO_TELEGRAPH"
+  ],
+  "npcs": [
+    {
+      "id": "NPC_PONTON",
+      "hex": "K6",
+      "name": "Alcalde Andrew Ponton"
+    }
+  ],
+  "depth_reserve": [
+    "S2_WATCH_THE_ROAD",
+    "S2_WRITE_IT_DOWN",
+    "S2_SIT_WITH_THE_HORSES"
+  ],
+  "actions": [
+    {
+      "id": "S2_RIDE_MINA",
+      "verb": "ACT",
+      "label": "Ride for Mina. Forty miles, and go now.",
+      "detail": "The nearest help that does not know anything is happening.",
+      "requires": {},
+      "cost": {
+        "move": 2
+      },
+      "roll": {
+        "stat": "land",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "You are there before dark and they believe you, because you can say how many men and how much powder.",
+          "teach": [
+            "FACT_SEVENTY_MILES",
+            "FACT_COMMITTEES_OF_SAFETY"
+          ],
+          "clocks": {
+            "WORD": 2
+          },
+          "set_flags": [
+            "RODE_FOR_HELP"
+          ],
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "You are there. They ask how many men and you find you do not know.",
+          "teach": [
+            "FACT_SEVENTY_MILES"
+          ],
+          "clocks": {
+            "WORD": 1
+          },
+          "set_flags": [
+            "RODE_FOR_HELP"
+          ]
+        },
+        "weak": {
+          "narrate": "The horse goes lame at the halfway creek and you walk the rest.",
+          "teach": [
+            "FACT_SEVENTY_MILES"
+          ],
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S2_WRITE_COMMITTEE",
+      "verb": "ACT",
+      "label": "Write to the Committee of Safety at San Felipe.",
+      "detail": "Eighty miles. Paper travels no faster than a man, but it argues better.",
+      "requires": {},
+      "roll": {
+        "stat": "word",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "You give them numbers, a date, and one clear request. That is what makes a committee move instead of meet.",
+          "teach": [
+            "FACT_COMMITTEES_OF_SAFETY",
+            "FACT_NO_TELEGRAPH"
+          ],
+          "clocks": {
+            "WORD": 2
+          },
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "It is sent. It says what happened and not what you want done.",
+          "teach": [
+            "FACT_COMMITTEES_OF_SAFETY"
+          ],
+          "clocks": {
+            "WORD": 1
+          }
+        },
+        "weak": {
+          "narrate": "You write it angry. Reading it back tomorrow you will wish you had not.",
+          "teach": [
+            "FACT_COMMITTEES_OF_SAFETY"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S2_MUSTER_WHO_IS_HERE",
+      "verb": "SEEK",
+      "label": "Muster whoever is actually in town today.",
+      "detail": "Half the men are out with the cotton. Some will not be back for days.",
+      "requires": {},
+      "outcomes": {
+        "all": {
+          "narrate": "Eighteen who can shoot, and four of those are needed somewhere else. That is the town, on this particular afternoon.",
+          "teach": [
+            "FACT_EIGHTEEN_MEN"
+          ],
+          "set_flags": [
+            "KNOWS_THE_MUSTER"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S2_ASK_HOW_NEWS_TRAVELS",
+      "verb": "SEEK",
+      "label": "Ask how anybody would even find out.",
+      "detail": "There is no wire. There is a road and there are horses.",
+      "requires": {},
+      "outcomes": {
+        "all": {
+          "narrate": "Somebody rides. That is the entire system. Everything anyone in this square believes right now is at least two days old, including what they believe about Béxar.",
+          "teach": [
+            "FACT_NO_TELEGRAPH",
+            "FACT_SEVENTY_MILES"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S2_TALK_TO_LOCKHART",
+      "verb": "SPEAK",
+      "label": "Ask a ranch family whether the ranging company rides.",
+      "detail": "The rancheros are the ones who would have to go. Find one and ask.",
+      "requires": {
+        "adjacent_calling": [
+          "RANCHERO"
+        ]
+      },
+      "roll": {
+        "stat": "talk",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "They ride. He tells you exactly how few they are, and rides anyway, and does not make a speech about it.",
+          "teach": [
+            "FACT_EIGHTEEN_MEN"
+          ],
+          "set_flags": [
+            "LOCKHART_RIDES"
+          ],
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "They ride. He does not pretend it is enough.",
+          "teach": [
+            "FACT_EIGHTEEN_MEN"
+          ],
+          "set_flags": [
+            "LOCKHART_RIDES"
+          ]
+        },
+        "weak": {
+          "narrate": "He asks who is minding the town while everybody rides off being brave. Nobody answers him.",
+          "teach": [
+            "FACT_WHO_CANNOT_LEAVE"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S2_CHECK_THE_FORD",
+      "verb": "SEEK",
+      "label": "Go and look at the ford.",
+      "detail": "Everything that comes at this town comes across the Guadalupe.",
+      "requires": {},
+      "cost": {
+        "move": 2
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "Low, slow, and crossable by anybody who wants to. The river is not going to defend this town for you.",
+          "teach": [
+            "FACT_SEVENTY_MILES"
+          ],
+          "set_flags": [
+            "SAW_THE_FORD"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S2_WHO_STAYS",
+      "verb": "SEEK",
+      "label": "Ask who could not leave if this town had to.",
+      "detail": "Somebody has already worked it out and not said it aloud.",
+      "requires": {},
+      "outcomes": {
+        "all": {
+          "narrate": "More people than can ride. The old, the sick, the very young, and whoever stays to mind them — which is most of the women and two men nobody will name.",
+          "teach": [
+            "FACT_WHO_CANNOT_LEAVE"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S2_BORROW_A_HORSE",
+      "verb": "SPEAK",
+      "label": "Get somebody to lend you a horse.",
+      "detail": "Nobody here has a spare one. Somebody will do it anyway.",
+      "requires": {
+        "adjacent_character": true
+      },
+      "cost": {
+        "word": 1
+      },
+      "roll": {
+        "stat": "talk",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "They hand you the reins and tell you what the animal will and will not do. That is trust, itemised.",
+          "teach": [
+            "FACT_SEVENTY_MILES"
+          ],
+          "grant_move": 2,
+          "set_flags": [
+            "BORROWED_A_HORSE"
+          ],
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "You get the horse and a long look.",
+          "teach": [
+            "FACT_SEVENTY_MILES"
+          ],
+          "grant_move": 1,
+          "set_flags": [
+            "BORROWED_A_HORSE"
+          ]
+        },
+        "weak": {
+          "narrate": "They need it themselves, and they are right.",
+          "teach": [
+            "FACT_SEVENTY_MILES"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S2_SEND_TO_RANCHOS",
+      "verb": "SPEAK",
+      "label": "Send word down the river to the ranchos.",
+      "detail": "They are closer than San Felipe and nobody has thought of them.",
+      "requires": {},
+      "roll": {
+        "stat": "talk",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "They already know. They knew before you did, and they were waiting to be asked rather than told.",
+          "teach": [
+            "FACT_TEJANO_FEDERALISTS"
+          ],
+          "standing": {
+            "ranchos": 1
+          },
+          "clocks": {
+            "WORD": 1
+          },
+          "legacy": 2,
+          "set_flags": [
+            "STOOD_WITH_THE_RANCHOS"
+          ]
+        },
+        "partial": {
+          "narrate": "Word goes. It will be received better than the way you sent it.",
+          "teach": [
+            "FACT_TEJANO_FEDERALISTS"
+          ],
+          "clocks": {
+            "WORD": 1
+          }
+        },
+        "weak": {
+          "narrate": "You send it as an instruction. It arrives as one.",
+          "teach": [
+            "FACT_TEJANO_FEDERALISTS"
+          ],
+          "standing": {
+            "ranchos": -1
+          }
+        }
+      }
+    },
+    {
+      "id": "S2_COUNT_THE_STORES",
+      "verb": "SEEK",
+      "label": "Count what the town can feed people for.",
+      "detail": "If riders come, they eat.",
+      "requires": {},
+      "outcomes": {
+        "all": {
+          "narrate": "Forty days for the people already here. Fewer, and quickly fewer, for every man who rides in to help.",
+          "teach": [
+            "FACT_POWDER_TWELVE",
+            "FACT_EIGHTEEN_MEN"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S2_WATCH_THE_ROAD",
+      "verb": "SEEK",
+      "depth": true,
+      "label": "Sit where you can see the Béxar road, and watch it.",
+      "detail": "Having done what you came to do, you can afford to look west.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "Nothing on it. Just heat, and the road going on for seventy miles, and the knowledge that whatever is coming is already on the way and you cannot see it yet.",
+          "teach": [
+            "FACT_NO_TELEGRAPH",
+            "FACT_SEVENTY_MILES"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S2_WRITE_IT_DOWN",
+      "verb": "HOLD",
+      "depth": true,
+      "label": "Write down what happened today, for yourself.",
+      "detail": "Nobody asked you to. In thirty years somebody will want it.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "Dates, names, the weather, the number of men. Boring, and worth more than every speech made in this square today.",
+          "teach": [
+            "FACT_COMMITTEES_OF_SAFETY"
+          ],
+          "legacy": 2,
+          "set_flags": [
+            "KEPT_A_RECORD"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S2_SIT_WITH_THE_HORSES",
+      "verb": "HOLD",
+      "depth": true,
+      "label": "Go and see to the horses.",
+      "detail": "Somebody fed the horses. It is always somebody.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "Watered, fed, and checked over. Every plan made in that square today depends on this and nobody in it will ever mention you.",
+          "teach": [
+            "FACT_SEVENTY_MILES"
+          ],
+          "legacy": 2,
+          "clear_resolve": 1,
+          "set_flags": [
+            "FED_THE_HORSES"
+          ]
+        }
+      }
+    }
+  ],
+  "time": "AFTERNOON",
+  "weather": "CLEAR",
+  "clock": "mid-afternoon"
+}

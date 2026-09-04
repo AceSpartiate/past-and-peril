@@ -1,0 +1,82 @@
+{
+  "id": "jacal",
+  "title": "A jacal in La Villita",
+  "scale": "1 hex ≈ 7 feet",
+  "indoors": true,
+  "entry": "C2",
+  "parent": {
+    "place": "bexar_alamo",
+    "hex": "N14"
+  },
+  "cols": 6,
+  "rows": 4,
+  "_about": "ONE ROOM, and the thing to notice first is what is missing: there is NO FIREPLACE AND NO CHIMNEY. The fire burns on the packed dirt floor in the middle of the room and the smoke works its way out through the thatch. Walls are upright mesquite poles between forked corner posts, packed and plastered with mud six to ten inches thick — cool in summer, and hard to shoot through. The roof is grass thatch that has to be replaced every three or four years. Outside the door is the ramada, the brush arbour where the family actually cooks and works in hot weather.",
+  "_why_it_matters": "Almonte's 1834 census says most San Antonio houses were jacales roofed with thatch. THIS IS THE MAJORITY HOUSE OF BÉXAR, not a curiosity, and it is worth a student walking from Zumwalt's store into this room and noticing that the food technology is completely different — a metate and a baking stone where the Anglo house has a skillet and a Dutch oven.",
+  "_honesty": "The best eyewitness description of a jacal interior we have is Noah Smithwick's, and he was openly contemptuous of the people who lived in them. That makes this a good place to teach a real historical skill: reading a hostile witness for his facts while discounting his framing. He tells you what was in the room. He is not a reliable guide to the people in it.",
+  "grid": [
+    "WWWWWW",
+    "PDd_dW",
+    "P_nMnN",
+    "WWWWWW"
+  ],
+  "landmarks": [
+    {
+      "hex": "A2",
+      "label": "THE RAMADA",
+      "note": "The brush arbour outside the door. In hot weather this is where the family lives."
+    },
+    {
+      "hex": "C2",
+      "label": "THE DOOR",
+      "note": "There is only one."
+    },
+    {
+      "hex": "D2",
+      "label": "THE FIRE",
+      "key": true,
+      "note": "On the floor. No hearth, no chimney — the smoke goes out through the thatch."
+    },
+    {
+      "hex": "D3",
+      "label": "THE METATE",
+      "key": true,
+      "note": "The sloped stone where corn is ground, every day, by hand. Somebody's whole morning."
+    },
+    {
+      "hex": "F3",
+      "label": "THE NICHE",
+      "note": "A hollow in the thick wall. A santo, and a candle."
+    },
+    {
+      "hex": "C3",
+      "label": "THE BED",
+      "note": "A rawhide bedstead, or a petate mat on the floor."
+    }
+  ],
+  "features": [
+    {
+      "id": "DOOR_JACAL_OUT",
+      "kind": "door",
+      "hex": "C2",
+      "open": true,
+      "label": "Out to La Villita",
+      "to": {
+        "place": "bexar_alamo",
+        "hex": "N14",
+        "label": "OUT"
+      }
+    },
+    {
+      "id": "CHEST_METATE",
+      "kind": "chest",
+      "hex": "D3",
+      "label": "The metate and the baking stone",
+      "searched": false,
+      "contents": [
+        "ITEM_TORTILLA_STONE"
+      ],
+      "note": "A flat stone, or a sheet of iron, that the tortillas bake on. Completely different technology from the skillet in the Anglo house.",
+      "searchLabel": "Look at the metate and the baking stone."
+    }
+  ]
+}

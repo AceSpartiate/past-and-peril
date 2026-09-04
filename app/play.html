@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Slate — Gonzales</title>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/play.css">
+</head>
+<body class="play">
+
+<!-- ============ PICK YOUR NAME ============ -->
+<div class="pick" id="pick">
+  <div class="pick-in">
+    <div class="mono brandline">THE GONZALES COMPANY</div>
+    <h1>Tap your name</h1>
+    <p class="mono sub" id="pick-sub">GONZALES-7B · SESSION 1</p>
+    <p class="pick-need" id="pick-need" hidden></p>
+    <div class="pick-grid" id="pick-grid"></div>
+  </div>
+</div>
+
+<!-- ============ MAKE YOUR FIGURINE ============
+     The second beat of creation. Tapping a name used to drop a student
+     straight onto the board, which is why a teacher testing it could not
+     find character creation: there was nothing to find. Now the name is a
+     choice, and this is the other one — the colour you will be on thirty
+     screens for the rest of the unit. -->
+<div class="make" id="make" hidden>
+  <div class="make-in">
+    <div class="make-head">
+      <span class="mono brandline" id="make-kicker">YOU ARE PLAYING</span>
+      <h2 id="make-name">—</h2>
+      <p class="mono make-role" id="make-role">—</p>
+    </div>
+
+    <div class="make-body">
+      <div class="make-fig">
+        <!-- the figurine, drawn by the real renderer at a size a child can
+             see, so what they choose here is what they get on the board -->
+        <canvas id="make-canvas" width="240" height="240"></canvas>
+        <p class="mono make-cap">THIS IS YOU ON THE MAP</p>
+      </div>
+
+      <div class="make-side">
+        <p class="make-lede" id="make-lede"></p>
+        <div class="make-pick-colour">
+          <span class="mono lbl">PICK YOUR COLOUR</span>
+          <div class="swatches" id="make-swatches"></div>
+          <p class="mono make-note" id="make-note"></p>
+        </div>
+        <div class="make-stats mono" id="make-stats"></div>
+      </div>
+    </div>
+
+    <div class="make-foot">
+      <button class="btn primary" id="make-go" type="button">This is me</button>
+      <button class="mono make-back" id="make-back" type="button">Pick someone else</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PLAY ============ -->
+<div class="wrap" id="wrap" hidden>
+
+  <header class="hud">
+    <span class="swatch" id="hud-swatch"></span>
+    <div class="who">
+      <div class="nm" id="hud-name">—</div>
+      <div class="mono rl" id="hud-role">—</div>
+    </div>
+
+    <div class="pips" title="Words">
+      <div class="mono lbl">WORDS</div>
+      <div class="pipset" id="hud-words"></div>
+    </div>
+    <div class="pips" title="Resolve">
+      <div class="mono lbl">RESOLVE</div>
+      <div class="pipset" id="hud-resolve"></div>
+    </div>
+    <div class="stats mono" id="hud-stats"></div>
+    <div class="mv">
+      <div class="mono lbl">MOVE</div>
+      <div class="mono val" id="hud-move">0</div>
+    </div>
+    <button class="readme mono" id="readme" type="button"
+            title="Read what happens out loud, just to me">
+      <span class="rm-ico"></span><span class="rm-txt">READ TO ME</span>
+    </button>
+  </header>
+  <div class="kitbar" id="hud-kit" hidden></div>
+  <div class="spacer-removed" hidden>
+  </div>
+
+  <!-- the world -->
+  <main class="board">
+    <canvas id="map"></canvas>
+
+    <!-- where you are, and what time it is. Both read at a glance; neither
+         needs to be read at all, because the map itself is lit for the hour. -->
+    <div class="placebar">
+      <div class="place-name" id="place-name">&mdash;</div>
+      <div class="mono place-time" id="place-time"></div>
+    </div>
+
+    <button class="key-btn mono" id="key-btn" type="button" title="What the map means">
+      <span class="kb-hex"></span>MAP KEY
+    </button>
+
+    <!-- the shelf. Sits beside MAP KEY because those are the two things on
+         this screen a student reaches for on purpose rather than in a turn. -->
+    <button class="docs-btn mono" id="docs-btn" type="button" hidden
+            title="The documents your teacher has given you">
+      <span class="db-ico"></span><span id="docs-btn-n">DOCUMENTS</span>
+    </button>
+
+    <!-- the way in, and the way out -->
+    <button class="portal" id="portal" type="button" hidden>Go inside</button>
+
+    <aside class="keypanel" id="keypanel" hidden>
+      <header class="kp-head">
+        <div>
+          <div class="mono kp-eyebrow">WHAT THE MAP MEANS</div>
+          <h2 class="kp-title" id="key-title">The map</h2>
+        </div>
+        <button class="kp-close mono" id="key-close" type="button">CLOSE</button>
+      </header>
+      <div class="kp-body">
+        <div class="mono kp-sec">THE GROUND</div>
+        <div class="kgrid" id="key-ground"></div>
+        <div class="mono kp-sec">THINGS ON IT</div>
+        <div class="kgrid" id="key-marks"></div>
+        <div class="mono kp-sec">WHO IS WHO</div>
+        <div class="kgrid" id="key-who"></div>
+      </div>
+    </aside>
+
+    <div class="scrim" id="scrim">
+      <div class="scrim-in">
+        <div class="mono scrim-kicker" id="scrim-kicker">EYES UP FRONT</div>
+        <div class="scrim-title" id="scrim-title">Watch the board.</div>
+        <div class="scrim-note mono" id="scrim-note"></div>
+        <button class="scrim-tut" id="tut-offer" type="button" hidden>Show me how to play</button>
+      </div>
+    </div>
+
+    <div class="turnbar" id="turnbar" hidden>
+      <span class="mono tb-label" id="tb-label">DECLARE</span>
+      <span class="mono tb-count" id="tb-count">1:30</span>
+      <!-- movement as pips: a budget you can see going down, rather than a
+           number in a sentence you have to read and convert -->
+      <span class="tb-move mono" id="tb-move" hidden></span>
+      <span class="tb-hint" id="tb-hint">Tap a hex to move. Then choose what you do.</span>
+    </div>
+
+    <div class="hexinfo mono" id="hexinfo" hidden></div>
+
+    <!-- NOT TALKING TO THE SERVER.
+         This deliberately lives OUTSIDE #scrim. The old offline message was
+         #scrim-note, inside the lock screen, which renderTurn hides whenever
+         the turn is open — so it could only ever appear at the exact moments
+         a student was not playing. A teacher closed the server mid-lesson and
+         the student screen carried on accepting taps as though nothing had
+         happened. -->
+    <div class="offline" id="offline" hidden>
+      <span class="off-dot"></span>
+      <span class="off-txt" id="off-txt">Lost the classroom server. Trying again…</span>
+    </div>
+  </main>
+
+  <!-- practice: what to do, how far through, and the way out -->
+  <div class="tut" id="tut" hidden>
+    <div class="tut-left">
+      <div class="tut-top">
+        <span class="mono tut-tag">PRACTICE</span>
+        <span class="mono tut-count" id="tut-count">1 of 9</span>
+        <span class="tut-dots" id="tut-dots"></span>
+      </div>
+      <div class="tut-say" id="tut-say">—</div>
+      <div class="tut-hint" id="tut-hint" hidden></div>
+    </div>
+    <div class="tut-right">
+      <button class="btn primary" id="tut-next" type="button" hidden>Next</button>
+      <button class="mono tut-quit" id="tut-quit" type="button">SKIP</button>
+    </div>
+  </div>
+
+  <!-- the ability bar -->
+  <footer class="bar">
+    <div class="acts" id="acts"></div>
+  </footer>
+
+  <div class="outcome" id="outcome" hidden>
+    <div class="oc-in">
+      <div class="oc-roll" id="oc-roll" hidden>
+        <svg class="die" id="oc-d1" viewBox="0 0 48 48"></svg>
+        <svg class="die" id="oc-d2" viewBox="0 0 48 48"></svg>
+        <span class="mono oc-math" id="oc-math"></span>
+        <span class="mono oc-total" id="oc-total"></span>
+      </div>
+      <div class="mono oc-tier" id="oc-tier"></div>
+      <div class="oc-text" id="oc-text"></div>
+      <div class="oc-learn" id="oc-learn" hidden>
+        <div class="mono oc-learn-cap">you found something out</div>
+        <div class="oc-learn-body" id="oc-learn-body"></div>
+        <div class="mono oc-learn-note">this is true, and it is in the record</div>
+      </div>
+      <div class="oc-earn" id="oc-earn" hidden></div>
+      <button class="btn primary" id="oc-close" type="button">Back to the square</button>
+    </div>
+  </div>
+
+  <!-- WHAT YOU MISSED.
+       Shown automatically to a student the server has worked out was absent.
+       Nobody presses anything to make it appear, and the teacher is told it
+       happened rather than asked to do it. -->
+  <div class="catchup" id="catchup" hidden>
+    <div class="cu-in">
+      <div class="mono cu-kicker" id="cu-kicker">WHILE YOU WERE AWAY</div>
+      <h2 class="cu-title" id="cu-title">—</h2>
+      <div class="cu-body" id="cu-body"></div>
+      <div class="cu-facts" id="cu-facts" hidden>
+        <div class="mono cu-facts-cap">these are yours anyway</div>
+        <div id="cu-facts-list"></div>
+        <div class="mono cu-facts-note">nobody can miss the record by being away</div>
+      </div>
+      <button class="btn primary" id="cu-close" type="button">I am caught up</button>
+    </div>
+  </div>
+
+  <div class="commit" id="commit" hidden>
+    <div class="commit-in">
+      <div class="mono c-kicker" id="c-kicker">ACT</div>
+      <div class="c-text" id="c-text">—</div>
+      <div class="c-row">
+        <button class="btn" id="c-cancel" type="button">Change my mind</button>
+        <button class="btn primary" id="c-do" type="button">Do it</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/net.js"></script>
+<script src="js/hexmap.js"></script>
+<!-- ============ THE DOCUMENTS ============
+     No paper, so the primary sources live here. Opened automatically by the
+     timeline when a segment declares one, and reachable at any time from the
+     DOCUMENTS button. -->
+<div class="docs" id="docs" hidden>
+  <div class="docs-in">
+    <header class="docs-bar">
+      <div class="docs-head">
+        <span class="mono docs-kicker">PRIMARY SOURCE</span>
+        <h2 id="doc-title">—</h2>
+      </div>
+      <button class="mono doc-close" id="doc-close" type="button">CLOSE</button>
+    </header>
+    <p class="doc-blurb" id="doc-blurb" hidden></p>
+    <div class="docs-cols">
+      <div class="doc-body" id="doc-body"></div>
+      <aside class="doc-side">
+        <span class="mono lbl">YOUR DOCUMENTS</span>
+        <div class="doc-shelf" id="doc-shelf"></div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<script src="js/audio.js"></script>
+<script src="js/docs.js"></script>
+<!-- coach marks: before tutorial.js, which points with them -->
+<script src="js/coach.js"></script>
+<script src="js/tutorial.js"></script>
+<script src="js/play.js"></script>
+</body>
+</html>

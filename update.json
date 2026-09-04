@@ -1,0 +1,19 @@
+{
+  "_comment": [
+    "Auto-update and problem reporting are configured here, and nowhere else.",
+    "",
+    "repo:     the GitHub repository to take releases from, as owner/name.",
+    "          It must be public — the launcher uses no token and no account,",
+    "          so there is nothing to leak and nothing for a teacher to set up.",
+    "          Leave it as the placeholder and this copy simply never updates,",
+    "          which is a perfectly good state for a machine that has no",
+    "          internet or sits behind a filter that blocks GitHub.",
+    "",
+    "reportTo: OPTIONAL. A URL to POST a problem report to automatically.",
+    "          Absent by default, and it should stay absent unless your",
+    "          district has agreed to it. Without it, reports are written to",
+    "          the reports folder and a pre-filled page opens for the teacher",
+    "          to read and submit themselves. See tools/report.mjs."
+  ],
+  "repo": "AceSpartiate/gonzales-company"
+}

@@ -1,0 +1,142 @@
+{
+  "_readme": "THE VOICE CAST, and the licence for every voice in it. See VOICE_LICENSES.md at the repo root for the reasoning. Two rules govern this file: (1) nothing goes in it whose licence I have not read, and (2) the MODEL FILES ARE NOT COMMITTED — tools/get-voices.mjs fetches them into voices/ (gitignored) and tools/render-voices.mjs turns them into app/audio/*.mp3, which IS committed. A future install on another school computer plays the mp3s with no download, no Python, and no account.",
+
+  "engine": {
+    "name": "Piper",
+    "repo": "https://github.com/OHF-Voice/piper1-gpl",
+    "install": "python -m pip install piper-tts soundfile",
+    "license": "GPL-3.0-or-later (the engine only)",
+    "why_not_committed": "GPL-3.0 is copyleft, and vendoring the wheel would make this repo a GPL distribution with source-offer obligations. Audio RENDERED by a GPL tool is not a derivative of that tool — the same way a document typed in a GPL editor is not GPL — so the committed mp3s carry no obligation at all. Install the engine, do not ship it.",
+    "note": "soundfile is here for one reason: libsndfile writes MP3 directly, so this pipeline needs no ffmpeg."
+  },
+
+  "voices": [
+    {
+      "id": "en_US-norman-medium",
+      "path": "en/en_US/norman/medium",
+      "lang": "en-US",
+      "sex": "male",
+      "bytes": 63531379,
+      "dataset": "LibriVox (public domain), ~15.5 h, assembled by Bryce Beattie",
+      "license": "public domain",
+      "lineage": "trained from scratch",
+      "clean": true
+    },
+    {
+      "id": "en_US-kristin-medium",
+      "path": "en/en_US/kristin/medium",
+      "lang": "en-US",
+      "sex": "female",
+      "bytes": 63531379,
+      "dataset": "LibriVox (public domain), ~11.5 h",
+      "license": "public domain",
+      "lineage": "trained from scratch",
+      "clean": true
+    },
+    {
+      "id": "en_US-john-medium",
+      "path": "en/en_US/john/medium",
+      "lang": "en-US",
+      "sex": "male",
+      "bytes": 63531379,
+      "dataset": "LibriVox (public domain), ~12.5 h",
+      "license": "public domain",
+      "lineage": "fine-tuned from kristin, which was trained from scratch on public-domain audio",
+      "clean": true
+    },
+    {
+      "id": "en_US-bryce-medium",
+      "path": "en/en_US/bryce/medium",
+      "lang": "en-US",
+      "sex": "male",
+      "bytes": 63531379,
+      "dataset": "the author's own voice, ~750 samples",
+      "license": "public domain",
+      "lineage": "fine-tuned from an unreleased voice by the same author",
+      "clean": true
+    },
+    {
+      "id": "en_GB-cori-medium",
+      "path": "en/en_GB/cori/medium",
+      "lang": "en-GB",
+      "sex": "female",
+      "bytes": 63531379,
+      "dataset": "LibriVox (public domain), ~24 h",
+      "license": "public domain",
+      "lineage": "trained from scratch",
+      "clean": true
+    },
+    {
+      "id": "es_MX-ald-medium",
+      "path": "es/es_MX/ald/medium",
+      "lang": "es-MX",
+      "sex": "male",
+      "bytes": 63201294,
+      "dataset": "rmcpantoja/Ald_Mexican_Spanish_speech_dataset — 535 clips, 1 h 33 m, native Mexican Spanish",
+      "license": "The Unlicense (public-domain dedication)",
+      "lineage": "fine-tuned from es_ES-davefx-medium, which was fine-tuned from en_US-lessac-medium",
+      "clean": false,
+      "caveat": "The SPEECH DATA is a public-domain dedication and the phonemiser is es-419 (Latin American), which is right. But the WEIGHTS descend from the Blizzard 2013 Lessac corpus, whose licence forbids redistribution. Whether fine-tuned weights are a derivative work of their training corpus is unsettled in US law. We do not redistribute the weights — only rendered audio — which is why this is acceptable here and would not be if we committed the .onnx. This is the whole es-MX catalogue's problem, not this voice's: see VOICE_LICENSES.md."
+    }
+  ],
+
+  "_rejected": [
+    { "id": "en_US-lessac-*", "why": "Blizzard 2013 licence permits research use only and explicitly forbids distribution and sub-licensing. It is ALSO the example voice in every Piper tutorial, so it is the single most likely voice to end up here by accident. Do not add it." },
+    { "id": "es_MX-claude-high", "why": "Its MODEL_CARD cites a HuggingFace Space, not a dataset, and the sibling voices in that Space are named cortana, jarvis_ucm and veritasium — Microsoft and Marvel properties and a named living person. That pattern is consistent with voice cloning without consent, which is a likeness problem and not merely a licence mismatch. Excluded on provenance." },
+    { "id": "en_US-ryan-*, en_US-hfc_*, en_GB-semaine-medium", "why": "CC BY-NC-SA 4.0. ShareAlike could attach a copyleft obligation to district curriculum material. Public-domain alternatives exist, so there is no reason to take it." },
+    { "id": "en_GB-cori-high, en_US-ljspeech-high", "why": "114 MB each — over GitHub's 100 MiB hard push limit. Irrelevant while we ship no models, but noted so nobody switches to 'high' and hits a wall." },
+    { "id": "Microsoft Dalia / Jorge / David / Zira", "why": "Windows OS components. No redistribution grant, no output grant, and they are not even reachable from a browser. A teacher may install them for the LIVE fallback on their own machine; nothing derived from them may be committed." }
+  ],
+
+  "cast": {
+    "_note": "Who reads what, for the OFFLINE RENDER. This is not the same table as SPEAKERS in app/js/audio.js — that one casts the browser's own voices for the live fallback, and it can only pick from what the machine happens to have installed. length = speaking rate (higher is slower). Rules 1 and 2 of design/10-voice-cast.md are enforced here as well as there.",
+
+    "NARRATOR":        { "voice": "en_US-norman-medium",  "length": 1.06, "noiseW": 0.8 },
+    "HISTORIAN":       { "voice": "en_GB-cori-medium",    "length": 1.00, "noiseW": 0.8 },
+
+    "_rule1": "Mexican and Tejano characters are rendered in NATIVE es-MX, never as an English speaker doing an accent. The Piper catalogue contains only two distinct es-MX speakers, so four men cannot have four voices; they are separated by rate and by phoneme-width variation instead. That is an honest workaround. Substituting a Castilian es_ES voice would NOT be — the Iberian theta is wrong for 1835 Mexican officers.",
+    "UGARTECHEA":      { "voice": "es_MX-ald-medium", "length": 1.02, "noiseW": 0.7 },
+    "CASTANEDA":       { "voice": "es_MX-ald-medium", "length": 0.92, "noiseW": 0.9 },
+    "SANTA_ANNA":      { "voice": "es_MX-ald-medium", "length": 1.16, "noiseW": 0.6 },
+    "SEGUIN":          { "voice": "es_MX-ald-medium", "length": 1.05, "noiseW": 0.9 },
+    "ALMONTE":         { "voice": "en_US-john-medium", "length": 1.00, "noiseW": 0.8,
+                         "note": "Educated in the United States — the documented exception to rule 1." },
+
+    "TRAVIS":          { "voice": "en_US-john-medium",  "length": 0.98 },
+    "AUSTIN":          { "voice": "en_US-bryce-medium", "length": 1.08 },
+    "HOUSTON":         { "voice": "en_US-norman-medium","length": 1.14, "noiseW": 0.7 },
+
+    "_rule2": "Joe, Greenbury Logan, Samuel McCulloch Jr. and Hendrick Arnold get STRAIGHT, DIGNIFIED, UNACCENTED reads. No dialect performance. design/10-voice-cast.md calls the alternative 'minstrelsy with a lesson plan attached' and it is right. Their entries below are ordinary on purpose. This is deliberate and it is not an oversight — do not 'fix' it later by adding an accent.",
+    "JOE":             { "voice": "en_US-john-medium",  "length": 1.02 },
+    "GREENBURY_LOGAN": { "voice": "en_US-bryce-medium", "length": 1.04 },
+    "MCCULLOCH":       { "voice": "en_US-john-medium",  "length": 1.00 },
+    "ARNOLD":          { "voice": "en_US-bryce-medium", "length": 1.00 }
+  },
+
+  "say_it_this_way": {
+    "_note": "espeak-ng reads '1835' as 'one thousand eight hundred and thirty-five', which no human has ever said about a year. These are applied before rendering. Spanish especially needs numbers written out — see the note in the alt-TTS research.",
+    "1835": "eighteen thirty-five",
+    "1836": "eighteen thirty-six",
+    "1834": "eighteen thirty-four",
+    "1832": "eighteen thirty-two",
+    "1824": "eighteen twenty-four",
+    "1830": "eighteen thirty",
+    "1831": "eighteen thirty-one",
+    "1833": "eighteen thirty-three",
+    "Béxar": "Bay-har",
+    "Bexar": "Bay-har",
+    "Gonzales": "Gon-zah-les",
+    "Ugartechea": "Oo-gar-te-chay-a",
+    "Castañeda": "Cas-tan-yay-da",
+    "Seguín": "Se-geen",
+    "alcalde": "al-cal-day",
+    "ayuntamiento": "a-yoon-ta-mee-en-toe",
+    "empresario": "em-pre-sah-ree-oh",
+    "Guadalupe": "Gwa-da-loo-pay",
+    "jacal": "ha-cal",
+    "acequia": "a-say-kee-a",
+    "Tejano": "Te-hah-no",
+    "Matamoros": "Ma-ta-mo-ros",
+    "Goliad": "Go-lee-ad"
+  }
+}

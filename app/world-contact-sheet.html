@@ -1,0 +1,1334 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The world — Gonzales &amp; Béxar</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+  :root { --paper:#E9EBE4; --field:#F2F3EE; --ink:#1B2A33; --soft:#4A5B63;
+          --rule:#C6CCC3; --oxide:#9E3729; --teal:#39646B; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink);
+         font:15px/1.55 "IBM Plex Sans", system-ui, sans-serif; }
+  header { padding:34px 22px 22px; border-bottom:2px solid var(--rule); background:var(--field); }
+  .kick { font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.2em;
+          color:var(--oxide); font-weight:600; }
+  h1 { font-family:"Libre Caslon Display",Georgia,serif; font-weight:400;
+       font-size:clamp(26px,5vw,40px); margin:11px 0 8px; line-height:1.1; }
+  header p { margin:0; max-width:66ch; color:var(--soft); font-size:14px; }
+  main { padding:8px 14px 60px; max-width:1180px; margin:0 auto; }
+  figure { margin:30px 0 0; }
+  figcaption { font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em;
+               text-transform:uppercase; color:var(--oxide); font-weight:600; padding-bottom:9px; }
+  .board { position:relative; width:100%; aspect-ratio:17/11; background:var(--paper);
+           border:1px solid var(--rule); overflow:hidden; }
+  .board.in { aspect-ratio:16/9; background:#DED9C9; }
+  canvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .note { font-size:13px; color:var(--soft); margin-top:9px; max-width:74ch; }
+  footer { border-top:2px solid var(--rule); background:var(--field);
+           padding:24px 22px 40px; font-size:13px; color:var(--soft); }
+  footer b { color:var(--ink); font-weight:500; }
+  code { font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--paper);
+         border:1px solid var(--rule); padding:1px 5px; }
+</style>
+
+<header>
+  <div class="kick">THE GONZALES COMPANY</div>
+  <h1>The world, at the hours it is actually played at</h1>
+  <p>Every image below is the <b>real renderer</b> reading the <b>real map files</b> — the same code
+  the students' Chromebooks run. Nothing here was drawn for this page. If it looks wrong here, it is
+  wrong in the game.</p>
+</header>
+
+<main id="sheet"></main>
+
+<footer>
+  <p><b>Seven places.</b> Two towns and five interiors. Every student stands in exactly one, so two
+  who walk into different buildings in the same second are looking at different worlds a beat later.
+  Going inside costs one movement point, not your turn.</p>
+  <p><b>The map says what time it is.</b> Each scene declares its hour and weather; the ground is
+  washed for the hour and windows light up after dark. Sunrise and sunset are computed and certain.
+  The clock hours are attested for some events and reconstructed for others, and the game says which.
+  There were no time zones in 1835 — every town kept its own solar time.</p>
+  <p><b>Terrain is drawn, not coloured.</b> Grass has blades, fields have furrows running the same
+  way across the whole field, roads are one continuous rutted ribbon, timber casts shadows, high
+  ground gets a surveyor's hachures. Every scattered mark is hashed from its hex coordinate, so
+  thirty screens agree to the pixel and nothing crawls when the canvas redraws.</p>
+  <p>Run <code>node tools/check-maps.mjs</code> after touching any map. See
+  <code>design/17-the-world.md</code>.</p>
+</footer>
+
+<script>/* hexmap.js — the world, shared by the Stage and the student client.
+ *
+ * Implements design/11-map-data.md: pointy-top hexes, odd-r offset for the
+ * labels a human types (G6), axial coordinates for the maths. One module so the
+ * projector's omniscient view and a student's fogged view can never disagree
+ * about where anything is.
+ *
+ * TWO THINGS THIS FILE IS CAREFUL ABOUT
+ *
+ * 1. A HEX GRID IS NOT A MAP. A coloured tile tells a twelve-year-old nothing.
+ *    So terrain is DRAWN — grass has blades, a ploughed field has furrows, a
+ *    road is one continuous rutted ribbon rather than eleven brown lozenges,
+ *    timber has canopies that cast shadows. The scatter is hashed from the hex
+ *    coordinate (see rnd), so it is pixel-identical on thirty Chromebooks and
+ *    does not crawl when the canvas redraws four times a second.
+ *
+ * 2. PLACES ARE INDEPENDENT. A map is a PLACE — the town, a house, a forge,
+ *    Béxar. Every student stands in exactly one, and two students in different
+ *    places see different worlds on their own screens at the same instant. The
+ *    renderer does not know or care which; it is handed one map and draws it.
+ */
+
+const HexMap = (function () {
+  const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+  /* ------------------------------------------------------------------ data */
+
+  /* Maps are authored as ASCII grids against the MASTER legend in
+   * content/terrain.json, so a new map is eleven lines of text and not a
+   * colour scheme. A map may override a single glyph locally; it almost never
+   * needs to. */
+  function hydrate(doc, terrain) {
+    const legend = {};
+    if (terrain && terrain.legend) {
+      Object.keys(terrain.legend).forEach((k) => { legend[k] = terrain.legend[k]; });
+    }
+    Object.keys(doc.legend || {}).forEach((k) => {
+      legend[k] = Object.assign({}, legend[k] || {}, doc.legend[k]);
+    });
+    const out = Object.assign({}, doc, { legend: legend });
+    out.lightTable = (terrain && terrain.light) || {};
+    out.weatherTable = (terrain && terrain.weather) || {};
+    return out;
+  }
+
+  function make(data) {
+    const cols = data.cols, rows = data.rows;
+    const legend = data.legend;
+
+    function glyph(c, r) {
+      if (c < 0 || r < 0 || c >= cols || r >= rows) return null;
+      const row = data.grid[r];
+      if (row === undefined || c >= row.length) return null;
+      return row[c];
+    }
+    function terrain(c, r) {
+      const g = glyph(c, r);
+      return g === null ? null : (legend[g] || null);
+    }
+    function label(c, r) { return LETTERS[c] + (r + 1); }
+    function parse(lab) {
+      if (!lab) return null;
+      const c = LETTERS.indexOf(String(lab)[0].toUpperCase());
+      const r = parseInt(String(lab).slice(1), 10) - 1;
+      if (c < 0 || isNaN(r)) return null;
+      return { c: c, r: r };
+    }
+
+    /* odd-r offset neighbours. The row parity shifts which diagonals you get,
+     * and getting this wrong is the classic hex bug. */
+    function neighbours(c, r) {
+      const odd = (r % 2) === 1;
+      const d = odd
+        ? [[+1, 0], [0, -1], [-1, 0], [0, +1], [+1, -1], [+1, +1]]
+        : [[+1, 0], [-1, -1], [-1, 0], [-1, +1], [0, -1], [0, +1]];
+      const out = [];
+      d.forEach(function (o) {
+        const nc = c + o[0], nr = r + o[1];
+        if (nc >= 0 && nr >= 0 && nc < cols && nr < rows) out.push({ c: nc, r: nr });
+      });
+      return out;
+    }
+
+    /* Features sit ON the ground: a door that can open, a chest that can be
+     * emptied, the cannon, the way into a building. Looked up by hex, and they
+     * change during play. */
+    const featureIndex = {};
+    (data.features || []).forEach((f) => { (featureIndex[f.hex] = featureIndex[f.hex] || []).push(f); });
+    function featuresAt(lab) { return featureIndex[lab] || []; }
+    function feature(id) { return (data.features || []).filter((f) => f.id === id)[0] || null; }
+    function itemsById(id) { return (data.items || []).filter((i) => i.id === id)[0] || null; }
+
+    /* A shut door stops you. An open one does not. Checked on the hex you are
+     * trying to ENTER, so a closed door makes the room behind it genuinely
+     * unreachable rather than merely expensive. */
+    function passable(lab) {
+      const doors = featuresAt(lab).filter((f) => f.kind === 'door');
+      if (doors.length && doors.some((d) => !d.open)) return false;
+      return true;
+    }
+
+    /* A PORTAL is a door that goes somewhere else — into a house, back out to
+     * the street. Standing on one is what lets a student change place. */
+    function portalAt(lab) {
+      return featuresAt(lab).filter((f) => f.to && f.to.place)[0] || null;
+    }
+
+    /* Dijkstra out to a movement budget, with occupancy and doors.
+     *
+     *   · you may not END on a hex somebody is standing on
+     *   · you may not PASS THROUGH one either — so a doorway held by two
+     *     people is genuinely held, and a route has to be clear, not merely
+     *     short. That is the difference between a map and a menu of hexes. */
+    function reachable(from, points, opts) {
+      opts = opts || {};
+      const start = typeof from === 'string' ? parse(from) : from;
+      if (!start) return {};
+      const blocked = {};
+      (opts.occupied || []).forEach((h) => { blocked[h] = true; });
+      const key = function (p) { return p.c + ',' + p.r; };
+      const dist = {};
+      dist[key(start)] = 0;
+      const queue = [{ c: start.c, r: start.r, d: 0 }];
+      while (queue.length) {
+        queue.sort(function (a, b) { return a.d - b.d; });
+        const cur = queue.shift();
+        if (cur.d > (dist[key(cur)] === undefined ? Infinity : dist[key(cur)])) continue;
+        neighbours(cur.c, cur.r).forEach(function (n) {
+          const t = terrain(n.c, n.r);
+          if (!t || t.cost === null || t.cost === undefined) return;
+          const lab = label(n.c, n.r);
+          if (blocked[lab]) return;                 // somebody is standing there
+          if (!passable(lab)) return;               // the door is shut
+          let cost = t.cost;
+          if (opts.cheapTerrain && opts.cheapTerrain.indexOf(t.name) !== -1) cost = 1;
+          const nd = cur.d + cost;
+          if (nd > points) return;
+          const k = key(n);
+          if (dist[k] === undefined || nd < dist[k]) {
+            dist[k] = nd;
+            queue.push({ c: n.c, r: n.r, d: nd });
+          }
+        });
+      }
+      delete dist[key(start)];
+      return dist;
+    }
+
+    function landmarkAt(lab) {
+      return (data.landmarks || []).filter(function (l) { return l.hex === lab; })[0] || null;
+    }
+
+    /* THE MAP KEY, computed rather than written.
+     *
+     * A key that lists twenty-eight terrain types when this map has nine is
+     * worse than no key. So the panel is built from the glyphs THIS map
+     * actually contains, in the order a student meets them. */
+    function legendUsed() {
+      const seen = {};
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const g = glyph(c, r);
+          if (g !== null && legend[g]) seen[g] = (seen[g] || 0) + 1;
+        }
+      }
+      return Object.keys(seen).map(function (g) {
+        return Object.assign({ glyph: g, hexes: seen[g] }, legend[g]);
+      }).sort(function (a, b) {
+        const ac = a.cost === null ? 99 : a.cost, bc = b.cost === null ? 99 : b.cost;
+        return ac - bc || b.hexes - a.hexes || a.name.localeCompare(b.name);
+      });
+    }
+    function featureKinds() {
+      const seen = {};
+      (data.features || []).forEach((f) => { seen[f.kind] = true; });
+      return Object.keys(seen);
+    }
+
+    return {
+      data: data, id: data.id, title: data.title,
+      indoors: !!data.indoors, parent: data.parent || null,
+      cols: cols, rows: rows, legend: legend,
+      glyph: glyph, terrain: terrain, label: label, parse: parse,
+      neighbours: neighbours, reachable: reachable, landmarkAt: landmarkAt,
+      landmarks: data.landmarks || [],
+      features: data.features || [], items: data.items || [],
+      featuresAt: featuresAt, feature: feature, item: itemsById,
+      passable: passable, portalAt: portalAt,
+      legendUsed: legendUsed, featureKinds: featureKinds,
+    };
+  }
+
+  /* ---------------------------------------------------------------- render */
+
+  function Renderer(canvas, map) {
+    const ctx = canvas.getContext('2d');
+    let R = 26, ox = 0, oy = 0, dpr = 1;
+
+    /* Every scattered blade of grass is a function of WHERE it is, never of
+     * when it was drawn. Thirty screens agree, and nothing shimmers. */
+    function rnd(c, r, i) {
+      let h = (c * 73856093) ^ (r * 19349663) ^ ((i | 0) * 83492791);
+      h = (h ^ (h >>> 13)) >>> 0;
+      h = (Math.imul(h, 1274126177)) >>> 0;
+      return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+    }
+
+    function layout() {
+      const rect = canvas.getBoundingClientRect();
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.max(200, Math.round(rect.width * dpr));
+      canvas.height = Math.max(160, Math.round(rect.height * dpr));
+
+      /* Fit the whole place, then centre it. A student should never have to
+       * scroll or pinch to see where they are. An interior is small, so it is
+       * capped rather than blown up to absurd hexes. */
+      const padPx = Math.min(16 * dpr, canvas.width * 0.055);
+      const availW = canvas.width - padPx * 2;
+      const availH = canvas.height - padPx * 2;
+      const byW = availW / ((map.cols + 0.5) * Math.sqrt(3));
+      const byH = availH / (2 + 1.5 * (map.rows - 1));
+      R = Math.max(8, Math.min(byW, byH, 74 * dpr));
+      const gridW = (map.cols + 0.5) * Math.sqrt(3) * R;
+      const gridH = (2 + 1.5 * (map.rows - 1)) * R;
+      ox = (canvas.width - gridW) / 2;
+      oy = (canvas.height - gridH) / 2;
+    }
+
+    function centre(c, r) {
+      const w = Math.sqrt(3) * R;
+      return [ox + w / 2 + c * w + (r % 2 ? w / 2 : 0), oy + R + r * 1.5 * R];
+    }
+    function pts(cx, cy) {
+      const a = [];
+      for (let i = 0; i < 6; i++) {
+        const t = Math.PI / 180 * (60 * i + 30);
+        a.push([cx + R * Math.cos(t), cy + R * Math.sin(t)]);
+      }
+      return a;
+    }
+    function path(cx, cy) {
+      const p = pts(cx, cy);
+      ctx.beginPath();
+      ctx.moveTo(p[0][0], p[0][1]);
+      for (let i = 1; i < 6; i++) ctx.lineTo(p[i][0], p[i][1]);
+      ctx.closePath();
+    }
+    function clipHex(cx, cy, fn) {
+      ctx.save();
+      path(cx, cy);
+      ctx.clip();
+      fn();
+      ctx.restore();
+    }
+    /* The edge two hexes share, as two screen points. Used for fences and for
+     * the darker line where water meets bank. */
+    function sharedEdge(p, q) {
+      const dx = q[0] - p[0], dy = q[1] - p[1];
+      const len = Math.hypot(dx, dy) || 1;
+      const ux = dx / len, uy = dy / len;
+      const ap = R * Math.sqrt(3) / 2;                 // apothem
+      const mx = p[0] + ux * ap, my = p[1] + uy * ap;
+      const hx = -uy * (R / 2), hy = ux * (R / 2);
+      return [[mx - hx, my - hy], [mx + hx, my + hy]];
+    }
+
+    /* Screen point → hex. Nearest-centre is exact enough at this radius and is
+     * far more forgiving on a trackpad than true cube rounding. */
+    function hitTest(px, py) {
+      const x = px * dpr, y = py * dpr;
+      let best = null, bestD = Infinity;
+      for (let r = 0; r < map.rows; r++) {
+        for (let c = 0; c < map.cols; c++) {
+          const p = centre(c, r);
+          const d = (p[0] - x) * (p[0] - x) + (p[1] - y) * (p[1] - y);
+          if (d < bestD) { bestD = d; best = { c: c, r: r }; }
+        }
+      }
+      return bestD <= (R * R * 1.05) ? best : null;
+    }
+
+    /* ------------------------------------------------------------- terrain
+     *
+     * One function per `detail` value in content/terrain.json. Each draws
+     * INSIDE one hex, clipped, using only rnd(c,r,·) for variation. Nothing
+     * here reads the clock, so nothing here moves. */
+    const DECOR = {
+      grass: function (c, r, p, t) {
+        const n = Math.round(9 + 9 * (t.density || 1));
+        ctx.strokeStyle = 'rgba(104,124,84,.46)';
+        ctx.lineWidth = Math.max(0.8, R * 0.035);
+        ctx.lineCap = 'round';
+        for (let i = 0; i < n; i++) {
+          const a = rnd(c, r, i) * Math.PI * 2;
+          const d = Math.sqrt(rnd(c, r, i + 40)) * R * 0.82;
+          const x = p[0] + Math.cos(a) * d, y = p[1] + Math.sin(a) * d;
+          const h = R * (0.13 + rnd(c, r, i + 80) * 0.13);
+          const lean = (rnd(c, r, i + 120) - 0.5) * R * 0.16;
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.quadraticCurveTo(x + lean * 0.5, y - h * 0.6, x + lean, y - h);
+          ctx.stroke();
+        }
+      },
+
+      furrow: function (c, r, p) {
+        /* Ploughed rows run the same way across a whole field, so the angle is
+         * hashed from the FIELD, not the hex — otherwise the country looks
+         * like a quilt. */
+        const a = Math.PI * 0.16;
+        ctx.strokeStyle = 'rgba(150,142,108,.50)';
+        ctx.lineWidth = Math.max(0.8, R * 0.045);
+        const step = R * 0.28;
+        for (let k = -3; k <= 3; k++) {
+          const off = k * step;
+          ctx.beginPath();
+          ctx.moveTo(p[0] - Math.cos(a) * R - Math.sin(a) * off, p[1] - Math.sin(a) * R + Math.cos(a) * off);
+          ctx.lineTo(p[0] + Math.cos(a) * R - Math.sin(a) * off, p[1] + Math.sin(a) * R + Math.cos(a) * off);
+          ctx.stroke();
+        }
+      },
+
+      stubble: function (c, r, p) {
+        ctx.strokeStyle = 'rgba(150,138,92,.55)';
+        ctx.lineWidth = Math.max(0.8, R * 0.04);
+        const a = Math.PI * 0.16, step = R * 0.34;
+        for (let k = -2; k <= 2; k++) {
+          for (let j = -2; j <= 2; j++) {
+            const u = j * step + (rnd(c, r, k * 7 + j) - 0.5) * R * 0.1;
+            const v = k * step;
+            const x = p[0] + Math.cos(a) * u - Math.sin(a) * v;
+            const y = p[1] + Math.sin(a) * u + Math.cos(a) * v;
+            if (Math.hypot(x - p[0], y - p[1]) > R * 0.8) continue;
+            ctx.beginPath();
+            ctx.moveTo(x, y + R * 0.09);
+            ctx.lineTo(x, y - R * 0.09);
+            ctx.stroke();
+          }
+        }
+      },
+
+      orchard: function (c, r, p) {
+        /* Planted in rows, which is the whole visual difference between an
+         * orchard and a wood. The peach orchard is where the cannon went. */
+        const step = R * 0.52;
+        for (let k = -1; k <= 1; k++) {
+          for (let j = -1; j <= 1; j++) {
+            const x = p[0] + j * step + (k % 2 ? step * 0.5 : 0);
+            const y = p[1] + k * step * 0.92;
+            if (Math.hypot(x - p[0], y - p[1]) > R * 0.78) continue;
+            const rad = R * 0.15;
+            ctx.beginPath();
+            ctx.arc(x + R * 0.05, y + R * 0.06, rad, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(60,74,48,.16)';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x, y, rad, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(126,152,102,.85)';
+            ctx.fill();
+          }
+        }
+      },
+
+      scrub: function (c, r, p, t) {
+        const n = Math.round(4 + 4 * (t.density || 1));
+        for (let i = 0; i < n; i++) {
+          const a = rnd(c, r, i) * Math.PI * 2;
+          const d = Math.sqrt(rnd(c, r, i + 30)) * R * 0.7;
+          const x = p[0] + Math.cos(a) * d, y = p[1] + Math.sin(a) * d;
+          const rad = R * (0.11 + rnd(c, r, i + 60) * 0.09);
+          ctx.beginPath();
+          for (let k = 0; k < 7; k++) {
+            const ta = (k / 7) * Math.PI * 2;
+            const rr = rad * (0.68 + rnd(c, r, i * 11 + k) * 0.55);
+            const px = x + Math.cos(ta) * rr, py = y + Math.sin(ta) * rr;
+            if (k === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          ctx.fillStyle = 'rgba(122,138,100,.55)';
+          ctx.fill();
+        }
+      },
+
+      canopy: function (c, r, p, t, L) {
+        const n = (t.density || 1) >= 0.9 ? 3 : 2;
+        const sh = L ? L.shadow : 1.6, sa = L ? L.shadowAngle : 2.4;
+        for (let i = 0; i < n; i++) {
+          const a = rnd(c, r, i) * Math.PI * 2;
+          const d = (n === 1 ? 0 : Math.sqrt(rnd(c, r, i + 20)) * R * 0.42);
+          const x = p[0] + Math.cos(a) * d, y = p[1] + Math.sin(a) * d;
+          const rad = R * (0.28 + rnd(c, r, i + 50) * 0.13);
+          if (sh > 0) {
+            ctx.beginPath();
+            ctx.arc(x + Math.cos(sa) * rad * sh * 0.32, y + Math.sin(sa) * rad * sh * 0.32, rad * 0.92, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(48,60,40,.20)';
+            ctx.fill();
+          }
+          ctx.beginPath();                       // a lobed crown, not a circle
+          for (let k = 0; k < 9; k++) {
+            const ta = (k / 9) * Math.PI * 2;
+            const rr = rad * (0.82 + rnd(c, r, i * 17 + k) * 0.34);
+            const px = x + Math.cos(ta) * rr, py = y + Math.sin(ta) * rr;
+            if (k === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          ctx.fillStyle = 'rgba(108,130,88,.88)';
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(72,90,60,.55)';
+          ctx.lineWidth = Math.max(0.7, R * 0.022);
+          ctx.stroke();
+        }
+      },
+
+      cane: function (c, r, p) {
+        ctx.strokeStyle = 'rgba(118,142,104,.62)';
+        ctx.lineWidth = Math.max(0.8, R * 0.03);
+        for (let i = 0; i < 22; i++) {
+          const a = rnd(c, r, i) * Math.PI * 2;
+          const d = Math.sqrt(rnd(c, r, i + 25)) * R * 0.85;
+          const x = p[0] + Math.cos(a) * d, y = p[1] + Math.sin(a) * d;
+          const h = R * (0.3 + rnd(c, r, i + 55) * 0.2);
+          const lean = (rnd(c, r, i + 95) - 0.5) * R * 0.2;
+          ctx.beginPath();
+          ctx.moveTo(x, y + h * 0.3);
+          ctx.lineTo(x + lean, y - h);
+          ctx.stroke();
+        }
+      },
+
+      hachure: function (c, r, p) {
+        /* Contour ticks, the way a nineteenth-century surveyor drew high
+         * ground. Reads as "this is above you" without a legend. */
+        ctx.strokeStyle = 'rgba(140,132,104,.62)';
+        ctx.lineWidth = Math.max(0.8, R * 0.04);
+        [0.42, 0.68].forEach(function (ring, ri) {
+          const n = ri ? 16 : 11;
+          for (let i = 0; i < n; i++) {
+            const a = (i / n) * Math.PI * 2 + ri * 0.2;
+            const x = p[0] + Math.cos(a) * R * ring;
+            const y = p[1] + Math.sin(a) * R * ring;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + Math.cos(a) * R * 0.13, y + Math.sin(a) * R * 0.13);
+            ctx.stroke();
+          }
+        });
+      },
+
+      water: function (c, r, p, t) {
+        /* Current, drawn as broken lines running with the channel. Dense in
+         * the river, sparse at a ford so the ford reads as shallow. */
+        const n = (t.density || 1) >= 0.9 ? 4 : 2;
+        ctx.strokeStyle = 'rgba(112,152,162,.55)';
+        ctx.lineWidth = Math.max(0.9, R * 0.045);
+        ctx.lineCap = 'round';
+        for (let i = 0; i < n; i++) {
+          const y = p[1] + (i - (n - 1) / 2) * R * 0.42 + (rnd(c, r, i) - 0.5) * R * 0.12;
+          const w = R * (0.34 + rnd(c, r, i + 7) * 0.36);
+          const x = p[0] + (rnd(c, r, i + 14) - 0.5) * R * 0.5;
+          ctx.beginPath();
+          ctx.moveTo(x - w, y);
+          ctx.quadraticCurveTo(x, y - R * 0.09, x + w, y);
+          ctx.stroke();
+        }
+      },
+
+      ditch: function (c, r, p) {
+        ctx.strokeStyle = 'rgba(108,146,148,.7)';
+        ctx.lineWidth = Math.max(1, R * 0.09);
+        ctx.beginPath();
+        ctx.moveTo(p[0] - R * 0.9, p[1] + R * 0.1);
+        ctx.quadraticCurveTo(p[0], p[1] - R * 0.16, p[0] + R * 0.9, p[1] + R * 0.1);
+        ctx.stroke();
+      },
+
+      sand: function (c, r, p) {
+        ctx.fillStyle = 'rgba(160,148,116,.42)';
+        for (let i = 0; i < 26; i++) {
+          const a = rnd(c, r, i) * Math.PI * 2;
+          const d = Math.sqrt(rnd(c, r, i + 33)) * R * 0.85;
+          ctx.beginPath();
+          ctx.arc(p[0] + Math.cos(a) * d, p[1] + Math.sin(a) * d, R * 0.022, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      },
+
+      packed: function (c, r, p, t) {
+        const n = Math.round(6 + 22 * (t.density || 0.3));
+        ctx.fillStyle = 'rgba(128,122,104,.26)';
+        for (let i = 0; i < n; i++) {
+          const a = rnd(c, r, i) * Math.PI * 2;
+          const d = Math.sqrt(rnd(c, r, i + 12)) * R * 0.82;
+          ctx.beginPath();
+          ctx.arc(p[0] + Math.cos(a) * d, p[1] + Math.sin(a) * d, R * 0.02, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      },
+
+      rubble: function (c, r, p) {
+        for (let i = 0; i < 7; i++) {
+          const a = rnd(c, r, i) * Math.PI * 2;
+          const d = Math.sqrt(rnd(c, r, i + 15)) * R * 0.66;
+          const x = p[0] + Math.cos(a) * d, y = p[1] + Math.sin(a) * d;
+          const s = R * (0.09 + rnd(c, r, i + 45) * 0.08);
+          ctx.beginPath();
+          ctx.moveTo(x - s, y + s * 0.6);
+          ctx.lineTo(x - s * 0.3, y - s);
+          ctx.lineTo(x + s, y - s * 0.2);
+          ctx.lineTo(x + s * 0.4, y + s * 0.8);
+          ctx.closePath();
+          ctx.fillStyle = 'rgba(150,146,132,.75)';
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(110,106,94,.6)';
+          ctx.lineWidth = Math.max(0.6, R * 0.02);
+          ctx.stroke();
+        }
+      },
+
+      boards: function (c, r, p) {
+        ctx.strokeStyle = 'rgba(150,138,112,.42)';
+        ctx.lineWidth = Math.max(0.7, R * 0.03);
+        for (let k = -3; k <= 3; k++) {
+          const y = p[1] + k * R * 0.29;
+          ctx.beginPath();
+          ctx.moveTo(p[0] - R * 0.9, y);
+          ctx.lineTo(p[0] + R * 0.9, y);
+          ctx.stroke();
+        }
+      },
+
+      planks: function (c, r, p) {
+        ctx.strokeStyle = 'rgba(130,116,92,.55)';
+        ctx.lineWidth = Math.max(0.8, R * 0.05);
+        for (let k = -2; k <= 2; k++) {
+          const x = p[0] + k * R * 0.35;
+          ctx.beginPath();
+          ctx.moveTo(x, p[1] - R * 0.8);
+          ctx.lineTo(x, p[1] + R * 0.8);
+          ctx.stroke();
+        }
+      },
+
+      goods: function (c, r, p) {
+        /* Barrels, crates, a counter. Enough to say "there is stuff here". */
+        for (let i = 0; i < 4; i++) {
+          const x = p[0] + (rnd(c, r, i) - 0.5) * R * 1.1;
+          const y = p[1] + (rnd(c, r, i + 9) - 0.5) * R * 1.0;
+          const s = R * 0.19;
+          ctx.fillStyle = 'rgba(150,132,100,.75)';
+          ctx.strokeStyle = 'rgba(110,94,68,.75)';
+          ctx.lineWidth = Math.max(0.7, R * 0.022);
+          if (rnd(c, r, i + 21) > 0.5) {
+            ctx.beginPath(); ctx.arc(x, y, s * 0.8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.arc(x, y, s * 0.4, 0, Math.PI * 2); ctx.stroke();
+          } else {
+            ctx.beginPath(); ctx.rect(x - s, y - s * 0.72, s * 2, s * 1.44); ctx.fill(); ctx.stroke();
+          }
+        }
+      },
+
+      fire: function (c, r, p) {
+        ctx.beginPath();
+        ctx.arc(p[0], p[1], R * 0.44, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(196,110,52,.30)';
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(p[0] - R * 0.2, p[1] + R * 0.24);
+        ctx.quadraticCurveTo(p[0] - R * 0.06, p[1] - R * 0.06, p[0], p[1] - R * 0.34);
+        ctx.quadraticCurveTo(p[0] + R * 0.09, p[1] - R * 0.04, p[0] + R * 0.2, p[1] + R * 0.24);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(214,120,48,.86)';
+        ctx.fill();
+      },
+
+      threshold: function (c, r, p) {
+        ctx.strokeStyle = 'rgba(122,112,90,.7)';
+        ctx.lineWidth = Math.max(1, R * 0.07);
+        ctx.beginPath();
+        ctx.moveTo(p[0] - R * 0.5, p[1] + R * 0.3);
+        ctx.lineTo(p[0] + R * 0.5, p[1] + R * 0.3);
+        ctx.stroke();
+      },
+
+      ladder: function (c, r, p) {
+        ctx.strokeStyle = 'rgba(128,112,84,.8)';
+        ctx.lineWidth = Math.max(0.9, R * 0.05);
+        ctx.beginPath(); ctx.moveTo(p[0] - R * 0.22, p[1] - R * 0.5); ctx.lineTo(p[0] - R * 0.22, p[1] + R * 0.5); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(p[0] + R * 0.22, p[1] - R * 0.5); ctx.lineTo(p[0] + R * 0.22, p[1] + R * 0.5); ctx.stroke();
+        for (let k = -2; k <= 2; k++) {
+          const y = p[1] + k * R * 0.24;
+          ctx.beginPath(); ctx.moveTo(p[0] - R * 0.22, y); ctx.lineTo(p[0] + R * 0.22, y); ctx.stroke();
+        }
+      },
+    };
+
+    /* ---------------------------------------------------------- ribbons
+     * A road is one continuous thing. Drawing it hex-by-hex gives you eleven
+     * brown lozenges; drawing centre-to-centre through every neighbour of the
+     * same kind gives you a road. */
+    function ribbon(match, width, colour, dash) {
+      ctx.save();
+      ctx.strokeStyle = colour;
+      ctx.lineWidth = width;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      if (dash) ctx.setLineDash(dash);
+      for (let r = 0; r < map.rows; r++) {
+        for (let c = 0; c < map.cols; c++) {
+          if (!match(c, r)) continue;
+          const p = centre(c, r);
+          let joined = false;
+          map.neighbours(c, r).forEach((n) => {
+            if (!match(n.c, n.r)) return;
+            if (n.r < r || (n.r === r && n.c < c)) return;   // draw each link once
+            joined = true;
+            const q = centre(n.c, n.r);
+            ctx.beginPath();
+            ctx.moveTo(p[0], p[1]);
+            ctx.lineTo(q[0], q[1]);
+            ctx.stroke();
+          });
+          if (!joined) {                                     // a lone hex still shows
+            ctx.beginPath();
+            ctx.arc(p[0], p[1], width * 0.42, 0, Math.PI * 2);
+            ctx.fillStyle = colour;
+            ctx.fill();
+          }
+        }
+      }
+      ctx.restore();
+    }
+
+    function isName(c, r, name) {
+      const t = map.terrain(c, r);
+      return !!t && t.name === name;
+    }
+
+    /* ------------------------------------------------------------- icons
+     * Drawn, not typed. A door has to read as open or shut at a glance from a
+     * Chromebook, so these are shapes rather than glyphs. */
+    function icon(kind, cx, cy, size, open) {
+      const S = size;
+      ctx.save();
+      ctx.lineWidth = Math.max(1, S * 0.13);
+      ctx.lineJoin = 'round';
+      if (kind === 'door') {
+        ctx.strokeStyle = open ? '#39646B' : '#9E3729';
+        ctx.fillStyle = open ? 'rgba(57,100,107,.14)' : 'rgba(158,55,41,.20)';
+        ctx.beginPath();
+        ctx.rect(cx - S * 0.45, cy - S * 0.6, S * 0.9, S * 1.2);
+        ctx.fill(); ctx.stroke();
+        if (open) {                       // the leaf, swung back
+          ctx.beginPath();
+          ctx.moveTo(cx + S * 0.45, cy - S * 0.6);
+          ctx.lineTo(cx + S * 1.0, cy - S * 0.15);
+          ctx.stroke();
+        } else {                          // a bar across it
+          ctx.beginPath();
+          ctx.moveTo(cx - S * 0.45, cy);
+          ctx.lineTo(cx + S * 0.45, cy);
+          ctx.stroke();
+        }
+      } else if (kind === 'stair') {      // a portal: this door goes somewhere
+        ctx.strokeStyle = '#39646B';
+        ctx.fillStyle = 'rgba(57,100,107,.16)';
+        ctx.beginPath();
+        ctx.moveTo(cx - S * 0.55, cy + S * 0.55);
+        ctx.lineTo(cx - S * 0.55, cy - S * 0.1);
+        ctx.lineTo(cx + S * 0.05, cy - S * 0.1);
+        ctx.lineTo(cx + S * 0.05, cy - S * 0.62);
+        ctx.lineTo(cx + S * 0.6, cy - S * 0.62);
+        ctx.lineTo(cx + S * 0.6, cy + S * 0.55);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
+      } else if (kind === 'chest') {
+        ctx.strokeStyle = '#8A6534';
+        ctx.fillStyle = 'rgba(138,101,52,.28)';
+        ctx.beginPath();
+        ctx.rect(cx - S * 0.6, cy - S * 0.4, S * 1.2, S * 0.85);
+        ctx.fill(); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(cx - S * 0.6, cy - S * 0.1);
+        ctx.lineTo(cx + S * 0.6, cy - S * 0.1);
+        ctx.stroke();
+      } else if (kind === 'chest-done') {
+        ctx.strokeStyle = '#A9B2A8';
+        ctx.setLineDash([S * 0.25, S * 0.2]);
+        ctx.beginPath();
+        ctx.rect(cx - S * 0.6, cy - S * 0.4, S * 1.2, S * 0.85);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      } else if (kind === 'body') {
+        ctx.strokeStyle = '#7A5C7E';
+        ctx.fillStyle = 'rgba(122,92,126,.26)';
+        ctx.beginPath();
+        ctx.ellipse(cx, cy + S * 0.1, S * 0.62, S * 0.3, 0, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(cx - S * 0.5, cy - S * 0.12, S * 0.2, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+      } else if (kind === 'cannon') {
+        ctx.strokeStyle = '#9E3729';
+        ctx.fillStyle = 'rgba(158,55,41,.30)';
+        ctx.beginPath();
+        ctx.moveTo(cx - S * 0.75, cy - S * 0.22);
+        ctx.lineTo(cx + S * 0.5, cy - S * 0.32);
+        ctx.lineTo(cx + S * 0.5, cy + S * 0.08);
+        ctx.lineTo(cx - S * 0.75, cy + S * 0.18);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(cx - S * 0.55, cy + S * 0.45, S * 0.32, 0, Math.PI * 2);
+        ctx.stroke();
+      } else if (kind === 'well') {
+        ctx.strokeStyle = '#55666E';
+        ctx.fillStyle = 'rgba(85,102,110,.22)';
+        ctx.beginPath(); ctx.arc(cx, cy, S * 0.5, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(cx, cy, S * 0.24, 0, Math.PI * 2); ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    /* ---------------------------------------------------------------- draw
+     *
+     * state = { you, tokens[], npcs[], reach{}, hover, features[], occupied[],
+     *           light: {phase, weather}, showLabels }
+     */
+    function draw(state) {
+      state = state || {};
+      layout();
+      const S = dpr;
+      const LT = (map.data.lightTable || {});
+      const WT = (map.data.weatherTable || {});
+      const lightKey = (state.light && state.light.phase) || 'MIDDAY';
+      const L = LT[lightKey] || LT.MIDDAY || { alpha: 0, shadow: 1, shadowAngle: 1.57 };
+      const W = WT[(state.light && state.light.weather) || 'CLEAR'] || null;
+      /* Indoors it is always the same dimness — a lamp does not care that it is
+       * overcast outside — but night still reaches through the door. */
+      const indoorL = map.indoors ? Object.assign({}, L, { alpha: L.alpha * 0.45, shadow: 0.9 }) : L;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = map.indoors ? '#DED9C9' : '#E9EBE4';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const reach = state.reach || {};
+      const you = state.you ? map.parse(state.you) : null;
+
+      /* ---- 1. THE GROUND, as ground. Fills with no strokes, so terrain reads
+       * as continuous country rather than N separate tiles. */
+      for (let r = 0; r < map.rows; r++) {
+        for (let c = 0; c < map.cols; c++) {
+          const t = map.terrain(c, r);
+          if (!t) continue;
+          const p = centre(c, r);
+          path(p[0], p[1]);
+          ctx.fillStyle = t.fill || '#E9EBE4';
+          ctx.fill();
+        }
+      }
+
+      /* ---- 2. WHAT GROWS ON IT. The decoration pass — grass, furrows,
+       * canopies, hachures. This is the whole difference between a grid and a
+       * place. Buildings and walls are skipped; they get their own pass. */
+      for (let r = 0; r < map.rows; r++) {
+        for (let c = 0; c < map.cols; c++) {
+          const t = map.terrain(c, r);
+          if (!t || !t.detail) continue;
+          const fn = DECOR[t.detail];
+          if (!fn) continue;
+          const p = centre(c, r);
+          clipHex(p[0], p[1], function () { fn(c, r, p, t, indoorL); });
+        }
+      }
+
+      /* ---- 3. WATER, as water: flow lines down the channel, a firm bank. */
+      const water = function (c, r) { const t = map.terrain(c, r); return !!t && (t.name === 'river' || t.name === 'ford'); };
+      ctx.save();
+      ctx.strokeStyle = 'rgba(90,130,140,.55)';
+      ctx.lineWidth = 2.2 * S;
+      for (let r = 0; r < map.rows; r++) {
+        for (let c = 0; c < map.cols; c++) {
+          if (!water(c, r)) continue;
+          const p = centre(c, r);
+          map.neighbours(c, r).forEach((n) => {
+            if (water(n.c, n.r)) return;
+            const e = sharedEdge(p, centre(n.c, n.r));
+            ctx.beginPath();
+            ctx.moveTo(e[0][0], e[0][1]);
+            ctx.lineTo(e[1][0], e[1][1]);
+            ctx.stroke();
+          });
+        }
+      }
+      ctx.restore();
+
+      /* ---- 4. ROADS AND PATHS, as continuous ways. Verge, then metal, then
+       * the two ruts a wagon actually leaves. */
+      const road = function (c, r) { return isName(c, r, 'road') || isName(c, r, 'bridge'); };
+      ribbon(road, R * 1.02, 'rgba(178,168,142,.42)');
+      ribbon(road, R * 0.78, '#D9D0BD');
+      ribbon(road, R * 0.10, 'rgba(150,136,106,.55)');
+      ribbon(function (c, r) { return isName(c, r, 'path'); }, R * 0.20,
+             'rgba(160,148,120,.60)', [R * 0.26, R * 0.20]);
+
+      /* ---- 5. FENCES. Drawn on the EDGE between a pen and whatever is not a
+       * pen, because a fence is a boundary and not a square of ground. */
+      ctx.save();
+      ctx.strokeStyle = 'rgba(128,112,82,.85)';
+      ctx.lineWidth = Math.max(1, R * 0.055);
+      for (let r = 0; r < map.rows; r++) {
+        for (let c = 0; c < map.cols; c++) {
+          if (!isName(c, r, 'pen')) continue;
+          const p = centre(c, r);
+          map.neighbours(c, r).forEach((n) => {
+            if (isName(n.c, n.r, 'pen')) return;
+            const e = sharedEdge(p, centre(n.c, n.r));
+            ctx.beginPath();
+            ctx.moveTo(e[0][0], e[0][1]);
+            ctx.lineTo(e[1][0], e[1][1]);
+            ctx.stroke();
+            for (let k = 1; k <= 2; k++) {          // posts
+              const px = e[0][0] + (e[1][0] - e[0][0]) * (k / 3);
+              const py = e[0][1] + (e[1][1] - e[0][1]) * (k / 3);
+              ctx.beginPath();
+              ctx.arc(px, py, R * 0.035, 0, Math.PI * 2);
+              ctx.fillStyle = 'rgba(110,94,66,.9)';
+              ctx.fill();
+            }
+          });
+        }
+      }
+      ctx.restore();
+
+      /* ---- 6. STRUCTURE. A footprint with a shadow reads as a building; a
+       * coloured hexagon reads as a colour. Walls are a different animal and
+       * are drawn as mass, not as a house. */
+      const lamps = [];                        // where light comes from after dark
+      for (let r = 0; r < map.rows; r++) {
+        for (let c = 0; c < map.cols; c++) {
+          const t = map.terrain(c, r);
+          if (!t) continue;
+          const p = centre(c, r);
+          if (t.detail === 'stone') {
+            path(p[0], p[1]);
+            ctx.fillStyle = t.fill;
+            ctx.fill();
+            ctx.strokeStyle = t.line || '#868C7C';
+            ctx.lineWidth = Math.max(1.4, R * 0.09);
+            ctx.stroke();
+            clipHex(p[0], p[1], function () {   // coursed stone
+              ctx.strokeStyle = 'rgba(96,102,92,.45)';
+              ctx.lineWidth = Math.max(0.7, R * 0.025);
+              for (let k = -2; k <= 2; k++) {
+                const y = p[1] + k * R * 0.36;
+                ctx.beginPath(); ctx.moveTo(p[0] - R, y); ctx.lineTo(p[0] + R, y); ctx.stroke();
+              }
+            });
+            continue;
+          }
+          if (t.detail !== 'roof' && t.detail !== 'thatch') continue;
+
+          const w = R * 1.02, h = R * 0.90;
+          const sh = indoorL.shadow, sa = indoorL.shadowAngle;
+          ctx.save();
+          if (sh > 0) {
+            ctx.fillStyle = 'rgba(27,42,51,.17)';
+            ctx.fillRect(p[0] - w / 2 + Math.cos(sa) * sh * S * 1.4,
+                         p[1] - h / 2 + Math.sin(sa) * sh * S * 1.4, w, h);
+          }
+          ctx.fillStyle = t.fill;
+          ctx.strokeStyle = t.line || '#7C8B90';
+          ctx.lineWidth = 1.3 * S;
+          ctx.fillRect(p[0] - w / 2, p[1] - h / 2, w, h);
+          /* the sunward slope, lighter — this is what makes it read as a roof */
+          ctx.fillStyle = 'rgba(255,255,255,.30)';
+          ctx.beginPath();
+          ctx.moveTo(p[0] - w / 2, p[1] - h / 2);
+          ctx.lineTo(p[0] + w / 2, p[1] - h / 2);
+          ctx.lineTo(p[0] + w / 2, p[1] - h / 6);
+          ctx.lineTo(p[0] - w / 2, p[1] - h / 6);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeRect(p[0] - w / 2, p[1] - h / 2, w, h);
+          if (t.detail === 'thatch') {
+            ctx.strokeStyle = 'rgba(150,132,92,.6)';
+            ctx.lineWidth = Math.max(0.7, R * 0.024);
+            for (let k = -3; k <= 3; k++) {
+              ctx.beginPath();
+              ctx.moveTo(p[0] - w / 2, p[1] + k * h * 0.16);
+              ctx.lineTo(p[0] + w / 2, p[1] + k * h * 0.16);
+              ctx.stroke();
+            }
+          } else {
+            ctx.beginPath();                     // roof ridge
+            ctx.moveTo(p[0] - w / 2, p[1] - h / 6);
+            ctx.lineTo(p[0] + w / 2, p[1] - h / 6);
+            ctx.stroke();
+            ctx.fillStyle = 'rgba(90,100,96,.8)';   // and a chimney
+            const cw = R * 0.14;
+            ctx.fillRect(p[0] + w / 2 - cw * 2.1, p[1] - h / 2 - cw * 0.9, cw, cw * 1.5);
+          }
+          ctx.restore();
+          if (L.windows) lamps.push([p[0], p[1], R * 1.5, 'window']);
+        }
+      }
+      /* A fire is a light source as well as a decoration. */
+      for (let r = 0; r < map.rows; r++) {
+        for (let c = 0; c < map.cols; c++) {
+          const t = map.terrain(c, r);
+          if (t && t.detail === 'fire') { const p = centre(c, r); lamps.push([p[0], p[1], R * 2.1, 'fire']); }
+        }
+      }
+
+      /* ---- 7. the grid, light enough to be a guide and not a cage */
+      ctx.save();
+      ctx.strokeStyle = map.indoors ? 'rgba(27,42,51,.10)' : 'rgba(27,42,51,.11)';
+      ctx.lineWidth = 1 * S;
+      for (let r = 0; r < map.rows; r++) {
+        for (let c = 0; c < map.cols; c++) {
+          if (!map.terrain(c, r)) continue;
+          const p = centre(c, r);
+          path(p[0], p[1]);
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+
+      /* ---- 8. THE LIGHT. Everything above is daylight; this is what time it
+       * actually is. A wash over the ground, then warm pools where there is a
+       * fire or a lit window, then weather on top of both. Tokens and the reach
+       * overlay are drawn AFTER, because a student must be able to read their
+       * own options at midnight. */
+      if (indoorL.alpha > 0) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'multiply';
+        ctx.fillStyle = hexA(indoorL.wash, indoorL.alpha);
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      }
+      if (indoorL.warmAlpha > 0) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'overlay';
+        ctx.fillStyle = hexA(indoorL.warm, indoorL.warmAlpha);
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      }
+      if (lamps.length && indoorL.alpha > 0.12) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        lamps.forEach(function (lp) {
+          const g = ctx.createRadialGradient(lp[0], lp[1], 0, lp[0], lp[1], lp[2]);
+          const warm = lp[3] === 'fire' ? '214,126,58' : '224,182,110';
+          g.addColorStop(0, 'rgba(' + warm + ',' + (lp[3] === 'fire' ? 0.5 : 0.34) + ')');
+          g.addColorStop(1, 'rgba(' + warm + ',0)');
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(lp[0], lp[1], lp[2], 0, Math.PI * 2);
+          ctx.fill();
+        });
+        ctx.restore();
+        /* and the lit pane itself, so you can see WHICH house is awake */
+        lamps.forEach(function (lp) {
+          if (lp[3] !== 'window') return;
+          ctx.fillStyle = 'rgba(238,206,140,.92)';
+          ctx.fillRect(lp[0] - R * 0.30, lp[1] + R * 0.02, R * 0.20, R * 0.16);
+          ctx.fillRect(lp[0] + R * 0.10, lp[1] + R * 0.02, R * 0.20, R * 0.16);
+        });
+      }
+      if (W && W.veilAlpha > 0) {
+        ctx.save();
+        ctx.fillStyle = hexA(W.veil, W.veilAlpha);
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        if (W.drift) {                    // fog lies in the low ground by the water
+          for (let r = 0; r < map.rows; r++) {
+            for (let c = 0; c < map.cols; c++) {
+              if (!water(c, r) && !isName(c, r, 'riverbank')) continue;
+              const p = centre(c, r);
+              const g = ctx.createRadialGradient(p[0], p[1], 0, p[0], p[1], R * 2.4);
+              g.addColorStop(0, hexA(W.veil, 0.5));
+              g.addColorStop(1, hexA(W.veil, 0));
+              ctx.fillStyle = g;
+              ctx.beginPath();
+              ctx.arc(p[0], p[1], R * 2.4, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+        }
+        if (W.streaks) {
+          ctx.strokeStyle = 'rgba(255,255,255,.16)';
+          ctx.lineWidth = 1 * S;
+          for (let i = 0; i < 200; i++) {
+            const x = rnd(i, 3, 1) * canvas.width, y = rnd(i, 9, 2) * canvas.height;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + 3 * S, y + 13 * S);
+            ctx.stroke();
+          }
+        }
+        ctx.restore();
+      }
+
+      /* ---- 9. where you may go, and what the step costs */
+      for (let r = 0; r < map.rows; r++) {
+        for (let c = 0; c < map.cols; c++) {
+          const key = c + ',' + r;
+          if (reach[key] === undefined) continue;
+          const p = centre(c, r);
+          path(p[0], p[1]);
+          ctx.fillStyle = 'rgba(57,100,107,.19)';
+          ctx.fill();
+          ctx.strokeStyle = '#39646B';
+          ctx.lineWidth = 1.8 * S;
+          ctx.setLineDash([4 * S, 3 * S]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          if (R > 15) {
+            ctx.fillStyle = 'rgba(31,60,66,.9)';
+            ctx.font = (R * 0.34).toFixed(0) + 'px "IBM Plex Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(reach[key], p[0], p[1] + R * 0.64);
+          }
+        }
+      }
+
+      /* ---- 10. features: doors, portals, chests, bodies, the cannon */
+      (state.features || map.features || []).forEach((f) => {
+        const h = map.parse(f.hex);
+        if (!h) return;
+        const p = centre(h.c, h.r);
+        if (f.kind === 'door') {
+          icon(f.to ? 'stair' : 'door', p[0], p[1], R * 0.42, f.open);
+          /* its label is drawn in the decluttered pass below */
+        } else if (f.kind === 'chest') icon(f.searched ? 'chest-done' : 'chest', p[0], p[1], R * 0.36);
+        else if (f.kind === 'body') icon(f.searched ? 'chest-done' : 'body', p[0], p[1], R * 0.38);
+        else if (f.kind === 'cannon') icon('cannon', p[0], p[1], R * 0.46);
+        else if (f.kind === 'well') icon('well', p[0], p[1], R * 0.34);
+      });
+
+      if (state.hover) {
+        const p = centre(state.hover.c, state.hover.r);
+        path(p[0], p[1]);
+        ctx.strokeStyle = '#9E3729';
+        ctx.lineWidth = 2.6 * S;
+        ctx.stroke();
+      }
+
+      /* ---- 10b. THE WRITING ON THE MAP, decluttered. */
+      const labels = [];
+      (state.features || map.features || []).forEach((f) => {
+        if (!f.to || f.open === false) return;
+        const hx = map.parse(f.hex);
+        if (!hx) return;
+        const p = centre(hx.c, hx.r);
+        labels.push({ text: f.to.label || 'IN', x: p[0], y: p[1] - R * 0.58,
+                      colour: 'rgba(47,86,92,.95)', rank: 0, size: 0.26 });
+      });
+      if (state.showLabels !== false) {
+        map.landmarks.forEach((l) => {
+          const hx = map.parse(l.hex);
+          if (!hx) return;
+          /* When the hexes are small there is only room for what matters. */
+          if (R < 26 && !l.key) return;
+          const p = centre(hx.c, hx.r);
+          labels.push({ text: l.label, x: p[0], y: p[1] + R - 2 * S,
+                        colour: l.key ? 'rgba(158,55,41,.95)' : 'rgba(52,66,72,.9)',
+                        rank: l.key ? 1 : 2, size: 0.25 });
+        });
+      }
+      if (labels.length && R > 11) {
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'alphabetic';
+        const taken = [];
+        labels.sort((a, b) => a.rank - b.rank);
+        labels.forEach((L) => {
+          const px = Math.max(6, R * L.size);
+          ctx.font = px.toFixed(0) + 'px "IBM Plex Mono", monospace';
+          const w = ctx.measureText(L.text).width;
+          const box = [L.x - w / 2 - 2 * S, L.y - px, L.x + w / 2 + 2 * S, L.y + px * 0.3];
+          const clash = taken.some((t) =>
+            box[0] < t[2] && box[2] > t[0] && box[1] < t[3] && box[3] > t[1]);
+          if (clash) return;
+          taken.push(box);
+          ctx.lineWidth = 3.4 * S;
+          ctx.strokeStyle = map.indoors ? 'rgba(222,217,201,.92)' : 'rgba(242,243,238,.92)';
+          ctx.strokeText(L.text, L.x, L.y);
+          ctx.fillStyle = L.colour;
+          ctx.fillText(L.text, L.x, L.y);
+        });
+      }
+
+      /* ---- 12. THE PEOPLE THE STORY IS ABOUT. NPCs are square, so they are
+       * never confused with a classmate, and they are named. Ponton standing
+       * on his own doorstep is the difference between a board and a town. */
+      (state.npcs || []).forEach(function (n) {
+        const h = map.parse(n.hex);
+        if (!h) return;
+        const p = centre(h.c, h.r);
+        const s = R * 0.24;
+        ctx.save();
+        ctx.translate(p[0], p[1]);
+        ctx.rotate(Math.PI / 4);
+        ctx.fillStyle = 'rgba(27,42,51,.22)';
+        ctx.fillRect(-s + 1.5 * S, -s + 1.5 * S, s * 2, s * 2);
+        ctx.fillStyle = n.color || '#C39355';
+        ctx.fillRect(-s, -s, s * 2, s * 2);
+        ctx.strokeStyle = '#F2F3EE';
+        ctx.lineWidth = 1.7 * S;
+        ctx.strokeRect(-s, -s, s * 2, s * 2);
+        ctx.restore();
+        if (n.name && R > 16) {
+          ctx.font = (R * 0.24).toFixed(0) + 'px "IBM Plex Sans", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.lineWidth = 3 * S;
+          ctx.strokeStyle = 'rgba(242,243,238,.85)';
+          ctx.strokeText(n.name, p[0], p[1] - R * 0.44);
+          ctx.fillStyle = 'rgba(90,72,42,.95)';
+          ctx.fillText(n.name, p[0], p[1] - R * 0.44);
+        }
+      });
+
+      /* ---- 13. everybody else, in their company's colour, with a name.
+       * A hollow token means they are INSIDE this building and cannot see you
+       * — the independent-map rule, made visible. */
+      (state.tokens || []).forEach(function (tk) {
+        const h = map.parse(tk.hex);
+        if (!h) return;
+        const p = centre(h.c, h.r);
+        const rad = R * 0.27;
+        const x = p[0] + (tk.dx || 0) * S, y = p[1] + (tk.dy || 0) * S;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(x, y + 1.5 * S, rad, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(27,42,51,.22)';
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(x, y, rad, 0, Math.PI * 2);
+        if (tk.elsewhere) {
+          ctx.fillStyle = 'rgba(242,243,238,.86)';
+          ctx.fill();
+          ctx.strokeStyle = tk.color || '#55666E';
+          ctx.lineWidth = 2.6 * S;
+          ctx.stroke();
+          ctx.setLineDash([2.5 * S, 2.5 * S]);
+          ctx.beginPath();
+          ctx.arc(x, y, rad * 1.42, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(74,91,99,.6)';
+          ctx.lineWidth = 1.2 * S;
+          ctx.stroke();
+          ctx.setLineDash([]);
+        } else {
+          ctx.fillStyle = tk.color || '#55666E';
+          ctx.fill();
+          ctx.strokeStyle = '#F2F3EE';
+          ctx.lineWidth = 1.8 * S;
+          ctx.stroke();
+        }
+        if (tk.declared) {                    // already acted this turn
+          ctx.beginPath();
+          ctx.arc(x, y, rad * 1.62, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(57,100,107,.8)';
+          ctx.lineWidth = 1.5 * S;
+          ctx.stroke();
+        }
+        if (tk.name && R > 17) {
+          ctx.font = (R * 0.26).toFixed(0) + 'px "IBM Plex Sans", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.lineWidth = 3 * S;
+          ctx.strokeStyle = 'rgba(242,243,238,.85)';
+          ctx.strokeText(tk.name, x, y - rad - 3 * S);
+          ctx.fillStyle = 'rgba(27,42,51,.86)';
+          ctx.fillText(tk.name, x, y - rad - 3 * S);
+        }
+        ctx.restore();
+      });
+
+      /* ---- 14. you, unmistakably */
+      if (you) {
+        const p = centre(you.c, you.r);
+        path(p[0], p[1]);
+        ctx.strokeStyle = '#1B2A33';
+        ctx.lineWidth = 3 * S;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(p[0], p[1] + 2 * S, R * 0.31, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(27,42,51,.25)';
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(p[0], p[1], R * 0.31, 0, Math.PI * 2);
+        ctx.fillStyle = '#1B2A33';
+        ctx.fill();
+        ctx.strokeStyle = '#F2F3EE';
+        ctx.lineWidth = 2.2 * S;
+        ctx.stroke();
+      }
+    }
+
+    function hexA(hex, a) {
+      const h = String(hex || '#000').replace('#', '');
+      const n = parseInt(h.length === 3 ? h.split('').map((x) => x + x).join('') : h, 16);
+      return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+    }
+
+    return { draw: draw, hitTest: hitTest, layout: layout, get radius() { return R; } };
+  }
+
+  /* ------------------------------------------------------------- the key
+   *
+   * A legend that draws its own approximation of the map is a lie waiting to
+   * happen — somebody changes the grass and the key still shows the old grass.
+   * So a swatch is a REAL one-hex map put through the REAL renderer. If the key
+   * and the map ever disagree it is because the code disagrees with itself. */
+  function Swatch(canvas, spec, light) {
+    const legend = {};
+    const g = spec.glyph || 'z';
+    legend[g] = spec.terrain || { name: '', cost: 1, fill: '#E9EBE4' };
+    const fake = make({
+      id: 'swatch', cols: 1, rows: 1, grid: [g], legend: legend,
+      landmarks: [], items: [],
+      lightTable: {}, weatherTable: {},
+      features: spec.icon
+        ? [{ id: 'S', kind: spec.icon, hex: 'A1', label: '',
+             open: spec.open, searched: spec.searched, to: spec.to || null }]
+        : [],
+    });
+    Renderer(canvas, fake).draw({ showLabels: false, light: light || null });
+  }
+
+  return { make: make, hydrate: hydrate, Renderer: Renderer, Swatch: Swatch, LETTERS: LETTERS };
+})();
+
+if (typeof module !== 'undefined' && module.exports) module.exports = HexMap;
+</script>
+<script>
+const TERRAIN = {"_note":"THE MASTER LEGEND. Every map merges this, then may override single glyphs. design/11-map-data.md authors maps as ASCII grids; this is the key those grids are read against, and the only place a colour or a movement cost is decided.","_detail":"The `detail` field is a RENDERING instruction, not a rule. It tells hexmap.js what to scatter inside the hex — grass tufts, plough furrows, tree canopies, hill hachures — so that country reads as country instead of as a coloured tile. The scatter is hashed from the hex coordinate, so it is identical on thirty screens and stable across every redraw.","legend":{".":{"name":"plaza","cost":1,"blocks":false,"fill":"#DEDCCF","line":"#C4C2B2","detail":"packed","density":0.3,"about":"Packed bare earth. Gonzales had seven public squares; this is the one the town actually used."},",":{"name":"yard","cost":1,"blocks":false,"fill":"#E7E7DC","line":"#CDD3C9","detail":"packed","density":0.16,"about":"Trodden ground around the houses."},"'":{"name":"prairie","cost":1,"blocks":false,"fill":"#DDE4CB","line":"#C3CDAF","detail":"grass","density":0.85,"about":"Open grass. It runs from the last house to the treeline."},":":{"name":"field","cost":1,"blocks":false,"fill":"#E4E6D0","line":"#C9CFB4","detail":"furrow","density":1,"about":"Broken ground, ploughed in rows."},"c":{"name":"corn stubble","cost":1,"blocks":false,"fill":"#DFDEC2","line":"#C6C4A6","detail":"stubble","density":0.9,"about":"The corn is already in. What is left is knee-high and dry."},"o":{"name":"orchard","cost":1,"blocks":false,"fill":"#D6E0C6","line":"#B7C6A6","detail":"orchard","density":1,"about":"Planted trees in rows. You can see between them."},"\"":{"name":"brush","cost":2,"blocks":true,"fill":"#D2DAC4","line":"#B5BFA9","detail":"scrub","density":0.75,"about":"Mesquite and thorn. Slow, and you cannot see through it."},"t":{"name":"scattered trees","cost":2,"blocks":false,"fill":"#C9D4BC","line":"#AAB89C","detail":"canopy","density":0.4,"about":"A few big trees standing in the open."},"T":{"name":"timber","cost":3,"blocks":true,"fill":"#B4C2A8","line":"#94A188","detail":"canopy","density":1,"about":"Bottomland timber — pecan, cottonwood, post oak. Heavy going."},"w":{"name":"cane","cost":3,"blocks":true,"fill":"#C8D6C0","line":"#A6B89E","detail":"cane","density":1,"about":"Cane brake along the water. Over your head."},"^":{"name":"rise","cost":2,"blocks":false,"fill":"#DEDDCB","line":"#BFBDA8","detail":"hachure","density":1,"about":"High ground. Costs to climb, and you can see from it."},"=":{"name":"road","cost":1,"blocks":false,"fill":"#D9D0BD","line":"#BDB6A2","detail":"ruts","density":1,"about":"A wagon road. Riders move down it for free."},"-":{"name":"path","cost":1,"blocks":false,"fill":"#E0DBCB","line":"#C7C0AE","detail":"path","density":1,"about":"A footpath worn between two places people go."},"x":{"name":"pen","cost":2,"blocks":false,"fill":"#DCDCC8","line":"#BEBEA6","detail":"pen","density":1,"about":"A rail-fenced lot. Stock, or a garden somebody is protecting."},"#":{"name":"building","cost":2,"blocks":true,"fill":"#C2C9BE","line":"#98A292","detail":"roof","density":1,"about":"A house, a store, a shop. You go IN through the door, not through the wall."},"A":{"name":"adobe","cost":2,"blocks":true,"fill":"#D3C7B4","line":"#AC9E88","detail":"roof","density":1,"about":"Thick mud-brick walls. Cool inside, and hard to shoot through."},"j":{"name":"jacal","cost":2,"blocks":true,"fill":"#CFC6AE","line":"#AC9F82","detail":"thatch","density":1,"about":"Upright poles, mud packed between, thatched roof. Most of Béxar lived in one."},"W":{"name":"wall","cost":null,"blocks":true,"fill":"#AFB4A6","line":"#868C7C","detail":"stone","density":1,"about":"You do not go through a wall. Find the gate."},"y":{"name":"courtyard","cost":1,"blocks":false,"fill":"#DFDBCB","line":"#C1BCA9","detail":"packed","density":0.24,"about":"Enclosed open ground inside the walls."},"R":{"name":"rubble","cost":2,"blocks":false,"fill":"#CBC9BC","line":"#A9A79A","detail":"rubble","density":1,"about":"Fallen stone. Slow, but it will stop a ball."},"~":{"name":"river","cost":null,"blocks":false,"fill":"#C0D0D3","line":"#9EB4B9","detail":"water","density":1,"about":"The Guadalupe. You do not walk across it. Find the ford."},"a":{"name":"acequia","cost":2,"blocks":false,"fill":"#C8D6D6","line":"#A2B6B6","detail":"ditch","density":1,"about":"An irrigation ditch. Waist deep and awkward, but you can get over it."},"f":{"name":"ford","cost":2,"blocks":false,"fill":"#D2DEDB","line":"#A9BEBB","detail":"water","density":0.45,"about":"Where the river runs shallow enough to cross. Everybody knows where it is."},"B":{"name":"bridge","cost":1,"blocks":false,"fill":"#D6CFC0","line":"#B3AA98","detail":"planks","density":1,"about":"Planks over the water. One at a time."},"b":{"name":"riverbank","cost":1,"blocks":false,"fill":"#D8DCCD","line":"#BABFAD","detail":"grass","density":0.4,"about":"The strip between the water and the grass."},"s":{"name":"sandbar","cost":1,"blocks":false,"fill":"#E3E0CF","line":"#C8C4AE","detail":"sand","density":0.7,"about":"Dry gravel the river left behind."},"_":{"name":"floor","cost":1,"blocks":false,"fill":"#E3E0D4","line":"#C6C1AE","detail":"boards","density":1,"about":"Inside. Puncheon floor, or beaten dirt."},"d":{"name":"dirt floor","cost":1,"blocks":false,"fill":"#DCD6C6","line":"#BEB7A4","detail":"packed","density":0.4,"about":"Swept dirt. Most floors in Texas in 1835."},"h":{"name":"hearth","cost":1,"blocks":false,"fill":"#D8C6B4","line":"#B39A82","detail":"fire","density":1,"about":"The fireplace. Light, heat, and where the cooking happens."},"F":{"name":"forge","cost":1,"blocks":false,"fill":"#C9B9A8","line":"#A08D79","detail":"fire","density":1,"about":"The smith's fire, and the bellows beside it."},"n":{"name":"furniture","cost":2,"blocks":false,"fill":"#CFC8B6","line":"#ADA48E","detail":"goods","density":1,"about":"A counter, a table, shelves, barrels. Climb over it if you must."},"D":{"name":"doorway","cost":1,"blocks":false,"fill":"#E6E2D6","line":"#C0BAA6","detail":"threshold","density":1,"about":"The way in, and the way out."},"P":{"name":"breezeway","cost":1,"blocks":false,"fill":"#E1DDCE","line":"#C4BEAB","detail":"boards","density":0.6,"about":"The open passage through the middle of a dogtrot house. Shade, and a draught."},"L":{"name":"ladder","cost":2,"blocks":false,"fill":"#DAD2BE","line":"#B6AC94","detail":"ladder","density":1,"about":"Up to the loft, where people sleep."},"M":{"name":"metate","cost":2,"blocks":false,"fill":"#CFC4AE","line":"#A89C82","detail":"goods","density":1,"about":"The sloped stone where corn is ground, by hand, every single day."},"N":{"name":"niche","cost":1,"blocks":false,"fill":"#D6CBB6","line":"#B0A48C","detail":"threshold","density":1,"about":"A hollow in a wall ten inches thick. A santo, and a candle."}},"light":{"_note":"What the map looks like at each hour, and in each weather. design/12 sets the tone; this sets the tint. A student should be able to tell what time it is WITHOUT reading a word.","DAWN":{"label":"before sunrise","wash":"#2E3A52","alpha":0.34,"warm":"#C98A4E","warmAlpha":0.1,"shadow":3.2,"shadowAngle":2.35,"windows":true,"stars":0.25},"MORNING":{"label":"morning","wash":"#D8C48A","alpha":0.07,"warm":"#E0B673","warmAlpha":0.06,"shadow":2.4,"shadowAngle":2.6,"windows":false,"stars":0},"MIDDAY":{"label":"midday","wash":"#FFFFFF","alpha":0,"warm":"#FFFFFF","warmAlpha":0,"shadow":1,"shadowAngle":1.57,"windows":false,"stars":0},"AFTERNOON":{"label":"afternoon","wash":"#E0C08E","alpha":0.06,"warm":"#E8B96F","warmAlpha":0.05,"shadow":2,"shadowAngle":0.52,"windows":false,"stars":0},"DUSK":{"label":"sundown","wash":"#7A5A6B","alpha":0.2,"warm":"#D9773F","warmAlpha":0.13,"shadow":3.4,"shadowAngle":0.3,"windows":true,"stars":0.1},"NIGHT":{"label":"after dark","wash":"#1B2440","alpha":0.52,"warm":"#8FA8C4","warmAlpha":0.05,"shadow":0,"shadowAngle":0,"windows":true,"stars":1}},"weather":{"CLEAR":{"label":"clear","veil":null,"veilAlpha":0},"FOG":{"label":"fog on the river","veil":"#DCE2E2","veilAlpha":0.4,"drift":true},"RAIN":{"label":"rain","veil":"#9FAFB4","veilAlpha":0.18,"streaks":true},"NORTHER":{"label":"a norther","veil":"#B6BEC4","veilAlpha":0.14,"streaks":true}}};
+const MAPS = [{"id":"bexar_alamo","title":"San Antonio de Béxar","scale":"1 hex ≈ 110 yards","entry":"I1","cols":20,"rows":15,"_why_this_exists":"Scenes S2.3 and S2.4 have declared \"map\": \"bexar_alamo\" since they were written, and this file did not exist — so the Siege of Béxar and Ben Milam's assault were both being played on the Gonzales town grid, with the Guadalupe standing in for the San Antonio River and Zumwalt's store standing in for the Veramendi house. Nothing crashed. It just quietly wasn't Béxar.","_geography":"THE RIVER IS THE MAP. Town on the west bank, the Alamo on the east, and ONE crossing artillery can use — the ford and footbridge at the head of the great bend. Every decision Cos made in December 1835 was constrained by having his force split across that water, and he withdrew across it into the Alamo at one in the morning on 9 December. The bend wraps the town's south-east corner.","_how_it_was_actually_fought":"THE TEXIANS NEVER FOUGHT DOWN THE STREETS. Two north–south corridors — Acequia Street and Soledad Street — converge on the north face of Main Plaza, with the Old Mill north of town as the shared jump-off. The advance went building to building with crowbars, not volley to volley across open ground. That is why the plazas here are bare packed earth swept by artillery, and why the barricades sit in the street mouths: crossing a plaza should feel like a bad idea.","_honesty":"SIMPLIFIED, and a student should be told so. At 110 yards a hex the Alamo reads as a walled block; the real compound was 480 by 160 feet enclosing up to thirty adobe and mud buildings, and deserves its own map at ten yards a hex. Béxar had far more houses than the twenty-odd shown. Three specific uncertainties are marked in the landmarks rather than smoothed over: WHERE THE SHOT THAT KILLED BEN MILAM CAME FROM is disputed — a cypress on one bank or the other, or the church tower, and the sources do not agree; the exact hour of his death is traditional rather than proven; and historians disagree about the length of the Alamo chapel itself, one source saying 75 feet and another 'more than 90'. Both are secondary sources. The most famous building in Texas has a contested floor plan.","grid":["\",,,,,,,A~~ba,::oooo","\"jj,aj,==~~ba,::oooo","\",,,a,A=b~~ba,::oooo","\"AAAaAy=t~~ba,::::::","\",,Aa,,=t~~ba,::::::","\"AA,aAA=b~~ba,WWWWW:","\"..AR..Rb~~ba,WyyyW:","\"..y,..,b~~b,,WyyyW:","\"===R====fB===WyAAW:","^--------b~~b=WyAyW:","^AA,,AA,,b~~b=WyyRW:","^jj,,,,j,b~~b=WyyRW:","\",A,,Ajjb~~b,=WW.WW:","\"\",,,,,,b~~bjj=R=\"\"\"","\"\",,,,,,b~~bj,:a:\"\"\""],"landmarks":[{"hex":"B7","label":"PLAZA DE ARMAS","note":"The Military Plaza. Open packed earth, and the guns can see all of it."},{"hex":"F7","label":"MAIN PLAZA","key":true,"note":"Plaza de las Islas. Cos's whole position hangs on holding it."},{"hex":"D7","label":"SAN FERNANDO","note":"The church between the two plazas. Mexican artillery was stationed here. From the top of the tower you can see the whole of Béxar — and in February a red flag will fly from it."},{"hex":"D8","label":"CAMPO SANTO","note":"The churchyard."},{"hex":"H4","label":"SOLEDAD ST","note":"One of the two corridors the assault came down, hugging the river."},{"hex":"E4","label":"ACEQUIA ST","note":"The other corridor. The irrigation ditch runs down the middle of the street — older than any Anglo house in Texas."},{"hex":"G3","label":"VERAMENDI","note":"The Veramendi house on Soledad Street. Johnson's objective on 5 December."},{"hex":"G4","label":"MILAM FELL HERE","key":true,"note":"The Veramendi courtyard. Ben Milam was killed by a single shot to the head on the afternoon of 7 December 1835, and is buried in this courtyard. He had asked for volunteers four days earlier with 'Who will go with old Ben Milam into San Antonio?' and three hundred said they would."},{"hex":"I4","label":"THE CYPRESS","note":"DISPUTED. One account puts the marksman who killed Milam in a cypress by the river. Another puts him on the far bank. A third says the San Fernando tower. The sources do not agree and this game will not pretend they do."},{"hex":"D5","label":"DE LA GARZA","note":"Milam's own division objective on 5 December."},{"hex":"I1","label":"THE OLD MILL","key":true,"note":"Molino Blanco, half a mile north of Main Plaza. Where the Texian army camped, and where both assault columns started from."},{"hex":"J9","label":"THE FORD","key":true,"note":"The Commerce Street crossing at the head of the bend. The only crossing artillery can use, and the hinge of this whole map."},{"hex":"M9","label":"THE ALAMEDA","note":"The cottonwood-lined road east from the ford to the Alamo's south side."},{"hex":"Q13","label":"THE ALAMO GATE","key":true,"note":"The main gate, on the south. Cos's men withdrew through it at one in the morning on 9 December."},{"hex":"R12","label":"THE CHAPEL","note":"ROOFLESS. In December 1835 Cos's men tore down the four great arches that were to have carried a dome that was never built, and heaped the stone into a ramp up to the apse to mount guns on. A building demolished by the men defending it."},{"hex":"Q9","label":"LONG BARRACK","note":"Two storeys. The convento."},{"hex":"P14","label":"THE LUNETTE","note":"A U-shaped earthwork and a deep trench in front of the gate."},{"hex":"M14","label":"LA VILLITA","note":"Jacales southeast of the river. Cos signed the capitulation in a house here on 9 December."},{"hex":"A11","label":"THE RISE","note":"Where the Texian guns were laid. Neill's bombardment of the Alamo was a diversion — it had to see across the river to work."}],"features":[{"id":"BEXAR_GUN_CHURCH","kind":"cannon","hex":"D7","label":"The gun on the church","note":"Mexican artillery on San Fernando, covering both plazas."},{"id":"BEXAR_GUN_PLAZA","kind":"cannon","hex":"F7","label":"The plaza battery","note":"Sited to sweep the open ground. Which is why you do not cross the open ground."},{"id":"BEXAR_GUN_ALAMO","kind":"cannon","hex":"R12","label":"The guns on the ramp","note":"Mounted on the rubble of the chapel's own arches, firing over the wall."},{"id":"BEXAR_WELL","kind":"well","hex":"C8","label":"The plaza well","note":"Water."},{"id":"DOOR_JACAL","kind":"door","hex":"N14","open":true,"label":"A jacal in La Villita","note":"Mud-and-stick walls, thatched roof, one room. Most of Béxar lived in one of these.","to":{"place":"jacal","hex":"C2","label":"THE JACAL"}},{"id":"BEXAR_CACHE_MILL","kind":"chest","hex":"I1","label":"The mill stores","searched":false,"contents":["ITEM_KEG_POWDER"],"note":"What the army brought with it, and it is not much.","searchLabel":"Search the mill stores."},{"id":"BEXAR_CACHE_BARRICADE","kind":"chest","hex":"E9","label":"A fallen barricade","searched":false,"contents":["ITEM_WORN_FILES"],"note":"Whatever they could pile across the street mouth, and whatever got left in it.","searchLabel":"Search the fallen barricade."},{"id":"BEXAR_BODY_COURTYARD","kind":"body","hex":"G4","label":"A man of Milam's division","searched":false,"contents":["ITEM_POWDER_HORN"],"note":"He came down Soledad Street on the fifth and got this far.","searchLabel":"Go through his pockets. He was one of Milam's."},{"id":"BEXAR_BODY_LUNETTE","kind":"body","hex":"P14","label":"Somebody in the trench","searched":false,"contents":["ITEM_GOOD_TOOLS"],"note":"In front of the gate, where the ground was worst.","searchLabel":"Search the man in the trench."}]},{"id":"gonzales_town","title":"Gonzales, DeWitt Colony","scale":"1 hex ≈ 60 yards","entry":"K7","cols":17,"rows":13,"_geography":"THE RIVER IS ON THE WEST, AND THAT IS THE WHOLE POINT. Gonzales stands on the east bank of the Guadalupe. Béxar is seventy miles west. So Castañeda's hundred dragoons came from the west and arrived on the FAR bank, with the river between them and the town — the Guadalupe was up after rain and the Texians had taken the ferry away. An earlier draft of this map put the river on the east side, which quietly made nonsense of scene S1.3 and of the whole of S2.1: the dragoons would have ridden straight into the square. If you redraw this map, keep the water west of the town. Column A is the far bank and it is deliberately reachable ONLY through the ford at row 7, so a student who wants to talk to the Mexican officer has to go to the one place in the world where that is possible.","_honesty":"The street grid, the seven public squares, the river and Water Street are documented. Individual building placement is RECONSTRUCTED — we know Zumwalt faced the plaza and the hotel was on Water Street, not which lot. Say so if a student asks. Two specific corrections worth knowing: there was no church building in Gonzales in 1835, so the colony records sit in the alcalde's house and not in a vestry; and the blacksmith shop here is the one Noah Smithwick worked in during September and October 1835 — the Sowells' — with Almeron Dickinson's shop the other candidate. Jacob Darst's shop, which an earlier draft named, is only 'possibly' his.","grid":["b~~bT'''''::::c''","b~~bTt''''::::c''","b~~bw'---=::::c''","b~~b''-=#...,#c''","b~~bb'-=#...,#c''","b~~b''-=#...,#'''","bfff============'","b~~b''-=#...,,#''","b~~bT'--=#x-,#'''","b~~bT'--==,-,''''","b~~bTt''--,-'''^'","b~~bTT'''\"\"oo''^^","b~~bTTT'\"\"\"oo''^^"],"landmarks":[{"hex":"K5","label":"THE CANNON","key":true,"note":"Under a tarpaulin in the square, where it has sat for years. The whole session orbits this hex."},{"hex":"I5","label":"PONTON","note":"The alcalde's house. Where the reply gets written, and where the colony's papers are kept."},{"hex":"N5","label":"ZUMWALT","note":"Store and boarding house, facing the plaza on St. James Street. Documented as facing the plaza."},{"hex":"J9","label":"THE FORGE","note":"The blacksmith's shop. Smithwick worked in the Sowells' shop here in September and October 1835."},{"hex":"O8","label":"TURNER'S","note":"The hotel, on Water Street. Sources disagree whether it was Turner's or Davis's — show students both."},{"hex":"I6","label":"LAND OFFICE","note":"Where a title to land in this colony is written down. Reconstructed placement."},{"hex":"D7","label":"THE FORD","key":true,"note":"The Béxar road crossing. The river is up. This is the only place a wagon gets over, and Castañeda is on the far side of it."},{"hex":"L12","label":"PEACH ORCHARD","key":true,"note":"George Davis's orchard. Where the cannon gets buried."},{"hex":"K9","label":"THE PEN","note":"A rail-fenced lot. Stock, and a garden somebody is protecting."},{"hex":"P11","label":"THE RISE","note":"High ground southeast of town. You can see the ford from here."},{"hex":"O2","label":"THE FIELDS","note":"Corn, already in by the end of September. What is left is stubble."},{"hex":"D10","label":"FERRY","note":"The ferry landing. THE FERRY IS NOT HERE — the town took it away so the dragoons could not cross. Documented."},{"hex":"A8","label":"THE FAR BANK","key":true,"note":"The west side of the Guadalupe. Béxar is seventy miles that way, and on the first of October there are a hundred dragoons standing here looking at you across the water."},{"hex":"L10","label":"THE ORCHARD PATH","note":"Worn between the square and George Davis’s peach orchard. People have been walking down here all week, and on the first of October a cannon goes down it."}],"westRoad":{"hexes":["A7","B7","C7","D7"],"note":"The Béxar road, west across the ford. Seventy miles. Four days by oxcart, two by fast horse. Everything in Session 1 happens at that distance."},"eastRoad":{"hexes":["P7","Q7"],"note":"The road east, toward San Felipe and the other colonies. Where a rider for help would go."},"features":[{"id":"CANNON","kind":"cannon","hex":"K5","label":"The cannon","note":"Small bronze, rotten carriage, under a tarpaulin."},{"id":"DOOR_PONTON","kind":"door","hex":"I5","open":false,"label":"Ponton's door","note":"The alcalde's house. Shut while he writes.","to":{"place":"ponton_house","hex":"D5","label":"PONTON'S"}},{"id":"DOOR_STORE","kind":"door","hex":"N5","open":true,"label":"Zumwalt's door","note":"Propped open. Half the town is in and out of it.","to":{"place":"zumwalt_store","hex":"C5","label":"THE STORE"}},{"id":"DOOR_FORGE","kind":"door","hex":"J9","open":true,"label":"The forge","note":"Never closed. The fire is never out.","to":{"place":"forge","hex":"C4","label":"THE FORGE"}},{"id":"DOOR_HOTEL","kind":"door","hex":"O8","open":true,"label":"The hotel door","note":"Travellers are how news reaches Gonzales.","to":{"place":"hotel","hex":"D5","label":"THE HOTEL"}},{"id":"WELL_PLAZA","kind":"well","hex":"K6","label":"The well","note":"Water, and the place people stand when they want to hear something."},{"id":"CACHE_ORCHARD","kind":"chest","hex":"L12","label":"Something buried","searched":false,"contents":["ITEM_SPADE"],"note":"Somebody has been digging here already.","searchLabel":"Dig where somebody has already been digging."},{"id":"CACHE_FORD","kind":"chest","hex":"D7","label":"A pack left at the ford","searched":false,"contents":["ITEM_GOOD_HORSE"],"note":"Whoever left it was in a hurry, and did not come back for it.","searchLabel":"Go through the pack left at the ford."}],"items":[{"id":"ITEM_POWDER_HORN","name":"A full powder horn","slot":"carried","effect":{"stat":{"arms":1}},"blurb":"Dry powder, properly stoppered. Worth more than money here."},{"id":"ITEM_LEDGER_BOOK","name":"Zumwalt's ledger","slot":"carried","effect":{"stat":{"talk":1}},"blurb":"Every debt in this town, in one book. People are careful around whoever is holding it."},{"id":"ITEM_GOOD_TOOLS","name":"A smith's good tools","slot":"carried","effect":{"stat":{"arms":1}},"blurb":"Files, punches, and a hammer that fits your hand."},{"id":"ITEM_COLONY_PAPERS","name":"The colony papers","slot":"carried","effect":{"stat":{"word":1}},"blurb":"Titles, grants, and the oath everybody swore. Hard to argue with somebody holding these."},{"id":"ITEM_SPADE","name":"A good spade","slot":"carried","effect":{"move":1},"blurb":"Somebody left it in the orchard. You can see why."},{"id":"ITEM_GOOD_HORSE","name":"A sound horse","slot":"carried","effect":{"move":2},"blurb":"Fed, shod, and left tied at the ford by somebody who did not come back for it."},{"id":"ITEM_WORN_FILES","name":"A bundle of worn-out files","slot":"carried","effect":{"stat":{"arms":1}},"blurb":"Blunt for iron, but the right steel. This is what the town's lance heads were made from — documented."},{"id":"ITEM_TORTILLA_STONE","name":"A flat baking stone","slot":"carried","effect":{"stat":{"talk":1}},"blurb":"You bake on it, and you share what comes off it. That is most of how anybody gets anything done."},{"id":"ITEM_SADDLEBAGS","name":"A stranger's saddlebags","slot":"carried","effect":{"stat":{"word":1}},"blurb":"Letters and a newspaper from San Felipe. Somebody upstairs knows something this town does not."},{"id":"ITEM_KEG_POWDER","name":"A keg of powder","slot":"carried","effect":{"stat":{"arms":2}},"blurb":"From behind Zumwalt's counter, where the customers cannot reach it."}]},{"id":"forge","title":"The blacksmith's shop","scale":"1 hex ≈ 4 feet","indoors":true,"entry":"C4","parent":{"place":"gonzales_town","hex":"J9"},"cols":6,"rows":4,"_about":"The forge on the back wall with the bellows behind it, the anvil exactly one stride in front of it — four feet, which is what the trade prescribes — the slack tub within reach, and an open shed front so the smoke has somewhere to go.","_honesty":"Noah Smithwick worked in the Sowells' Gonzales shop in September and October 1835, which is as close to documented as this gets. Almeron Dickinson's shop is the other candidate. There was NO COAL in Gonzales — boys burned charcoal for the fire, which is why there is a charcoal heap and not a coal bunker. Two things made in a shop like this went to the war: lance heads forged from worn-out files, and the cannon's wooden trucks, cross-sections sawn from a tree trunk with holes bored for wooden axles.","grid":["WnFWnW","W_n__W","Wn__nW","WWDddW"],"landmarks":[{"hex":"C1","label":"THE FORGE","key":true,"note":"The fire is never out. Charcoal, not coal — there is no coal in this colony."},{"hex":"B1","label":"THE BELLOWS","note":"Worked from behind. Somebody has to do it, and it is usually somebody young."},{"hex":"C2","label":"THE ANVIL","note":"One stride from the fire. That distance is not an accident."},{"hex":"B3","label":"THE SLACK TUB","note":"Where hot iron goes to stop being hot."},{"hex":"E3","label":"THE BENCH","note":"The vise, and the tools worth having."},{"hex":"D4","label":"THE SHED FRONT","note":"Open to the yard. Half this trade happens standing in the doorway."}],"features":[{"id":"DOOR_FORGE_OUT","kind":"door","hex":"C4","open":true,"label":"Out to the yard","to":{"place":"gonzales_town","hex":"J9","label":"OUT"}},{"id":"CHEST_FORGE_BENCH","kind":"chest","hex":"E3","label":"The forge chest","searched":false,"contents":["ITEM_GOOD_TOOLS"],"note":"Files, punches, and a hammer that fits your hand.","searchLabel":"Go through the forge chest."},{"id":"CHEST_FORGE_FILES","kind":"chest","hex":"E1","label":"The iron rack","searched":false,"contents":["ITEM_WORN_FILES"],"note":"A bundle of files too blunt for iron. The right steel for a lance head, though.","searchLabel":"Sort through the iron rack."}]},{"id":"hotel","title":"The hotel","scale":"1 hex ≈ 6 feet","indoors":true,"entry":"D5","parent":{"place":"gonzales_town","hex":"O8"},"cols":7,"rows":5,"_about":"A story-and-a-half dogtrot. The public side is the 'ordinary' — a fire, one long common table, and a dram bar. The other side is the sleeping room: four beds, and you do not get one to yourself. Travellers are how news reaches Gonzales, so this is the room where a student finds out what is happening somewhere else.","_honesty":"Sources disagree about whose hotel this was. The 1836 building list says Turner's Hotel; George Davis's biography says he kept 'the only hotel in Gonzales.' Show students both and let them weigh a list against a life-sketch — that is a better history lesson than either answer. The long table laid with mismatched knives, everything from butcher knives to pocketknives, and gourd cups instead of glass, is from an eyewitness.","grid":["WWWPWWW","WhnPnnW","WnDPDnW","WnLPnnW","WWWPWWW"],"landmarks":[{"hex":"D3","label":"THE BREEZEWAY","note":"Open at both ends, like every house in this town."},{"hex":"B2","label":"THE FIRE","note":"The public side. The 'ordinary'."},{"hex":"C2","label":"THE LONG TABLE","note":"Mismatched knives — butcher knives to pocketknives — and gourd cups. Everyone eats together or nobody eats."},{"hex":"B4","label":"THE DRAM BAR","note":"A whiskey barrel and a tin cup on a string."},{"hex":"C4","label":"THE LADDER","key":true,"note":"Up to the half-storey, where more travellers sleep. And where their bags are."},{"hex":"E3","label":"THE BEDS","note":"Four of them. You share."}],"features":[{"id":"DOOR_HOTEL_OUT","kind":"door","hex":"D5","open":true,"label":"Out to Water Street","to":{"place":"gonzales_town","hex":"O8","label":"OUT"}},{"id":"CHEST_SADDLEBAGS","kind":"chest","hex":"C4","label":"A stranger's saddlebags","searched":false,"contents":["ITEM_SADDLEBAGS"],"note":"Left at the foot of the ladder. Letters, and a newspaper from San Felipe.","searchLabel":"Go through a stranger's saddlebags."}]},{"id":"jacal","title":"A jacal in La Villita","scale":"1 hex ≈ 7 feet","indoors":true,"entry":"C2","parent":{"place":"bexar_alamo","hex":"N14"},"cols":6,"rows":4,"_about":"ONE ROOM, and the thing to notice first is what is missing: there is NO FIREPLACE AND NO CHIMNEY. The fire burns on the packed dirt floor in the middle of the room and the smoke works its way out through the thatch. Walls are upright mesquite poles between forked corner posts, packed and plastered with mud six to ten inches thick — cool in summer, and hard to shoot through. The roof is grass thatch that has to be replaced every three or four years. Outside the door is the ramada, the brush arbour where the family actually cooks and works in hot weather.","_why_it_matters":"Almonte's 1834 census says most San Antonio houses were jacales roofed with thatch. THIS IS THE MAJORITY HOUSE OF BÉXAR, not a curiosity, and it is worth a student walking from Zumwalt's store into this room and noticing that the food technology is completely different — a metate and a baking stone where the Anglo house has a skillet and a Dutch oven.","_honesty":"The best eyewitness description of a jacal interior we have is Noah Smithwick's, and he was openly contemptuous of the people who lived in them. That makes this a good place to teach a real historical skill: reading a hostile witness for his facts while discounting his framing. He tells you what was in the room. He is not a reliable guide to the people in it.","grid":["WWWWWW","PDd_dW","P_nMnN","WWWWWW"],"landmarks":[{"hex":"A2","label":"THE RAMADA","note":"The brush arbour outside the door. In hot weather this is where the family lives."},{"hex":"C2","label":"THE DOOR","note":"There is only one."},{"hex":"D2","label":"THE FIRE","key":true,"note":"On the floor. No hearth, no chimney — the smoke goes out through the thatch."},{"hex":"D3","label":"THE METATE","key":true,"note":"The sloped stone where corn is ground, every day, by hand. Somebody's whole morning."},{"hex":"F3","label":"THE NICHE","note":"A hollow in the thick wall. A santo, and a candle."},{"hex":"C3","label":"THE BED","note":"A rawhide bedstead, or a petate mat on the floor."}],"features":[{"id":"DOOR_JACAL_OUT","kind":"door","hex":"C2","open":true,"label":"Out to La Villita","to":{"place":"bexar_alamo","hex":"N14","label":"OUT"}},{"id":"CHEST_METATE","kind":"chest","hex":"D3","label":"The metate and the baking stone","searched":false,"contents":["ITEM_TORTILLA_STONE"],"note":"A flat stone, or a sheet of iron, that the tortillas bake on. Completely different technology from the skillet in the Anglo house.","searchLabel":"Look at the metate and the baking stone."}]},{"id":"ponton_house","title":"Ponton's house","scale":"1 hex ≈ 6 feet","indoors":true,"entry":"D5","parent":{"place":"gonzales_town","hex":"I5"},"cols":7,"rows":5,"_about":"A DOGTROT: two square pens with an open breezeway between them, front and back both open, which is how a Texas house was air-conditioned in 1835. You walk in along the breezeway and choose a side.","_honesty":"Andrew Ponton's own house is NOT DOCUMENTED — not its plan, not its site. This is a period-typical dogtrot. One Gonzales-specific correction worth making to a student: Captain Sharpe recorded that the houses here were mostly FRAME, walled with riven oak clapboards — thin split boards — and not the round chinked logs everyone pictures. There was also no church building in Gonzales in 1835, which is why the colony's records are on this table and not in a vestry.","grid":["WWWPWWW","Wh_P_nW","WnDPD_W","W_LPhnW","WWWPWWW"],"landmarks":[{"hex":"D3","label":"THE BREEZEWAY","note":"Open at both ends. Shade, and a draught, and where people stand to talk."},{"hex":"B2","label":"THE HEARTH","note":"Light and heat, and the rifle on pegs above it."},{"hex":"B3","label":"THE TABLE","key":true,"note":"Riven boards and backless stools. Where the alcalde writes, and where Ugartechea's demand is lying right now."},{"hex":"C4","label":"THE LOFT","note":"Up the ladder. Where the children sleep."},{"hex":"E4","label":"THE KITCHEN","note":"The other pen: the cooking fire, the bed, and the corn barrel."}],"features":[{"id":"DOOR_PONTON_OUT","kind":"door","hex":"D5","open":true,"label":"Out to the square","note":"The square is thirty feet that way, and a hundred people are in it.","to":{"place":"gonzales_town","hex":"I5","label":"OUT"}},{"id":"CHEST_PONTON_TABLE","kind":"chest","hex":"B3","label":"The alcalde's papers","searched":false,"contents":["ITEM_COLONY_PAPERS"],"note":"Land titles, the empresario grant, and the oath every one of these families swore.","searchLabel":"Read what is on the alcalde's table."},{"id":"CHEST_PONTON_HEARTH","kind":"chest","hex":"B2","label":"The pegs above the fire","searched":false,"contents":["ITEM_POWDER_HORN"],"note":"A rifle, and a horn beside it. Every house in this colony has both.","searchLabel":"Take down what is on the pegs above the fire."}]},{"id":"zumwalt_store","title":"Zumwalt's store","scale":"1 hex ≈ 4 feet","indoors":true,"entry":"C5","parent":{"place":"gonzales_town","hex":"N5"},"cols":6,"rows":5,"_about":"A counter across the middle of the room. Customers on this side, everything worth having on the other. The counter costs two to climb, and people notice.","_honesty":"That Adam Zumwalt's place faced the plaza is documented; the floor plan is period-typical reconstruction. Zumwalt's was actually TWO buildings — a residence and a separate attached kitchen that did duty as a restaurant and boarding house — and this map is only the store side. The shelf stock is taken from a real Texas store advertisement: coffee, sugar, tea, salt, chocolate, soap, candles, tobacco, letter paper, crackers, dried apples, hats, shoes and cheap cotton cloth, plus powder, lead, flints and nails. Not the Madeira and Bologna sausage — that was a Brazos port town's stock, not a frontier village's.","grid":["WnnnnW","W___hW","WnnnnW","W___nW","WWDWWW"],"landmarks":[{"hex":"C3","label":"THE COUNTER","key":true,"note":"Everything this town has bought on credit is written in the book lying on it."},{"hex":"C1","label":"THE SHELVES","note":"Coffee, calico, candles, nails. The two things a family saves for are a bolt of cloth and a paper of nails."},{"hex":"E2","label":"THE FIRE","note":"The clerk's side of the room, and the warm side."},{"hex":"D4","label":"THE FLOOR","note":"Where the town stands, argues, and finds out what the government wants."}],"features":[{"id":"DOOR_STORE_OUT","kind":"door","hex":"C5","open":true,"label":"Out to the square","to":{"place":"gonzales_town","hex":"N5","label":"OUT"}},{"id":"CHEST_LEDGER","kind":"chest","hex":"C3","label":"Zumwalt's ledger","searched":false,"contents":["ITEM_LEDGER_BOOK"],"note":"Who owes what, and to whom. Nobody in this room is comfortable about it.","searchLabel":"Open Zumwalt's ledger."},{"id":"CHEST_BEHIND_COUNTER","kind":"chest","hex":"C2","label":"Behind the counter","searched":false,"contents":["ITEM_KEG_POWDER"],"note":"The powder keg, the bars of lead, and the salt. Where a customer cannot reach.","searchLabel":"Look behind the counter."}]}];
+const PANELS = [{"map":"gonzales_town","light":{"phase":"MIDDAY","weather":"CLEAR"},"cap":"Gonzales · 30 September 1835, about noon","note":"The river is on the WEST and that is the whole point — Béxar is seventy miles that way, so Castañeda arrived on the far bank. The Béxar road crosses at the ford and runs dead east through the square. The footpath south-east goes down to Davis’s peach orchard."},{"map":"gonzales_town","light":{"phase":"DUSK","weather":"CLEAR"},"cap":"Gonzales · 1 October, sundown — S1.5, The Vote","note":"Lamps are coming on. Castañeda’s dragoons made camp seven miles upriver “around sundown” — documented."},{"map":"gonzales_town","light":{"phase":"NIGHT","weather":"CLEAR"},"cap":"Gonzales · the small hours of 2 October — S2.1, The River Between Them","note":"Every house shows two lit panes. There was a 78%-lit waxing gibbous moon that night, which is how they crossed."},{"map":"gonzales_town","light":{"phase":"DAWN","weather":"FOG"},"cap":"Gonzales · before dawn, 2 October — S2.2, Come and Take It","note":"The Battle of Gonzales was fought in fog off the Guadalupe. Fog is BRIGHT and blind; night is DARK and blind. Deliberately not the same overlay."},{"map":"bexar_alamo","light":{"phase":"AFTERNOON","weather":"NORTHER"},"cap":"San Antonio de Béxar · 7 December 1835, afternoon — S2.4, Ben Milam","note":"This map did not exist until today. Two scenes had declared it since they were written, so the Siege of Béxar was being played on the Gonzales grid. Town west of the river, Alamo east, one crossing artillery can use."},{"map":"ponton_house","light":{"phase":"MIDDAY","weather":"CLEAR"},"cap":"Inside the alcalde’s house","note":"A dogtrot: two pens either side of an open breezeway. Ugartechea’s demand is on the table on the left. Ponton’s own house is not documented — this is period-typical, and the map file says so."},{"map":"zumwalt_store","light":{"phase":"MIDDAY","weather":"CLEAR"},"cap":"Inside Zumwalt’s store","note":"A counter across the middle. Customers this side, the powder keg and the lead on the other. The ledger with every debt in town is lying on it."},{"map":"forge","light":{"phase":"DUSK","weather":"CLEAR"},"cap":"Inside the blacksmith’s shop","note":"The anvil sits one stride — four feet — in front of the forge, which is what the trade prescribes. Charcoal, not coal: there was no coal in Gonzales."},{"map":"hotel","light":{"phase":"NIGHT","weather":"CLEAR"},"cap":"Inside the hotel, after dark","note":"One long common table with mismatched knives and gourd cups, a dram bar, and a ladder to the half-storey where a stranger’s saddlebags are. Travellers are how news reaches Gonzales."},{"map":"jacal","light":{"phase":"MIDDAY","weather":"CLEAR"},"cap":"Inside a jacal in La Villita","note":"NO FIREPLACE AND NO CHIMNEY — the fire is on the dirt floor and the smoke goes out through the thatch. The metate is where corn is ground by hand, every day. Almonte’s 1834 census says most of Béxar lived like this."}];
+const byId = {};
+MAPS.forEach(m => { byId[m.id] = HexMap.hydrate(m, TERRAIN); });
+
+const sheet = document.getElementById('sheet');
+const drawers = [];
+PANELS.forEach(p => {
+  const doc = byId[p.map];
+  if (!doc) return;
+  const fig = document.createElement('figure');
+  const cap = document.createElement('figcaption');
+  cap.textContent = p.cap;
+  const box = document.createElement('div');
+  box.className = 'board' + (doc.indoors ? ' in' : '');
+  const cv = document.createElement('canvas');
+  box.appendChild(cv);
+  const note = document.createElement('div');
+  note.className = 'note';
+  note.textContent = p.note;
+  fig.appendChild(cap); fig.appendChild(box); fig.appendChild(note);
+  sheet.appendChild(fig);
+
+  const m = HexMap.make(doc);
+  const R = HexMap.Renderer(cv, m);
+  const npcs = [];
+  drawers.push(() => R.draw({
+    light: p.light,
+    features: m.features,
+    npcs: npcs,
+    tokens: [],
+    you: null,
+  }));
+});
+
+function paint() { drawers.forEach(fn => fn()); }
+paint();
+window.addEventListener('resize', () => { clearTimeout(window.__t); window.__t = setTimeout(paint, 150); });
+document.fonts && document.fonts.ready.then(paint);
+</script>

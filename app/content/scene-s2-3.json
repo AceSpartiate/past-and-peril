@@ -1,0 +1,279 @@
+{
+  "id": "S2.3",
+  "session": 2,
+  "title": "The Walls of Béxar",
+  "date": "1835-11-15",
+  "map": "bexar_alamo",
+  "kind": "SIEGE",
+  "must_teach": [
+    "FACT_GRASS_FIGHT",
+    "FACT_CONSULTATION",
+    "FACT_COS_SURRENDERED"
+  ],
+  "npcs": [
+    {
+      "id": "NPC_MILAM",
+      "hex": "I1",
+      "name": "Ben Milam"
+    },
+    {
+      "id": "NPC_COS",
+      "hex": "F7",
+      "name": "Cos's fortifications"
+    }
+  ],
+  "depth_reserve": [
+    "S23_CARRY_WATER",
+    "S23_WRITE_HOME",
+    "S23_SIT_WITH_THE_WOUNDED"
+  ],
+  "actions": [
+    {
+      "id": "S23_GRASS_FIGHT",
+      "verb": "ACT",
+      "label": "Intercept the pack train coming into Béxar.",
+      "detail": "Everyone is certain it is the silver payroll.",
+      "requires": {},
+      "roll": {
+        "stat": "land",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "You take it cleanly, at some cost, and it is grass. Cut grass, for the horses inside Béxar. That is how good everybody’s intelligence is in this war.",
+          "teach": [
+            "FACT_GRASS_FIGHT"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          },
+          "legacy": 2,
+          "broadcast": "{name} captured the silver train. It was grass."
+        },
+        "partial": {
+          "narrate": "You take it. It is grass. Two men are hurt over grass.",
+          "teach": [
+            "FACT_GRASS_FIGHT"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          },
+          "resolve": 1
+        },
+        "weak": {
+          "narrate": "They get it inside the walls, and you find out afterwards it was grass, which is somehow worse.",
+          "teach": [
+            "FACT_GRASS_FIGHT"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "S23_WORK_THE_CONSULTATION",
+      "verb": "SPEAK",
+      "label": "Get anything at all out of the Consultation.",
+      "detail": "They have been meeting since November. They agree on nothing.",
+      "requires": {},
+      "cost": {
+        "word": 1
+      },
+      "roll": {
+        "stat": "word",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "You come away with powder, and a promise, and the clear understanding that this body cannot decide whether it is fighting for the Constitution of 1824 or for independence.",
+          "teach": [
+            "FACT_CONSULTATION",
+            "FACT_1824_CONSTITUTION"
+          ],
+          "resource": {
+            "powder": 2
+          },
+          "legacy": 2
+        },
+        "partial": {
+          "narrate": "You come away with a resolution. You cannot fire a resolution.",
+          "teach": [
+            "FACT_CONSULTATION"
+          ],
+          "legacy": 1
+        },
+        "weak": {
+          "narrate": "Three days of argument and you go back with nothing but a better understanding of why there is nothing.",
+          "teach": [
+            "FACT_CONSULTATION"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S23_GUIDE_THE_COLUMN",
+      "verb": "ACT",
+      "label": "Take them in through the streets you grew up in.",
+      "detail": "Nobody in this army has been inside Béxar except the Tejanos.",
+      "requires": {},
+      "roll": {
+        "stat": "land",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Through yards, over walls, along an irrigation ditch nobody outside this town knows about. It works because of who you are and where you are from.",
+          "teach": [
+            "FACT_TEJANO_FEDERALISTS"
+          ],
+          "clocks": {
+            "BEXAR": 2
+          },
+          "standing": {
+            "ranchos": 1
+          },
+          "legacy": 2
+        },
+        "partial": {
+          "narrate": "They follow you and arrive where they should.",
+          "teach": [
+            "FACT_TEJANO_FEDERALISTS"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          }
+        },
+        "weak": {
+          "narrate": "Somebody asks loudly whether a Mexican should be leading them into a fight with Mexicans. It is the third time this week.",
+          "teach": [
+            "FACT_TEJANO_FEDERALISTS"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          },
+          "standing": {
+            "ranchos": -1
+          }
+        }
+      }
+    },
+    {
+      "id": "S23_PRESS",
+      "verb": "ACT",
+      "label": "Press the walls where your company was sent.",
+      "detail": "Fifteen hundred men behind a wall, and it has to fall.",
+      "requires": {},
+      "roll": {
+        "stat": "arms",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Ground taken, and held. The siege moves forward because of what your company did this week.",
+          "teach": [
+            "FACT_COS_SURRENDERED"
+          ],
+          "clocks": {
+            "BEXAR": 2
+          },
+          "legacy": 1,
+          "resource": {
+            "powder": -1
+          }
+        },
+        "partial": {
+          "narrate": "Ground taken. It costs powder and a night nobody sleeps through.",
+          "teach": [
+            "FACT_COS_SURRENDERED"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          },
+          "resource": {
+            "powder": -2
+          }
+        },
+        "weak": {
+          "narrate": "The siege grinds forward anyway. The cost of that lands on this town, not on the walls.",
+          "teach": [
+            "FACT_COS_SURRENDERED"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          },
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S23_CARRY_WATER",
+      "verb": "AID",
+      "depth": true,
+      "label": "Carry water to whoever has been out there longest.",
+      "detail": "A siege is mostly waiting, and being thirsty while you wait.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "Nobody thanks you and everybody drinks.",
+          "teach": [
+            "FACT_WINTER_FARMS"
+          ],
+          "legacy": 2,
+          "aid_target": true,
+          "clear_resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S23_WRITE_HOME",
+      "verb": "HOLD",
+      "depth": true,
+      "label": "Write home.",
+      "detail": "It is December and there are farms, and everyone here knows it.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "You write that it will be over soon and you are not lying, because you believe it. Most of the men around you are writing something similar and most of them will go home in January.",
+          "teach": [
+            "FACT_WINTER_FARMS"
+          ],
+          "legacy": 1,
+          "clear_resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S23_SIT_WITH_THE_WOUNDED",
+      "verb": "GUARD",
+      "depth": true,
+      "label": "Sit with the ones who were brought back.",
+      "detail": "The Veramendi yard is being used for this now.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "You are there, which is the whole of what you can do, and it is not nothing.",
+          "teach": [
+            "FACT_BEN_MILAM"
+          ],
+          "legacy": 2
+        }
+      }
+    }
+  ],
+  "time": "AFTERNOON",
+  "weather": "CLEAR",
+  "clock": "afternoon, and cold"
+}

@@ -1,0 +1,248 @@
+{
+  "id": "S2.4",
+  "session": 2,
+  "title": "Ben Milam",
+  "date": "1835-12-04",
+  "map": "bexar_alamo",
+  "kind": "SIEGE",
+  "must_teach": [
+    "FACT_BEN_MILAM",
+    "FACT_COS_SURRENDERED",
+    "FACT_WINTER_FARMS"
+  ],
+  "npcs": [
+    {
+      "id": "NPC_MILAM",
+      "hex": "G4",
+      "name": "Ben Milam"
+    },
+    {
+      "id": "NPC_COS",
+      "hex": "F7",
+      "name": "Cos's fortifications"
+    }
+  ],
+  "depth_reserve": [
+    "S23_CARRY_WATER",
+    "S23_WRITE_HOME",
+    "S23_SIT_WITH_THE_WOUNDED"
+  ],
+  "actions": [
+    {
+      "id": "S24_FOLLOW_MILAM",
+      "verb": "ACT",
+      "label": "Go with old Ben Milam into San Antonio.",
+      "detail": "He asked in the plaza. Three hundred said yes.",
+      "requires": {
+        "adjacent_npc": "NPC_MILAM"
+      },
+      "roll": {
+        "stat": "arms",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "House to house, room to room, through walls knocked through with crowbars. It is the worst fighting of the war so far and it is working.",
+          "teach": [
+            "FACT_BEN_MILAM"
+          ],
+          "clocks": {
+            "BEXAR": 2
+          },
+          "set_flags": [
+            "WENT_WITH_MILAM"
+          ],
+          "legacy": 2,
+          "resource": {
+            "powder": -1
+          }
+        },
+        "partial": {
+          "narrate": "You go in. You come out. You are not the same about it afterwards.",
+          "teach": [
+            "FACT_BEN_MILAM"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          },
+          "set_flags": [
+            "WENT_WITH_MILAM"
+          ],
+          "resolve": 1
+        },
+        "weak": {
+          "narrate": "You are pinned in a courtyard for six hours and contribute nothing but a target.",
+          "teach": [
+            "FACT_BEN_MILAM"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          },
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S24_HOUSE_TO_HOUSE",
+      "verb": "ACT",
+      "label": "Knock through the wall into the next house.",
+      "detail": "You do not go down the street. You go through the buildings.",
+      "requires": {},
+      "roll": {
+        "stat": "arms",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Crowbar, then the next room, then the next. Slow, filthy, and it is the thing that actually takes the town.",
+          "teach": [
+            "FACT_COS_SURRENDERED"
+          ],
+          "clocks": {
+            "BEXAR": 2
+          },
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "Two rooms and a courtyard. It takes all day.",
+          "teach": [
+            "FACT_COS_SURRENDERED"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          },
+          "resource": {
+            "powder": -1
+          }
+        },
+        "weak": {
+          "narrate": "The wall is thicker than the last one and you spend the day on it.",
+          "teach": [
+            "FACT_COS_SURRENDERED"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          },
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S24_PRESS",
+      "verb": "ACT",
+      "label": "Press the walls where your company was sent.",
+      "detail": "Fifteen hundred men behind a wall, and it has to fall.",
+      "requires": {},
+      "roll": {
+        "stat": "arms",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Ground taken, and held. The siege moves forward because of what your company did this week.",
+          "teach": [
+            "FACT_COS_SURRENDERED"
+          ],
+          "clocks": {
+            "BEXAR": 2
+          },
+          "legacy": 1,
+          "resource": {
+            "powder": -1
+          }
+        },
+        "partial": {
+          "narrate": "Ground taken. It costs powder and a night nobody sleeps through.",
+          "teach": [
+            "FACT_COS_SURRENDERED"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          },
+          "resource": {
+            "powder": -2
+          }
+        },
+        "weak": {
+          "narrate": "The siege grinds forward anyway. The cost of that lands on this town, not on the walls.",
+          "teach": [
+            "FACT_COS_SURRENDERED"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          },
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S23_CARRY_WATER",
+      "verb": "AID",
+      "depth": true,
+      "label": "Carry water to whoever has been out there longest.",
+      "detail": "A siege is mostly waiting, and being thirsty while you wait.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "Nobody thanks you and everybody drinks.",
+          "teach": [
+            "FACT_WINTER_FARMS"
+          ],
+          "legacy": 2,
+          "aid_target": true,
+          "clear_resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S23_WRITE_HOME",
+      "verb": "HOLD",
+      "depth": true,
+      "label": "Write home.",
+      "detail": "It is December and there are farms, and everyone here knows it.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "You write that it will be over soon and you are not lying, because you believe it. Most of the men around you are writing something similar and most of them will go home in January.",
+          "teach": [
+            "FACT_WINTER_FARMS"
+          ],
+          "legacy": 1,
+          "clear_resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S23_SIT_WITH_THE_WOUNDED",
+      "verb": "GUARD",
+      "depth": true,
+      "label": "Sit with the ones who were brought back.",
+      "detail": "The Veramendi yard is being used for this now.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "You are there, which is the whole of what you can do, and it is not nothing.",
+          "teach": [
+            "FACT_BEN_MILAM"
+          ],
+          "legacy": 2
+        }
+      }
+    }
+  ],
+  "time": "AFTERNOON",
+  "weather": "NORTHER",
+  "clock": "about half past three — ninety minutes of light left"
+}

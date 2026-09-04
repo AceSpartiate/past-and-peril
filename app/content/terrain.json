@@ -1,0 +1,460 @@
+{
+  "_note": "THE MASTER LEGEND. Every map merges this, then may override single glyphs. design/11-map-data.md authors maps as ASCII grids; this is the key those grids are read against, and the only place a colour or a movement cost is decided.",
+  "_detail": "The `detail` field is a RENDERING instruction, not a rule. It tells hexmap.js what to scatter inside the hex — grass tufts, plough furrows, tree canopies, hill hachures — so that country reads as country instead of as a coloured tile. The scatter is hashed from the hex coordinate, so it is identical on thirty screens and stable across every redraw.",
+  "legend": {
+    ".": {
+      "name": "plaza",
+      "cost": 1,
+      "blocks": false,
+      "fill": "#DEDCCF",
+      "line": "#C4C2B2",
+      "detail": "packed",
+      "density": 0.3,
+      "about": "Packed bare earth. Gonzales had seven public squares; this is the one the town actually used."
+    },
+    ",": {
+      "name": "yard",
+      "cost": 1,
+      "blocks": false,
+      "fill": "#E7E7DC",
+      "line": "#CDD3C9",
+      "detail": "packed",
+      "density": 0.16,
+      "about": "Trodden ground around the houses."
+    },
+    "'": {
+      "name": "prairie",
+      "cost": 1,
+      "blocks": false,
+      "fill": "#DDE4CB",
+      "line": "#C3CDAF",
+      "detail": "grass",
+      "density": 0.85,
+      "about": "Open grass. It runs from the last house to the treeline."
+    },
+    ":": {
+      "name": "field",
+      "cost": 1,
+      "blocks": false,
+      "fill": "#E4E6D0",
+      "line": "#C9CFB4",
+      "detail": "furrow",
+      "density": 1,
+      "about": "Broken ground, ploughed in rows."
+    },
+    "c": {
+      "name": "corn stubble",
+      "cost": 1,
+      "blocks": false,
+      "fill": "#DFDEC2",
+      "line": "#C6C4A6",
+      "detail": "stubble",
+      "density": 0.9,
+      "about": "The corn is already in. What is left is knee-high and dry."
+    },
+    "o": {
+      "name": "orchard",
+      "cost": 1,
+      "blocks": false,
+      "fill": "#D6E0C6",
+      "line": "#B7C6A6",
+      "detail": "orchard",
+      "density": 1,
+      "about": "Planted trees in rows. You can see between them."
+    },
+    "\"": {
+      "name": "brush",
+      "cost": 2,
+      "blocks": true,
+      "fill": "#D2DAC4",
+      "line": "#B5BFA9",
+      "detail": "scrub",
+      "density": 0.75,
+      "about": "Mesquite and thorn. Slow, and you cannot see through it."
+    },
+    "t": {
+      "name": "scattered trees",
+      "cost": 2,
+      "blocks": false,
+      "fill": "#C9D4BC",
+      "line": "#AAB89C",
+      "detail": "canopy",
+      "density": 0.4,
+      "about": "A few big trees standing in the open."
+    },
+    "T": {
+      "name": "timber",
+      "cost": 3,
+      "blocks": true,
+      "fill": "#B4C2A8",
+      "line": "#94A188",
+      "detail": "canopy",
+      "density": 1,
+      "about": "Bottomland timber — pecan, cottonwood, post oak. Heavy going."
+    },
+    "w": {
+      "name": "cane",
+      "cost": 3,
+      "blocks": true,
+      "fill": "#C8D6C0",
+      "line": "#A6B89E",
+      "detail": "cane",
+      "density": 1,
+      "about": "Cane brake along the water. Over your head."
+    },
+    "^": {
+      "name": "rise",
+      "cost": 2,
+      "blocks": false,
+      "fill": "#DEDDCB",
+      "line": "#BFBDA8",
+      "detail": "hachure",
+      "density": 1,
+      "about": "High ground. Costs to climb, and you can see from it."
+    },
+    "=": {
+      "name": "road",
+      "cost": 1,
+      "blocks": false,
+      "fill": "#D9D0BD",
+      "line": "#BDB6A2",
+      "detail": "ruts",
+      "density": 1,
+      "about": "A wagon road. Riders move down it for free."
+    },
+    "-": {
+      "name": "path",
+      "cost": 1,
+      "blocks": false,
+      "fill": "#E0DBCB",
+      "line": "#C7C0AE",
+      "detail": "path",
+      "density": 1,
+      "about": "A footpath worn between two places people go."
+    },
+    "x": {
+      "name": "pen",
+      "cost": 2,
+      "blocks": false,
+      "fill": "#DCDCC8",
+      "line": "#BEBEA6",
+      "detail": "pen",
+      "density": 1,
+      "about": "A rail-fenced lot. Stock, or a garden somebody is protecting."
+    },
+    "#": {
+      "name": "building",
+      "cost": 2,
+      "blocks": true,
+      "fill": "#C2C9BE",
+      "line": "#98A292",
+      "detail": "roof",
+      "density": 1,
+      "about": "A house, a store, a shop. You go IN through the door, not through the wall."
+    },
+    "A": {
+      "name": "adobe",
+      "cost": 2,
+      "blocks": true,
+      "fill": "#D3C7B4",
+      "line": "#AC9E88",
+      "detail": "roof",
+      "density": 1,
+      "about": "Thick mud-brick walls. Cool inside, and hard to shoot through."
+    },
+    "j": {
+      "name": "jacal",
+      "cost": 2,
+      "blocks": true,
+      "fill": "#CFC6AE",
+      "line": "#AC9F82",
+      "detail": "thatch",
+      "density": 1,
+      "about": "Upright poles, mud packed between, thatched roof. Most of Béxar lived in one."
+    },
+    "W": {
+      "name": "wall",
+      "cost": null,
+      "blocks": true,
+      "fill": "#AFB4A6",
+      "line": "#868C7C",
+      "detail": "stone",
+      "density": 1,
+      "about": "You do not go through a wall. Find the gate."
+    },
+    "y": {
+      "name": "courtyard",
+      "cost": 1,
+      "blocks": false,
+      "fill": "#DFDBCB",
+      "line": "#C1BCA9",
+      "detail": "packed",
+      "density": 0.24,
+      "about": "Enclosed open ground inside the walls."
+    },
+    "R": {
+      "name": "rubble",
+      "cost": 2,
+      "blocks": false,
+      "fill": "#CBC9BC",
+      "line": "#A9A79A",
+      "detail": "rubble",
+      "density": 1,
+      "about": "Fallen stone. Slow, but it will stop a ball."
+    },
+    "~": {
+      "name": "river",
+      "cost": null,
+      "blocks": false,
+      "fill": "#C0D0D3",
+      "line": "#9EB4B9",
+      "detail": "water",
+      "density": 1,
+      "about": "The Guadalupe. You do not walk across it. Find the ford."
+    },
+    "a": {
+      "name": "acequia",
+      "cost": 2,
+      "blocks": false,
+      "fill": "#C8D6D6",
+      "line": "#A2B6B6",
+      "detail": "ditch",
+      "density": 1,
+      "about": "An irrigation ditch. Waist deep and awkward, but you can get over it."
+    },
+    "f": {
+      "name": "ford",
+      "cost": 2,
+      "blocks": false,
+      "fill": "#D2DEDB",
+      "line": "#A9BEBB",
+      "detail": "water",
+      "density": 0.45,
+      "about": "Where the river runs shallow enough to cross. Everybody knows where it is."
+    },
+    "B": {
+      "name": "bridge",
+      "cost": 1,
+      "blocks": false,
+      "fill": "#D6CFC0",
+      "line": "#B3AA98",
+      "detail": "planks",
+      "density": 1,
+      "about": "Planks over the water. One at a time."
+    },
+    "b": {
+      "name": "riverbank",
+      "cost": 1,
+      "blocks": false,
+      "fill": "#D8DCCD",
+      "line": "#BABFAD",
+      "detail": "grass",
+      "density": 0.4,
+      "about": "The strip between the water and the grass."
+    },
+    "s": {
+      "name": "sandbar",
+      "cost": 1,
+      "blocks": false,
+      "fill": "#E3E0CF",
+      "line": "#C8C4AE",
+      "detail": "sand",
+      "density": 0.7,
+      "about": "Dry gravel the river left behind."
+    },
+    "_": {
+      "name": "floor",
+      "cost": 1,
+      "blocks": false,
+      "fill": "#E3E0D4",
+      "line": "#C6C1AE",
+      "detail": "boards",
+      "density": 1,
+      "about": "Inside. Puncheon floor, or beaten dirt."
+    },
+    "d": {
+      "name": "dirt floor",
+      "cost": 1,
+      "blocks": false,
+      "fill": "#DCD6C6",
+      "line": "#BEB7A4",
+      "detail": "packed",
+      "density": 0.4,
+      "about": "Swept dirt. Most floors in Texas in 1835."
+    },
+    "h": {
+      "name": "hearth",
+      "cost": 1,
+      "blocks": false,
+      "fill": "#D8C6B4",
+      "line": "#B39A82",
+      "detail": "fire",
+      "density": 1,
+      "about": "The fireplace. Light, heat, and where the cooking happens."
+    },
+    "F": {
+      "name": "forge",
+      "cost": 1,
+      "blocks": false,
+      "fill": "#C9B9A8",
+      "line": "#A08D79",
+      "detail": "fire",
+      "density": 1,
+      "about": "The smith's fire, and the bellows beside it."
+    },
+    "n": {
+      "name": "furniture",
+      "cost": 2,
+      "blocks": false,
+      "fill": "#CFC8B6",
+      "line": "#ADA48E",
+      "detail": "goods",
+      "density": 1,
+      "about": "A counter, a table, shelves, barrels. Climb over it if you must."
+    },
+    "D": {
+      "name": "doorway",
+      "cost": 1,
+      "blocks": false,
+      "fill": "#E6E2D6",
+      "line": "#C0BAA6",
+      "detail": "threshold",
+      "density": 1,
+      "about": "The way in, and the way out."
+    },
+    "P": {
+      "name": "breezeway",
+      "cost": 1,
+      "blocks": false,
+      "fill": "#E1DDCE",
+      "line": "#C4BEAB",
+      "detail": "boards",
+      "density": 0.6,
+      "about": "The open passage through the middle of a dogtrot house. Shade, and a draught."
+    },
+    "L": {
+      "name": "ladder",
+      "cost": 2,
+      "blocks": false,
+      "fill": "#DAD2BE",
+      "line": "#B6AC94",
+      "detail": "ladder",
+      "density": 1,
+      "about": "Up to the loft, where people sleep."
+    },
+    "M": {
+      "name": "metate",
+      "cost": 2,
+      "blocks": false,
+      "fill": "#CFC4AE",
+      "line": "#A89C82",
+      "detail": "goods",
+      "density": 1,
+      "about": "The sloped stone where corn is ground, by hand, every single day."
+    },
+    "N": {
+      "name": "niche",
+      "cost": 1,
+      "blocks": false,
+      "fill": "#D6CBB6",
+      "line": "#B0A48C",
+      "detail": "threshold",
+      "density": 1,
+      "about": "A hollow in a wall ten inches thick. A santo, and a candle."
+    }
+  },
+  "light": {
+    "_note": "What the map looks like at each hour, and in each weather. design/12 sets the tone; this sets the tint. A student should be able to tell what time it is WITHOUT reading a word.",
+    "DAWN": {
+      "label": "before sunrise",
+      "wash": "#2E3A52",
+      "alpha": 0.34,
+      "warm": "#C98A4E",
+      "warmAlpha": 0.1,
+      "shadow": 3.2,
+      "shadowAngle": 2.35,
+      "windows": true,
+      "stars": 0.25
+    },
+    "MORNING": {
+      "label": "morning",
+      "wash": "#D8C48A",
+      "alpha": 0.07,
+      "warm": "#E0B673",
+      "warmAlpha": 0.06,
+      "shadow": 2.4,
+      "shadowAngle": 2.6,
+      "windows": false,
+      "stars": 0
+    },
+    "MIDDAY": {
+      "label": "midday",
+      "wash": "#FFFFFF",
+      "alpha": 0,
+      "warm": "#FFFFFF",
+      "warmAlpha": 0,
+      "shadow": 1,
+      "shadowAngle": 1.57,
+      "windows": false,
+      "stars": 0
+    },
+    "AFTERNOON": {
+      "label": "afternoon",
+      "wash": "#E0C08E",
+      "alpha": 0.06,
+      "warm": "#E8B96F",
+      "warmAlpha": 0.05,
+      "shadow": 2,
+      "shadowAngle": 0.52,
+      "windows": false,
+      "stars": 0
+    },
+    "DUSK": {
+      "label": "sundown",
+      "wash": "#7A5A6B",
+      "alpha": 0.2,
+      "warm": "#D9773F",
+      "warmAlpha": 0.13,
+      "shadow": 3.4,
+      "shadowAngle": 0.3,
+      "windows": true,
+      "stars": 0.1
+    },
+    "NIGHT": {
+      "label": "after dark",
+      "wash": "#1B2440",
+      "alpha": 0.52,
+      "warm": "#8FA8C4",
+      "warmAlpha": 0.05,
+      "shadow": 0,
+      "shadowAngle": 0,
+      "windows": true,
+      "stars": 1
+    }
+  },
+  "weather": {
+    "CLEAR": {
+      "label": "clear",
+      "veil": null,
+      "veilAlpha": 0
+    },
+    "FOG": {
+      "label": "fog on the river",
+      "veil": "#DCE2E2",
+      "veilAlpha": 0.4,
+      "drift": true
+    },
+    "RAIN": {
+      "label": "rain",
+      "veil": "#9FAFB4",
+      "veilAlpha": 0.18,
+      "streaks": true
+    },
+    "NORTHER": {
+      "label": "a norther",
+      "veil": "#B6BEC4",
+      "veilAlpha": 0.14,
+      "streaks": true
+    }
+  }
+}

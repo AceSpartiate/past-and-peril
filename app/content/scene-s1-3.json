@@ -1,0 +1,444 @@
+{
+  "id": "S1.3",
+  "session": 1,
+  "title": "The Dragoon",
+  "date": "1835-10-01",
+  "map": "gonzales_town",
+  "kind": "COUNCIL",
+  "must_teach": [
+    "FACT_DRAGOON_IS_CITIZEN",
+    "FACT_ZACATECAS",
+    "FACT_TEJANO_FEDERALISTS",
+    "FACT_1824_CONSTITUTION"
+  ],
+  "npcs": [
+    {
+      "id": "NPC_DRAGOON",
+      "hex": "K8",
+      "name": "The dragoon"
+    },
+    {
+      "id": "NPC_PONTON",
+      "hex": "K6",
+      "name": "Alcalde Andrew Ponton"
+    },
+    {
+      "id": "NPC_SEGUIN",
+      "hex": "L7",
+      "name": "A rider from the ranchos"
+    }
+  ],
+  "depth_reserve": [
+    "S3_WATCH_THE_WATCHERS",
+    "S3_WALK_HIM_OUT",
+    "S3_SAY_NOTHING"
+  ],
+  "actions": [
+    {
+      "id": "S3_OFFER_HIM_A_MEAL",
+      "verb": "SPEAK",
+      "label": "Offer the dragoon a meal.",
+      "detail": "He has ridden seventy miles. He is also a fellow citizen.",
+      "requires": {
+        "adjacent_npc": "NPC_DRAGOON"
+      },
+      "roll": {
+        "stat": "talk",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "He eats at your table and tells you what he saw at Zacatecas in May, because you asked him like a neighbour and not like an enemy.",
+          "teach": [
+            "FACT_DRAGOON_IS_CITIZEN",
+            "FACT_ZACATECAS"
+          ],
+          "legacy": 2,
+          "set_flags": [
+            "FED_THE_DRAGOON"
+          ],
+          "broadcast": "{name} sat the dragoon down and fed him."
+        },
+        "partial": {
+          "narrate": "He accepts, warily. Two men in the square make sure he sees them watching.",
+          "teach": [
+            "FACT_DRAGOON_IS_CITIZEN"
+          ],
+          "legacy": 1,
+          "set_flags": [
+            "FED_THE_DRAGOON"
+          ]
+        },
+        "weak": {
+          "narrate": "He declines, politely, in the manner of a man who has been fed by people who meant something else by it.",
+          "teach": [
+            "FACT_DRAGOON_IS_CITIZEN"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S3_STOP_HIM",
+      "verb": "ACT",
+      "label": "Stop him. Ask him what he is counting.",
+      "detail": "He is unarmed, he is alone, and what he is doing is entirely legal.",
+      "requires": {
+        "adjacent_npc": "NPC_DRAGOON"
+      },
+      "roll": {
+        "stat": "arms",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "He tells you: houses, men, horses. He is not hiding it. He is a soldier making a report, and he answers because you asked instead of demanded.",
+          "teach": [
+            "FACT_DRAGOON_IS_CITIZEN"
+          ],
+          "set_flags": [
+            "SAW_THE_DRAGOON"
+          ],
+          "clocks": {
+            "DEMAND": 1
+          }
+        },
+        "partial": {
+          "narrate": "He stops. He answers half of it. He notes your face, which is now also part of the report.",
+          "teach": [
+            "FACT_DRAGOON_IS_CITIZEN"
+          ],
+          "set_flags": [
+            "SAW_THE_DRAGOON"
+          ],
+          "clocks": {
+            "DEMAND": 1
+          }
+        },
+        "weak": {
+          "narrate": "It becomes a scene. Four people are shouting and the dragoon is the calmest man in the square, which everyone can see.",
+          "teach": [
+            "FACT_DRAGOON_IS_CITIZEN"
+          ],
+          "set_flags": [
+            "SAW_THE_DRAGOON"
+          ],
+          "clocks": {
+            "DEMAND": 2
+          },
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S3_FOLLOW_HIM",
+      "verb": "SEEK",
+      "label": "Follow him at a distance and see what he writes.",
+      "detail": "He is making a list. You would like to know what is on it.",
+      "requires": {},
+      "cost": {
+        "move": 1
+      },
+      "roll": {
+        "stat": "land",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Houses, wells, the ford, the two forges, and the cannon. He is not spying. He is doing what any officer would do, and the thoroughness of it is the frightening part.",
+          "teach": [
+            "FACT_DRAGOON_IS_CITIZEN",
+            "FACT_SEVENTY_MILES"
+          ],
+          "set_flags": [
+            "SAW_THE_LIST"
+          ]
+        },
+        "partial": {
+          "narrate": "You get close enough to see that the list is long.",
+          "teach": [
+            "FACT_DRAGOON_IS_CITIZEN"
+          ]
+        },
+        "weak": {
+          "narrate": "He notices. He nods at you, pleasantly, and keeps writing.",
+          "teach": [
+            "FACT_DRAGOON_IS_CITIZEN"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S3_ASK_ABOUT_ZACATECAS",
+      "verb": "SPEAK",
+      "label": "Ask him, straight out, about Zacatecas.",
+      "detail": "He was in the army in May. He knows.",
+      "requires": {
+        "adjacent_npc": "NPC_DRAGOON"
+      },
+      "cost": {
+        "word": 1
+      },
+      "roll": {
+        "stat": "talk",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Two hours to beat them, and two days for the soldiers in the city afterwards. He does not defend it. He says it the way a man says a thing he was near and did not stop.",
+          "teach": [
+            "FACT_ZACATECAS",
+            "FACT_1824_CONSTITUTION"
+          ],
+          "legacy": 1,
+          "set_flags": [
+            "HEARD_ZACATECAS"
+          ]
+        },
+        "partial": {
+          "narrate": "He confirms it happened and will not say more than that.",
+          "teach": [
+            "FACT_ZACATECAS"
+          ],
+          "set_flags": [
+            "HEARD_ZACATECAS"
+          ]
+        },
+        "weak": {
+          "narrate": "He looks at you a long moment and says only that the state militia there refused a lawful order.",
+          "teach": [
+            "FACT_ZACATECAS"
+          ],
+          "set_flags": [
+            "HEARD_ZACATECAS"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S3_GUARD_THE_RANCHOS",
+      "verb": "GUARD",
+      "label": "Get between your Tejano neighbours and whoever is talking.",
+      "detail": "Somebody in this square is about to say something about whose side they are on.",
+      "requires": {},
+      "outcomes": {
+        "all": {
+          "narrate": "You put yourself where the remark has to go through you first. It is said anyway, quieter, and everybody sees who stood where.",
+          "teach": [
+            "FACT_TEJANO_FEDERALISTS"
+          ],
+          "standing": {
+            "ranchos": 1
+          },
+          "legacy": 2,
+          "set_flags": [
+            "STOOD_WITH_THE_RANCHOS"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S3_ASK_THE_RANCHOS_SIDE",
+      "verb": "SPEAK",
+      "label": "Ask the ranchos what they think, and listen to the answer.",
+      "detail": "Not to settle an argument. Because you do not know.",
+      "requires": {
+        "adjacent_npc": "NPC_SEGUIN"
+      },
+      "cost": {
+        "word": 1
+      },
+      "roll": {
+        "stat": "talk",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Federalists, and longer than you have been. They want the Constitution of 1824 back, they have wanted it since before your family arrived, and being asked rather than assumed about is new enough that they say so.",
+          "teach": [
+            "FACT_TEJANO_FEDERALISTS",
+            "FACT_1824_CONSTITUTION"
+          ],
+          "standing": {
+            "ranchos": 1
+          },
+          "legacy": 2,
+          "set_flags": [
+            "STOOD_WITH_THE_RANCHOS"
+          ]
+        },
+        "partial": {
+          "narrate": "You get the political answer, which is true and is not all of it.",
+          "teach": [
+            "FACT_1824_CONSTITUTION"
+          ]
+        },
+        "weak": {
+          "narrate": "You ask it the way people ask when they have already decided. They answer anyway.",
+          "teach": [
+            "FACT_TEJANO_FEDERALISTS"
+          ],
+          "standing": {
+            "ranchos": -1
+          }
+        }
+      }
+    },
+    {
+      "id": "S3_SHOW_OF_FORCE",
+      "verb": "ACT",
+      "label": "Make sure he counts more men than there are.",
+      "detail": "Move people around. Let him see the same rifle twice.",
+      "requires": {},
+      "cost": {
+        "move": 1
+      },
+      "roll": {
+        "stat": "arms",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "He counts thirty where there are eighteen. That number goes back to Béxar and it buys this town something, for a while.",
+          "teach": [
+            "FACT_EIGHTEEN_MEN"
+          ],
+          "clocks": {
+            "DEMAND": 1
+          },
+          "set_flags": [
+            "BLUFFED_THE_COUNT"
+          ],
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "He counts more than there are. He also writes down that they moved.",
+          "teach": [
+            "FACT_EIGHTEEN_MEN"
+          ],
+          "clocks": {
+            "DEMAND": 1
+          }
+        },
+        "weak": {
+          "narrate": "He has done this before, in other towns, and he counts the rifles rather than the men.",
+          "teach": [
+            "FACT_EIGHTEEN_MEN"
+          ],
+          "clocks": {
+            "DEMAND": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "S3_WHAT_ARE_WE",
+      "verb": "SPEAK",
+      "label": "Ask the square out loud what kind of town this is.",
+      "detail": "One unarmed man doing his job has already answered it, if anyone is listening.",
+      "requires": {},
+      "cost": {
+        "word": 1
+      },
+      "roll": {
+        "stat": "word",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "You get a real argument, in the open, between people who have to live here afterwards. That is worth more than agreement.",
+          "teach": [
+            "FACT_TOWN_DIVIDED",
+            "FACT_DRAGOON_IS_CITIZEN"
+          ],
+          "legacy": 2,
+          "broadcast": "{name} asked the square what kind of town this is, and got an argument."
+        },
+        "partial": {
+          "narrate": "Three people answer and two of them are only saying it to you.",
+          "teach": [
+            "FACT_TOWN_DIVIDED"
+          ],
+          "legacy": 1
+        },
+        "weak": {
+          "narrate": "Somebody says it is not the time. It never is, and it always is.",
+          "teach": [
+            "FACT_TOWN_DIVIDED"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S3_WATCH_THE_WATCHERS",
+      "verb": "SEEK",
+      "depth": true,
+      "label": "Stop watching him. Watch the people watching him.",
+      "detail": "You have done your part. Now look sideways.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "Two men have their hands where you can see them and three have theirs where you cannot. Nobody here agrees about this and almost nobody will say so.",
+          "teach": [
+            "FACT_TOWN_DIVIDED"
+          ],
+          "set_flags": [
+            "READ_THE_ROOM"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S3_WALK_HIM_OUT",
+      "verb": "GUARD",
+      "depth": true,
+      "label": "Walk him to the edge of town yourself.",
+      "detail": "So that whatever happens, it does not happen here.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "He goes, unhurt, and says something to you at the last hex that you will think about for the rest of the campaign.",
+          "teach": [
+            "FACT_DRAGOON_IS_CITIZEN"
+          ],
+          "legacy": 2,
+          "set_flags": [
+            "WALKED_HIM_OUT"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S3_SAY_NOTHING",
+      "verb": "HOLD",
+      "depth": true,
+      "label": "Say nothing, and let this pass.",
+      "detail": "Not every moment needs you in it.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "It passes. Nobody remembers what you did here, which was the point.",
+          "teach": [
+            "FACT_TOWN_DIVIDED"
+          ],
+          "legacy": 1,
+          "clear_resolve": 1
+        }
+      }
+    }
+  ],
+  "time": "MORNING",
+  "weather": "CLEAR",
+  "clock": "the morning of the first"
+}

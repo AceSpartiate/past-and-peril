@@ -1,0 +1,48 @@
+# ============================================================
+#  WHAT NEVER GOES TO GITHUB
+#
+#  This repository is PUBLIC, because auto-update reads GitHub's
+#  public API with no token (see tools/update.mjs). So every line
+#  below is a decision about what a student who finds this repo
+#  is allowed to read.
+#
+#  NOTE TO ANYONE EDITING THIS: git does NOT support a comment on
+#  the same line as a pattern. `data/   # saved periods` is a
+#  pattern matching that whole literal string, and ignores
+#  nothing. An earlier version of this file did exactly that and
+#  would have published 527 MB including saved class progress and
+#  the console key. Comments go on their own line.
+# ============================================================
+
+# SPOILERS. The run sheets say what happens in sessions the class
+# has not played yet. This is the main reason the repo is scoped.
+gm-materials/
+
+# TEACHER-ONLY. Rubrics, the live scorecard, the admin memo.
+assessment/
+
+# PER-STUDENT SECRETS. Each person card carries that character's
+# own secret. Public means every student reads every other one's.
+player-materials/
+
+# WORKING NOTES. No harm in them; not what this repo is for.
+research/
+design/
+design-canvas/
+design-canvas-student/
+overview.html
+.claude/
+
+# THIS MACHINE'S OWN STATE
+data/
+.teacher-key
+logs/
+reports/
+.backup/
+NO-UPDATE.txt
+
+# BUILT, NOT AUTHORED
+voices/
+runtime/
+dist/
+node_modules/

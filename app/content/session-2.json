@@ -1,0 +1,422 @@
+{
+  "session": 2,
+  "title": "Come and Take It",
+  "subtitle": "Gonzales → Béxar · October – December 1835",
+  "datestamp": "2 OCTOBER 1835",
+  "periodMinutes": 47,
+  "bellSlackMin": 2,
+  "actionsPerWindow": 0,
+  "teks": "7.3(A)(C) · 7.13(A) · 7.20(B)(C)(E)",
+  "clocks": [
+    {
+      "id": "DEMAND",
+      "label": "THE DEMAND",
+      "segments": 4,
+      "filled": 4,
+      "note": "Full since last session. Castañeda is here."
+    },
+    {
+      "id": "BEXAR",
+      "label": "THE WALLS OF BÉXAR",
+      "segments": 8,
+      "filled": 0,
+      "note": "Every company’s roll ticks it. When it fills, Béxar falls — the question is what it cost."
+    }
+  ],
+  "ledger": [
+    {
+      "id": "stores",
+      "label": "Stores",
+      "value": 38,
+      "unit": "days"
+    },
+    {
+      "id": "powder",
+      "label": "Powder",
+      "value": 12,
+      "unit": "rounds"
+    }
+  ],
+  "timeline": [
+    {
+      "id": "dispatch_read",
+      "kind": "checklist",
+      "seconds": 180,
+      "eyebrow": "LAST TIME",
+      "title": "Read your dispatch aloud.",
+      "items": [
+        "One of you reads what you wrote at the end of last session",
+        "Two Words each — take them now",
+        "The cannon is still in the ground"
+      ],
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "Last time this town refused to hand back a cannon, and buried it in an orchard. Since then the couriers have been riding. Take two Words."
+      }
+    },
+    {
+      "id": "cold_open",
+      "handout": "03",
+      "kind": "sequence",
+      "seconds": 240,
+      "eyebrow": "COLD OPEN",
+      "shots": [
+        {
+          "image": "austin_letter_oct_1835.jpg",
+          "tier": 1,
+          "provenance": "Stephen F. Austin, October 1835 · Texas State Library and Archives Commission",
+          "move": "HOLD",
+          "from": [
+            0.5,
+            0.4,
+            0.55
+          ],
+          "to": [
+            0.5,
+            0.4,
+            0.55
+          ],
+          "voice": {
+            "speaker": "NARRATOR",
+            "text": "Stephen Austin writes that war is the only recourse. This is the man who spent ten years telling colonists to stay loyal, obey Mexican law, and avoid exactly this."
+          }
+        },
+        {
+          "image": "austin_portrait.jpg",
+          "tier": 3,
+          "provenance": "Posthumous portrait of Stephen F. Austin · later 19th century",
+          "label": "PAINTED LATER · NOT FROM LIFE",
+          "move": "PULL",
+          "from": [
+            0.5,
+            0.35,
+            0.45
+          ],
+          "to": [
+            0.5,
+            0.5,
+            0.95
+          ],
+          "voice": {
+            "speaker": "NARRATOR",
+            "text": "He wrote it after eighteen months in a Mexican prison. Ask yourself what changed — the situation, or the man. That question is the whole of this session."
+          }
+        },
+        {
+          "image": "guadalupe_river.jpg",
+          "tier": 2,
+          "provenance": "The Guadalupe at Gonzales · later photograph",
+          "move": "TRACK",
+          "from": [
+            0.25,
+            0.5,
+            0.4
+          ],
+          "to": [
+            0.75,
+            0.5,
+            0.4
+          ],
+          "voice": {
+            "speaker": "NARRATOR",
+            "text": "It is before dawn on the second of October, and there is fog on the Guadalupe. On the far bank are a hundred dragoons who want the cannon back."
+          }
+        }
+      ],
+      "teacherNote": "Handout 03 — Austin’s October 1835 letter. Have a student read the operative sentence, then ask what changed: the situation, or the man?"
+    },
+    {
+      "id": "t1_situation",
+      "kind": "read",
+      "seconds": 45,
+      "turn": 1,
+      "scene": "S2.1",
+      "eyebrow": "TURN 1 · THE RIVER BETWEEN THEM · MARCH",
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "Castañeda’s dragoons are camped on the far bank. He has sent word that he wishes to speak with the alcalde. Every boat on the river is in Texian hands. It is foggy, and it is before dawn. What do you do while it is still dark?"
+      }
+    },
+    {
+      "id": "t1_path",
+      "kind": "beat",
+      "seconds": 220,
+      "turn": 1,
+      "scene": "S2.1",
+      "window": true,
+      "label": "YOUR MOVE",
+      "roll": true,
+      "instruction": "Move. Choose. Keep going until the fog lifts."
+    },
+    {
+      "id": "t1_consequence",
+      "kind": "read",
+      "seconds": 45,
+      "turn": 1,
+      "scene": "S2.1",
+      "eyebrow": "CONSEQUENCE",
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "The fog burns off. Whatever was decided in the dark, the sun is up and the fight starts today."
+      },
+      "clocks": {
+        "DEMAND": 1
+      }
+    },
+    {
+      "id": "t2_situation",
+      "kind": "read",
+      "seconds": 45,
+      "turn": 2,
+      "scene": "S2.2",
+      "eyebrow": "TURN 2 · COME AND TAKE IT · BATTLE",
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "Dawn. The flag flies over the cannon. The dragoons are formed up across the water and Castañeda is waiting for an answer. This is it."
+      }
+    },
+    {
+      "id": "t2_path",
+      "kind": "beat",
+      "seconds": 220,
+      "turn": 2,
+      "scene": "S2.2",
+      "window": true,
+      "label": "YOUR MOVE",
+      "roll": true,
+      "instruction": "The gun is loaded with scrap iron. There are a hundred men across the water."
+    },
+    {
+      "id": "t2_consequence",
+      "kind": "read",
+      "seconds": 45,
+      "turn": 2,
+      "scene": "S2.2",
+      "eyebrow": "CONSEQUENCE",
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "Castañeda withdraws. You have won, and the word goes out that Texas has fired on Mexican troops and won. Now everything happens at once. Goliad falls on the ninth. Austin is elected to command an army that does not obey him. On the first of November the Consultation meets and creates a provisional government that will spend three months arguing with itself. And General Cos, with fifteen hundred men, is fortified in Béxar — seventy miles up that road. As long as they hold it, this town is next."
+      }
+    },
+    {
+      "id": "t3_situation",
+      "kind": "read",
+      "seconds": 45,
+      "turn": 3,
+      "scene": "S2.3",
+      "eyebrow": "TURN 3 · THE WALLS OF BÉXAR · SIEGE",
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "Béxar is fifteen hundred men behind a wall, and it has to fall. Every company has a job. Every roll moves the same clock, because thirty of you are fighting one battle."
+      }
+    },
+    {
+      "id": "t3_path",
+      "kind": "beat",
+      "seconds": 220,
+      "turn": 3,
+      "scene": "S2.3",
+      "window": true,
+      "label": "YOUR MOVE",
+      "roll": true,
+      "instruction": "Your company has a job. The clock moves whatever happens — what you decide is what it costs."
+    },
+    {
+      "id": "t3_consequence",
+      "kind": "read",
+      "seconds": 45,
+      "turn": 3,
+      "scene": "S2.3",
+      "eyebrow": "CONSEQUENCE",
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "The clock moves by however the rolls landed. The siege grinds on into December, and it is cold, and men are beginning to talk about their farms."
+      }
+    },
+    {
+      "id": "t4_situation",
+      "kind": "read",
+      "seconds": 45,
+      "turn": 4,
+      "scene": "S2.4",
+      "eyebrow": "TURN 4 · BEN MILAM · SIEGE",
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "The siege grinds on. Whatever your company’s job was, it is still your job. It is the fourth of December."
+      }
+    },
+    {
+      "id": "t4_path",
+      "kind": "beat",
+      "seconds": 220,
+      "turn": 4,
+      "scene": "S2.4",
+      "window": true,
+      "label": "YOUR MOVE",
+      "roll": true,
+      "instruction": "Same job as last week. That is what a siege is."
+    },
+    {
+      "id": "t4_consequence",
+      "kind": "read",
+      "seconds": 45,
+      "turn": 4,
+      "scene": "S2.4",
+      "eyebrow": "CONSEQUENCE",
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "Béxar has fallen. Cos surrenders and marches south under parole. For the first time since October there is no Mexican army in Texas, and every man in this army believes the war is finished."
+      }
+    },
+    {
+      "id": "milam",
+      "kind": "record",
+      "seconds": 150,
+      "eyebrow": "STOP. DO NOT ROLL.",
+      "blocks": [
+        {
+          "head": "Who will go with old Ben Milam into San Antonio?",
+          "body": "He stood up in the plaza on the fourth of December and asked exactly that. Three hundred men followed him in, house to house, through walls knocked open with crowbars.",
+          "voice": {
+            "speaker": "HISTORIAN"
+          }
+        },
+        {
+          "head": "On the seventh of December",
+          "body": "A sniper in a cypress tree shot him in the head. He died in the yard of the Veramendi house. Two days later, Cos surrendered. Ben Milam never knew he had won.",
+          "voice": {
+            "speaker": "HISTORIAN"
+          }
+        },
+        {
+          "head": "I did not roll for that",
+          "body": "I am never going to roll for that. In this game the dice decide what things cost you. They do not decide who lives.",
+          "voice": {
+            "speaker": "HISTORIAN"
+          }
+        }
+      ],
+      "exitLine": "Remember that this is how death works here. You will need it."
+    },
+    {
+      "id": "t5_situation",
+      "kind": "read",
+      "seconds": 45,
+      "turn": 5,
+      "scene": "S2.5",
+      "eyebrow": "TURN 5 · THE MATAMOROS QUESTION · COUNCIL",
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "The war looks over. Cos has surrendered and marched south. There is no Mexican army in Texas. Most of the men want to go home — it is winter, and there are farms. And there is a plan on the table: take the army south to Matamoros and carry the revolution into Mexico itself. Somebody has to stay and garrison Béxar. Who?"
+      }
+    },
+    {
+      "id": "t5_path",
+      "kind": "beat",
+      "seconds": 220,
+      "turn": 5,
+      "scene": "S2.5",
+      "window": true,
+      "label": "SPEAK",
+      "roll": true,
+      "instruction": "SPEAK costs a Word. Whoever banked one holds the floor."
+    },
+    {
+      "id": "t5_consequence",
+      "kind": "read",
+      "seconds": 45,
+      "turn": 5,
+      "scene": "S2.5",
+      "eyebrow": "CONSEQUENCE",
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "Whatever this room decided is written down now, in your own words. Nothing is rolled for it. It waits."
+      }
+    },
+    {
+      "id": "tally",
+      "kind": "tally",
+      "seconds": 60,
+      "question": "What happens to the army?",
+      "options": [
+        {
+          "key": "A",
+          "label": "South to Matamoros"
+        },
+        {
+          "key": "B",
+          "label": "Garrison Béxar properly"
+        },
+        {
+          "key": "C",
+          "label": "Go home for the winter"
+        },
+        {
+          "key": "D",
+          "label": "Nobody could agree"
+        }
+      ],
+      "instruction": "Call it company by company. Delegate last. Write the result on the Ledger."
+    },
+    {
+      "id": "dispatch",
+      "kind": "checklist",
+      "seconds": 240,
+      "eyebrow": "DISPATCH",
+      "title": "Write it in character.",
+      "items": [
+        "Four sentences, from your Turn Log",
+        "To someone who is not here",
+        "Sign it with your person’s name"
+      ],
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "Write four sentences to somebody who was not at Béxar. Tell them what you think happens next. Sign it with your own name."
+      }
+    },
+    {
+      "id": "record",
+      "kind": "record",
+      "seconds": 240,
+      "eyebrow": "SET THE RECORD STRAIGHT",
+      "blocks": [
+        {
+          "head": "Real today",
+          "body": "The flag existed and it flew. The cannon was loaded with scrap iron. Castañeda really did choose not to force a battle — he withdrew. The Grass Fight really was a raid on grass-cutters that Texians were certain was a silver train. Ben Milam really said that line, and really died two days before the surrender.",
+          "voice": {
+            "speaker": "HISTORIAN"
+          }
+        },
+        {
+          "head": "And here is one I have to correct, because I told it to you myself",
+          "body": "You have probably heard that Sarah DeWitt and her daughter sewed that flag out of a wedding dress. That story is traditional and it is not documented — the Texas State Historical Association itself calls the attribution apocryphal. Somebody in this town made that flag. We do not actually know who.",
+          "voice": {
+            "speaker": "HISTORIAN"
+          }
+        },
+        {
+          "head": "So ask why THAT story is the one that stuck",
+          "body": "A mother and daughter cutting up a wedding dress to make a war banner is a much better story than \"somebody made a flag.\" Good stories travel further than true ones. Noticing when you are being handed one is most of this job.",
+          "voice": {
+            "speaker": "HISTORIAN"
+          }
+        },
+        {
+          "head": "A myth worth killing right now",
+          "body": "The Battle of Gonzales was not a heroic pitched battle. It was a skirmish, with one or two casualties. The war started small, mostly by accident, and the man on the other side agreed with you about the Constitution.",
+          "voice": {
+            "speaker": "HISTORIAN"
+          }
+        }
+      ],
+      "exitLine": "And here is what you did today: you decided who garrisons Béxar. Write it down. We will come back to it."
+    }
+  ],
+  "recap": [
+    "Before dawn on the second of October the town crossed the Guadalupe in fog and fired on Castañeda’s dragoons. Two hours later he withdrew.",
+    "That was the first shot of the Texas Revolution, and nobody in Gonzales had planned it that way.",
+    "The army that gathered marched west and besieged Béxar for two months in the cold.",
+    "Ben Milam asked who would go into the town with him. Three hundred said they would. He was killed on the seventh of December, and General Cos surrendered on the ninth."
+  ],
+  "_recap_note": "What a student who was absent is told about this session. FIXED HISTORY ONLY — what this particular class chose is generated from its own record, because that part is different every period. Highlights, not a summary: four sentences that make the next hour make sense."
+}

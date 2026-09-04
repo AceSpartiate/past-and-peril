@@ -1,0 +1,283 @@
+{
+  "id": "S2.5",
+  "session": 2,
+  "title": "The Matamoros Question",
+  "date": "1835-12-20",
+  "map": "gonzales_town",
+  "kind": "COUNCIL",
+  "must_teach": [
+    "FACT_MATAMOROS",
+    "FACT_WINTER_FARMS",
+    "FACT_COS_SURRENDERED",
+    "FACT_CONSULTATION"
+  ],
+  "npcs": [
+    {
+      "id": "NPC_PONTON",
+      "hex": "K6",
+      "name": "Alcalde Andrew Ponton"
+    }
+  ],
+  "depth_reserve": [
+    "S25_COUNT_WHO_IS_LEAVING",
+    "S25_WRITE_THE_LEDGER",
+    "S25_GO_HOME_YOURSELF"
+  ],
+  "actions": [
+    {
+      "id": "S25_SPEAK_FOR_MATAMOROS",
+      "verb": "SPEAK",
+      "label": "Argue for taking the army south to Matamoros.",
+      "detail": "Carry the revolution into Mexico. Rally the federalists there. Finish it.",
+      "requires": {},
+      "cost": {
+        "word": 1
+      },
+      "roll": {
+        "stat": "word",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "You make the case well: the federalists in the south are allies, the war is not won while an army can come back north, and sitting in Béxar all winter wins nothing.",
+          "teach": [
+            "FACT_MATAMOROS"
+          ],
+          "set_flags": [
+            "FOR_MATAMOROS"
+          ],
+          "legacy": 2,
+          "broadcast": "{name} argued for Matamoros."
+        },
+        "partial": {
+          "narrate": "You are heard. Half the room was already going.",
+          "teach": [
+            "FACT_MATAMOROS"
+          ],
+          "set_flags": [
+            "FOR_MATAMOROS"
+          ],
+          "legacy": 1
+        },
+        "weak": {
+          "narrate": "It comes out as a man who wants more war, and the room hears it that way.",
+          "teach": [
+            "FACT_MATAMOROS"
+          ],
+          "set_flags": [
+            "FOR_MATAMOROS"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S25_SPEAK_FOR_GARRISON",
+      "verb": "SPEAK",
+      "label": "Argue that somebody has to hold Béxar.",
+      "detail": "Whatever else happens, that town is the road north.",
+      "requires": {},
+      "cost": {
+        "word": 1
+      },
+      "roll": {
+        "stat": "word",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "You say the boring, correct thing: a garrison, supplied, in the place an army would have to come through. Nobody will write a song about this position.",
+          "teach": [
+            "FACT_MATAMOROS",
+            "FACT_COS_SURRENDERED"
+          ],
+          "set_flags": [
+            "FOR_GARRISON"
+          ],
+          "legacy": 3,
+          "broadcast": "{name} argued that Béxar has to be held and supplied."
+        },
+        "partial": {
+          "narrate": "Agreed in principle. Nobody volunteers.",
+          "teach": [
+            "FACT_MATAMOROS"
+          ],
+          "set_flags": [
+            "FOR_GARRISON"
+          ],
+          "legacy": 1
+        },
+        "weak": {
+          "narrate": "The room agrees and then talks about Matamoros for another twenty minutes.",
+          "teach": [
+            "FACT_MATAMOROS"
+          ],
+          "set_flags": [
+            "FOR_GARRISON"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S25_SPEAK_FOR_HOME",
+      "verb": "SPEAK",
+      "label": "Argue that the men should go home.",
+      "detail": "It is winter. The war looks over. There are farms.",
+      "requires": {},
+      "cost": {
+        "word": 1
+      },
+      "roll": {
+        "stat": "talk",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "You say what most of the men are already thinking: it is December, the Mexican army has marched south, and a farm that is not planted in the spring is a family that does not eat next winter. That is not cowardice. It is what an army of farmers is.",
+          "teach": [
+            "FACT_WINTER_FARMS"
+          ],
+          "set_flags": [
+            "FOR_HOME"
+          ],
+          "legacy": 2,
+          "broadcast": "{name} said out loud what most of the men were thinking."
+        },
+        "partial": {
+          "narrate": "Heard, and quietly agreed with by more people than say so.",
+          "teach": [
+            "FACT_WINTER_FARMS"
+          ],
+          "set_flags": [
+            "FOR_HOME"
+          ],
+          "legacy": 1
+        },
+        "weak": {
+          "narrate": "Somebody uses the word coward again. It is the cheapest word in Texas this year.",
+          "teach": [
+            "FACT_WINTER_FARMS"
+          ],
+          "set_flags": [
+            "FOR_HOME"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S25_VOLUNTEER_TO_STAY",
+      "verb": "ACT",
+      "label": "Volunteer to garrison Béxar yourself.",
+      "detail": "Somebody has to. Very few people are saying so.",
+      "requires": {},
+      "outcomes": {
+        "all": {
+          "narrate": "You put your name down for a winter in a half-ruined town seventy miles from home, on the road any army would use. Remember that you chose this, because in February somebody is going to ask how those men ended up there.",
+          "teach": [
+            "FACT_MATAMOROS"
+          ],
+          "set_flags": [
+            "VOLUNTEERED_FOR_BEXAR"
+          ],
+          "legacy": 3,
+          "broadcast": "{name} volunteered to hold Béxar through the winter."
+        }
+      }
+    },
+    {
+      "id": "S25_ASK_WHAT_HAPPENS_TO_BEXAR",
+      "verb": "SEEK",
+      "label": "Ask what happens to Béxar if everyone leaves.",
+      "detail": "It is a fair question and nobody in this room wants it asked.",
+      "requires": {},
+      "outcomes": {
+        "all": {
+          "narrate": "Nothing good, and everyone knows it. The Matamoros plan will take the men and the powder and the medical stores south, and the garrison that is left will be small and badly supplied — before anybody has seen a Mexican army come back north.",
+          "teach": [
+            "FACT_MATAMOROS",
+            "FACT_CONSULTATION"
+          ],
+          "set_flags": [
+            "ASKED_ABOUT_BEXAR"
+          ],
+          "legacy": 2
+        }
+      }
+    },
+    {
+      "id": "S25_COUNT_WHO_IS_LEAVING",
+      "verb": "SEEK",
+      "depth": true,
+      "label": "Count how many are actually going home.",
+      "detail": "Not who says they are staying. Who is packing.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "Most of them. The army that took Béxar is dissolving into men walking back to their own fields, and it is nobody’s fault and it is going to matter enormously.",
+          "teach": [
+            "FACT_WINTER_FARMS"
+          ],
+          "legacy": 2,
+          "set_flags": [
+            "SAW_THEM_LEAVE"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S25_WRITE_THE_LEDGER",
+      "verb": "HOLD",
+      "depth": true,
+      "label": "Write down what this town decided, in your own words.",
+      "detail": "Date it. You will want to know exactly what was said.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "You write it down plainly, without deciding yet whether it was right. Somebody is going to read this back to you.",
+          "teach": [
+            "FACT_MATAMOROS"
+          ],
+          "legacy": 2,
+          "set_flags": [
+            "KEPT_A_RECORD"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S25_GO_HOME_YOURSELF",
+      "verb": "HOLD",
+      "depth": true,
+      "label": "Go home.",
+      "detail": "It is December. The war is over. That is what everyone says.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "You go back to your own fields, like most of the men who took Béxar, believing the thing everyone believes in December 1835: that it is finished.",
+          "teach": [
+            "FACT_WINTER_FARMS"
+          ],
+          "legacy": 1,
+          "clear_resolve": 1,
+          "set_flags": [
+            "WENT_HOME_FOR_WINTER"
+          ]
+        }
+      }
+    }
+  ],
+  "time": "MIDDAY",
+  "weather": "CLEAR",
+  "clock": "midday (the hour is not recorded — this is a guess)"
+}

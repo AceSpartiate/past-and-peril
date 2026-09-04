@@ -1,0 +1,81 @@
+{
+  "id": "hotel",
+  "title": "The hotel",
+  "scale": "1 hex ≈ 6 feet",
+  "indoors": true,
+  "entry": "D5",
+  "parent": {
+    "place": "gonzales_town",
+    "hex": "O8"
+  },
+  "cols": 7,
+  "rows": 5,
+  "_about": "A story-and-a-half dogtrot. The public side is the 'ordinary' — a fire, one long common table, and a dram bar. The other side is the sleeping room: four beds, and you do not get one to yourself. Travellers are how news reaches Gonzales, so this is the room where a student finds out what is happening somewhere else.",
+  "_honesty": "Sources disagree about whose hotel this was. The 1836 building list says Turner's Hotel; George Davis's biography says he kept 'the only hotel in Gonzales.' Show students both and let them weigh a list against a life-sketch — that is a better history lesson than either answer. The long table laid with mismatched knives, everything from butcher knives to pocketknives, and gourd cups instead of glass, is from an eyewitness.",
+  "grid": [
+    "WWWPWWW",
+    "WhnPnnW",
+    "WnDPDnW",
+    "WnLPnnW",
+    "WWWPWWW"
+  ],
+  "landmarks": [
+    {
+      "hex": "D3",
+      "label": "THE BREEZEWAY",
+      "note": "Open at both ends, like every house in this town."
+    },
+    {
+      "hex": "B2",
+      "label": "THE FIRE",
+      "note": "The public side. The 'ordinary'."
+    },
+    {
+      "hex": "C2",
+      "label": "THE LONG TABLE",
+      "note": "Mismatched knives — butcher knives to pocketknives — and gourd cups. Everyone eats together or nobody eats."
+    },
+    {
+      "hex": "B4",
+      "label": "THE DRAM BAR",
+      "note": "A whiskey barrel and a tin cup on a string."
+    },
+    {
+      "hex": "C4",
+      "label": "THE LADDER",
+      "key": true,
+      "note": "Up to the half-storey, where more travellers sleep. And where their bags are."
+    },
+    {
+      "hex": "E3",
+      "label": "THE BEDS",
+      "note": "Four of them. You share."
+    }
+  ],
+  "features": [
+    {
+      "id": "DOOR_HOTEL_OUT",
+      "kind": "door",
+      "hex": "D5",
+      "open": true,
+      "label": "Out to Water Street",
+      "to": {
+        "place": "gonzales_town",
+        "hex": "O8",
+        "label": "OUT"
+      }
+    },
+    {
+      "id": "CHEST_SADDLEBAGS",
+      "kind": "chest",
+      "hex": "C4",
+      "label": "A stranger's saddlebags",
+      "searched": false,
+      "contents": [
+        "ITEM_SADDLEBAGS"
+      ],
+      "note": "Left at the foot of the ladder. Letters, and a newspaper from San Felipe.",
+      "searchLabel": "Go through a stranger's saddlebags."
+    }
+  ]
+}

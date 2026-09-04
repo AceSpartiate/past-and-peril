@@ -1,0 +1,319 @@
+{
+  "id": "S2.2",
+  "session": 2,
+  "title": "Come and Take It",
+  "date": "1835-10-02",
+  "map": "gonzales_town",
+  "kind": "BATTLE",
+  "must_teach": [
+    "FACT_SKIRMISH_NOT_BATTLE",
+    "FACT_SCRAP_IRON",
+    "FACT_CASTANEDA_FEDERALIST"
+  ],
+  "npcs": [
+    {
+      "id": "NPC_CASTANEDA",
+      "hex": "A7",
+      "name": "Castañeda, across the water"
+    }
+  ],
+  "depth_reserve": [
+    "S22_COUNT_THE_HURT",
+    "S22_LOOK_ACROSS",
+    "S22_HELP_THE_GUN_CREW"
+  ],
+  "actions": [
+    {
+      "id": "S22_FIRE_THE_CANNON",
+      "verb": "ACT",
+      "label": "Fire the cannon.",
+      "detail": "Scrap iron and chain, at a hundred men, across a river.",
+      "requires": {
+        "world_flag": [
+          "GUN_LOADED"
+        ]
+      },
+      "roll": {
+        "stat": "arms",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "It goes off with a noise like a barn falling down. It is not clear it hit anything at all. That is the first shot of the Texas Revolution and it may have hit nothing.",
+          "teach": [
+            "FACT_SCRAP_IRON",
+            "FACT_SKIRMISH_NOT_BATTLE"
+          ],
+          "world": {
+            "SHOT_FIRED": true
+          },
+          "set_flags": [
+            "FIRED_THE_CANNON"
+          ],
+          "legacy": 1,
+          "resource": {
+            "powder": -1
+          },
+          "broadcast": "{name} fired the cannon. The war has started."
+        },
+        "partial": {
+          "narrate": "It fires. Something lands in the water well short of the far bank.",
+          "teach": [
+            "FACT_SCRAP_IRON",
+            "FACT_SKIRMISH_NOT_BATTLE"
+          ],
+          "world": {
+            "SHOT_FIRED": true
+          },
+          "set_flags": [
+            "FIRED_THE_CANNON"
+          ],
+          "resource": {
+            "powder": -2
+          }
+        },
+        "weak": {
+          "narrate": "It fires, and the carriage collapses under it, and a man you know is under the wheel.",
+          "teach": [
+            "FACT_SCRAP_IRON"
+          ],
+          "world": {
+            "SHOT_FIRED": true
+          },
+          "set_flags": [
+            "FIRED_THE_CANNON"
+          ],
+          "resource": {
+            "powder": -2
+          },
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S22_CALL_THE_ANSWER",
+      "verb": "SPEAK",
+      "label": "Call the town’s answer loud enough to carry over water.",
+      "detail": "Four words, and everybody has to hear them.",
+      "requires": {},
+      "cost": {
+        "word": 1
+      },
+      "roll": {
+        "stat": "word",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Come and take it. It carries. On the far bank a hundred men hear a town refuse, and their commander — who agrees with them about the Constitution — has to decide what to do about it.",
+          "teach": [
+            "FACT_CASTANEDA_FEDERALIST"
+          ],
+          "legacy": 2,
+          "broadcast": "{name} called the answer across the water. Come and take it."
+        },
+        "partial": {
+          "narrate": "It carries. Somebody else was shouting at the same time and it comes out as noise.",
+          "teach": [
+            "FACT_CASTANEDA_FEDERALIST"
+          ],
+          "legacy": 1
+        },
+        "weak": {
+          "narrate": "Your voice goes at the wrong moment and the words are gone in the wind.",
+          "teach": [
+            "FACT_CASTANEDA_FEDERALIST"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S22_ADVANCE",
+      "verb": "ACT",
+      "label": "Cross the water and go at them.",
+      "detail": "This is the part where somebody starts a war on purpose.",
+      "requires": {},
+      "cost": {
+        "move": 2
+      },
+      "roll": {
+        "stat": "arms",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "You are across and formed up before they can decide. Nobody dies. That is not because anybody was careful — it is because the man opposite you chose not to make a fight of it.",
+          "teach": [
+            "FACT_SKIRMISH_NOT_BATTLE",
+            "FACT_CASTANEDA_FEDERALIST"
+          ],
+          "set_flags": [
+            "CROSSED_THE_RIVER"
+          ],
+          "legacy": 1,
+          "resource": {
+            "powder": -1
+          }
+        },
+        "partial": {
+          "narrate": "You get across wet and disordered and they are already pulling back.",
+          "teach": [
+            "FACT_SKIRMISH_NOT_BATTLE"
+          ],
+          "set_flags": [
+            "CROSSED_THE_RIVER"
+          ],
+          "resource": {
+            "powder": -2
+          }
+        },
+        "weak": {
+          "narrate": "The crossing is a shambles. If they had wanted a fight this would have been the end of you.",
+          "teach": [
+            "FACT_SKIRMISH_NOT_BATTLE"
+          ],
+          "set_flags": [
+            "CROSSED_THE_RIVER"
+          ],
+          "resource": {
+            "powder": -2
+          },
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S22_GUARD_THE_FLAG",
+      "verb": "GUARD",
+      "label": "Stay with the flag, whatever happens to it.",
+      "detail": "It is a bedsheet on a pole and it is the only thing everybody can see.",
+      "requires": {
+        "world_flag": [
+          "FLAG_MADE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "It stays up. Everything anybody remembers about today will have that flag in it, and you are the reason it was still flying at the end.",
+          "teach": [
+            "FACT_FLAG_APOCRYPHAL"
+          ],
+          "legacy": 2,
+          "set_flags": [
+            "GUARDED_THE_FLAG"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S22_HOLD_FIRE",
+      "verb": "GUARD",
+      "label": "Stop somebody from firing.",
+      "detail": "There is a man opposite who has not decided yet. Give him the minute.",
+      "requires": {},
+      "roll": {
+        "stat": "talk",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "You get a hand onto a musket and hold it down for the ten seconds that matter. Castañeda withdraws. Almost nobody is hurt. You will never be able to prove you did anything at all.",
+          "teach": [
+            "FACT_CASTANEDA_FEDERALIST",
+            "FACT_SKIRMISH_NOT_BATTLE"
+          ],
+          "legacy": 3,
+          "set_flags": [
+            "HELD_FIRE"
+          ],
+          "broadcast": "{name} stopped somebody firing, and the moment passed."
+        },
+        "partial": {
+          "narrate": "You slow it down. Somebody fires anyway, further along the line.",
+          "teach": [
+            "FACT_SKIRMISH_NOT_BATTLE"
+          ],
+          "legacy": 1
+        },
+        "weak": {
+          "narrate": "You are shoved aside by a man who has been waiting all week to do this.",
+          "teach": [
+            "FACT_SKIRMISH_NOT_BATTLE"
+          ],
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S22_COUNT_THE_HURT",
+      "verb": "SEEK",
+      "depth": true,
+      "label": "Count who was actually hurt.",
+      "detail": "Do it now, before the story sets.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "One, perhaps two, and not badly. That is the Battle of Gonzales. It will be told as a battle for the next two hundred years and it was a skirmish that one side chose not to have.",
+          "teach": [
+            "FACT_SKIRMISH_NOT_BATTLE"
+          ],
+          "legacy": 2,
+          "set_flags": [
+            "COUNTED_THE_HURT"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S22_LOOK_ACROSS",
+      "verb": "SEEK",
+      "depth": true,
+      "label": "Watch them go.",
+      "detail": "A hundred men, walking away, in good order.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "They are not beaten. They are leaving, because their commander decided a general engagement was not worth it, and because he agreed with you about the Constitution. You have won a war that has not started.",
+          "teach": [
+            "FACT_CASTANEDA_FEDERALIST"
+          ],
+          "legacy": 1
+        }
+      }
+    },
+    {
+      "id": "S22_HELP_THE_GUN_CREW",
+      "verb": "AID",
+      "depth": true,
+      "label": "Get the gun back off the ground.",
+      "detail": "Whatever happened to the carriage, it happened in front of everyone.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ],
+        "adjacent_character": true
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "Four of you and a plank. Nobody who writes about today will mention this part.",
+          "teach": [
+            "FACT_SCRAP_IRON"
+          ],
+          "legacy": 1,
+          "aid_target": true
+        }
+      }
+    }
+  ],
+  "time": "DAWN",
+  "weather": "FOG",
+  "clock": "about six in the morning, and you cannot see fifty yards"
+}

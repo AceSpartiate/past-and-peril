@@ -1,0 +1,233 @@
+{
+  "id": "bexar_alamo",
+  "title": "San Antonio de Béxar",
+  "scale": "1 hex ≈ 110 yards",
+  "entry": "I1",
+  "cols": 20,
+  "rows": 15,
+  "_why_this_exists": "Scenes S2.3 and S2.4 have declared \"map\": \"bexar_alamo\" since they were written, and this file did not exist — so the Siege of Béxar and Ben Milam's assault were both being played on the Gonzales town grid, with the Guadalupe standing in for the San Antonio River and Zumwalt's store standing in for the Veramendi house. Nothing crashed. It just quietly wasn't Béxar.",
+  "_geography": "THE RIVER IS THE MAP. Town on the west bank, the Alamo on the east, and ONE crossing artillery can use — the ford and footbridge at the head of the great bend. Every decision Cos made in December 1835 was constrained by having his force split across that water, and he withdrew across it into the Alamo at one in the morning on 9 December. The bend wraps the town's south-east corner.",
+  "_how_it_was_actually_fought": "THE TEXIANS NEVER FOUGHT DOWN THE STREETS. Two north–south corridors — Acequia Street and Soledad Street — converge on the north face of Main Plaza, with the Old Mill north of town as the shared jump-off. The advance went building to building with crowbars, not volley to volley across open ground. That is why the plazas here are bare packed earth swept by artillery, and why the barricades sit in the street mouths: crossing a plaza should feel like a bad idea.",
+  "_honesty": "SIMPLIFIED, and a student should be told so. At 110 yards a hex the Alamo reads as a walled block; the real compound was 480 by 160 feet enclosing up to thirty adobe and mud buildings, and deserves its own map at ten yards a hex. Béxar had far more houses than the twenty-odd shown. Three specific uncertainties are marked in the landmarks rather than smoothed over: WHERE THE SHOT THAT KILLED BEN MILAM CAME FROM is disputed — a cypress on one bank or the other, or the church tower, and the sources do not agree; the exact hour of his death is traditional rather than proven; and historians disagree about the length of the Alamo chapel itself, one source saying 75 feet and another 'more than 90'. Both are secondary sources. The most famous building in Texas has a contested floor plan.",
+  "grid": [
+    "\",,,,,,,A~~ba,::oooo",
+    "\"jj,aj,==~~ba,::oooo",
+    "\",,,a,A=b~~ba,::oooo",
+    "\"AAAaAy=t~~ba,::::::",
+    "\",,Aa,,=t~~ba,::::::",
+    "\"AA,aAA=b~~ba,WWWWW:",
+    "\"..AR..Rb~~ba,WyyyW:",
+    "\"..y,..,b~~b,,WyyyW:",
+    "\"===R====fB===WyAAW:",
+    "^--------b~~b=WyAyW:",
+    "^AA,,AA,,b~~b=WyyRW:",
+    "^jj,,,,j,b~~b=WyyRW:",
+    "\",A,,Ajjb~~b,=WW.WW:",
+    "\"\",,,,,,b~~bjj=R=\"\"\"",
+    "\"\",,,,,,b~~bj,:a:\"\"\""
+  ],
+  "landmarks": [
+    {
+      "hex": "B7",
+      "label": "PLAZA DE ARMAS",
+      "note": "The Military Plaza. Open packed earth, and the guns can see all of it."
+    },
+    {
+      "hex": "F7",
+      "label": "MAIN PLAZA",
+      "key": true,
+      "note": "Plaza de las Islas. Cos's whole position hangs on holding it."
+    },
+    {
+      "hex": "D7",
+      "label": "SAN FERNANDO",
+      "note": "The church between the two plazas. Mexican artillery was stationed here. From the top of the tower you can see the whole of Béxar — and in February a red flag will fly from it."
+    },
+    {
+      "hex": "D8",
+      "label": "CAMPO SANTO",
+      "note": "The churchyard."
+    },
+    {
+      "hex": "H4",
+      "label": "SOLEDAD ST",
+      "note": "One of the two corridors the assault came down, hugging the river."
+    },
+    {
+      "hex": "E4",
+      "label": "ACEQUIA ST",
+      "note": "The other corridor. The irrigation ditch runs down the middle of the street — older than any Anglo house in Texas."
+    },
+    {
+      "hex": "G3",
+      "label": "VERAMENDI",
+      "note": "The Veramendi house on Soledad Street. Johnson's objective on 5 December."
+    },
+    {
+      "hex": "G4",
+      "label": "MILAM FELL HERE",
+      "key": true,
+      "note": "The Veramendi courtyard. Ben Milam was killed by a single shot to the head on the afternoon of 7 December 1835, and is buried in this courtyard. He had asked for volunteers four days earlier with 'Who will go with old Ben Milam into San Antonio?' and three hundred said they would."
+    },
+    {
+      "hex": "I4",
+      "label": "THE CYPRESS",
+      "note": "DISPUTED. One account puts the marksman who killed Milam in a cypress by the river. Another puts him on the far bank. A third says the San Fernando tower. The sources do not agree and this game will not pretend they do."
+    },
+    {
+      "hex": "D5",
+      "label": "DE LA GARZA",
+      "note": "Milam's own division objective on 5 December."
+    },
+    {
+      "hex": "I1",
+      "label": "THE OLD MILL",
+      "key": true,
+      "note": "Molino Blanco, half a mile north of Main Plaza. Where the Texian army camped, and where both assault columns started from."
+    },
+    {
+      "hex": "J9",
+      "label": "THE FORD",
+      "key": true,
+      "note": "The Commerce Street crossing at the head of the bend. The only crossing artillery can use, and the hinge of this whole map."
+    },
+    {
+      "hex": "M9",
+      "label": "THE ALAMEDA",
+      "note": "The cottonwood-lined road east from the ford to the Alamo's south side."
+    },
+    {
+      "hex": "Q13",
+      "label": "THE ALAMO GATE",
+      "key": true,
+      "note": "The main gate, on the south. Cos's men withdrew through it at one in the morning on 9 December."
+    },
+    {
+      "hex": "R12",
+      "label": "THE CHAPEL",
+      "note": "ROOFLESS. In December 1835 Cos's men tore down the four great arches that were to have carried a dome that was never built, and heaped the stone into a ramp up to the apse to mount guns on. A building demolished by the men defending it."
+    },
+    {
+      "hex": "Q9",
+      "label": "LONG BARRACK",
+      "note": "Two storeys. The convento."
+    },
+    {
+      "hex": "P14",
+      "label": "THE LUNETTE",
+      "note": "A U-shaped earthwork and a deep trench in front of the gate."
+    },
+    {
+      "hex": "M14",
+      "label": "LA VILLITA",
+      "note": "Jacales southeast of the river. Cos signed the capitulation in a house here on 9 December."
+    },
+    {
+      "hex": "A11",
+      "label": "THE RISE",
+      "note": "Where the Texian guns were laid. Neill's bombardment of the Alamo was a diversion — it had to see across the river to work."
+    }
+  ],
+  "features": [
+    {
+      "id": "BEXAR_GUN_CHURCH",
+      "kind": "cannon",
+      "hex": "D7",
+      "label": "The gun on the church",
+      "note": "Mexican artillery on San Fernando, covering both plazas."
+    },
+    {
+      "id": "BEXAR_GUN_PLAZA",
+      "kind": "cannon",
+      "hex": "F7",
+      "label": "The plaza battery",
+      "note": "Sited to sweep the open ground. Which is why you do not cross the open ground."
+    },
+    {
+      "id": "BEXAR_GUN_ALAMO",
+      "kind": "cannon",
+      "hex": "R12",
+      "label": "The guns on the ramp",
+      "note": "Mounted on the rubble of the chapel's own arches, firing over the wall."
+    },
+    {
+      "id": "BEXAR_WELL",
+      "kind": "well",
+      "hex": "C8",
+      "label": "The plaza well",
+      "note": "Water."
+    },
+    {
+      "id": "DOOR_JACAL",
+      "kind": "door",
+      "hex": "N14",
+      "open": true,
+      "label": "A jacal in La Villita",
+      "note": "Mud-and-stick walls, thatched roof, one room. Most of Béxar lived in one of these.",
+      "to": {
+        "place": "jacal",
+        "hex": "C2",
+        "label": "THE JACAL"
+      }
+    },
+    {
+      "id": "BEXAR_CACHE_MILL",
+      "kind": "chest",
+      "hex": "I1",
+      "label": "The mill stores",
+      "searched": false,
+      "contents": [
+        "ITEM_KEG_POWDER"
+      ],
+      "note": "What the army brought with it, and it is not much.",
+      "searchLabel": "Search the mill stores."
+    },
+    {
+      "id": "BEXAR_CACHE_BARRICADE",
+      "kind": "chest",
+      "hex": "E9",
+      "label": "A fallen barricade",
+      "searched": false,
+      "contents": [
+        "ITEM_WORN_FILES"
+      ],
+      "note": "Whatever they could pile across the street mouth, and whatever got left in it.",
+      "searchLabel": "Search the fallen barricade."
+    },
+    {
+      "id": "BEXAR_BODY_COURTYARD",
+      "kind": "body",
+      "hex": "G4",
+      "label": "A man of Milam's division",
+      "searched": false,
+      "contents": [
+        "ITEM_POWDER_HORN"
+      ],
+      "note": "He came down Soledad Street on the fifth and got this far.",
+      "searchLabel": "Go through his pockets. He was one of Milam's."
+    },
+    {
+      "id": "BEXAR_BODY_LUNETTE",
+      "kind": "body",
+      "hex": "P14",
+      "label": "Somebody in the trench",
+      "searched": false,
+      "contents": [
+        "ITEM_GOOD_TOOLS"
+      ],
+      "note": "In front of the gate, where the ground was worst.",
+      "searchLabel": "Search the man in the trench."
+    }
+  ],
+  "stations": {
+    "SMITH": "I1",
+    "TRADER": "C7",
+    "CLERK": "D7",
+    "RANCHERO": "M9",
+    "RIDER": "J9",
+    "HEALER": "I1",
+    "HOUSEHOLDER": "B11",
+    "RIFLEMAN": "A11",
+    "_note": "In Béxar the army is camped at the Old Mill, so most trades stand there or on the two plazas. The riflemen are up on the rise with the guns."
+  }
+}

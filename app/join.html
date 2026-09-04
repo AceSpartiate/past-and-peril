@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Join — The Gonzales Company</title>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/app.css">
+<style>
+  /* THIS PAGE IS READ FROM THE BACK OF A CLASSROOM.
+   *
+   * It is on the projector while thirty students open Chromebooks. Everything
+   * on it is either the address they type, the code they scan, or the fact
+   * that it worked — and nothing else, because anything else is something a
+   * student reads instead of joining. */
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: var(--sans); display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  header {
+    flex-shrink: 0; display: flex; align-items: baseline; gap: 18px;
+    padding: 22px 40px 18px; border-bottom: 2px solid var(--rule-strong);
+  }
+  .brand { font-family: var(--mono); font-size: 13px; letter-spacing: .24em;
+           color: var(--oxide); font-weight: 600; }
+  .code { font-family: var(--mono); font-size: 13px; letter-spacing: .18em;
+          color: var(--ink-soft); margin-left: auto; }
+
+  main { flex-grow: 1; min-height: 0; display: flex; align-items: center;
+         gap: 56px; padding: 0 40px; }
+  .left { flex-grow: 1; min-width: 0; }
+  .kicker { font-family: var(--mono); font-size: clamp(13px, 1.4vw, 18px);
+            letter-spacing: .2em; color: var(--ink-soft); text-transform: uppercase; }
+  .url {
+    font-family: var(--mono); font-weight: 600;
+    font-size: clamp(34px, 6.4vw, 104px); line-height: 1.02;
+    letter-spacing: -.01em; margin: 18px 0 0; color: var(--ink);
+    word-break: break-all;
+  }
+  .alt { margin-top: 22px; font-size: clamp(13px, 1.3vw, 17px); color: var(--ink-soft); line-height: 1.6; }
+  .alt b { font-family: var(--mono); color: var(--ink); font-weight: 500; }
+
+  .right { flex-shrink: 0; text-align: center; }
+  #qr { display: block; background: #fff; border: 1px solid var(--rule); }
+  .qcap { font-family: var(--mono); font-size: 11px; letter-spacing: .16em;
+          color: var(--ink-faint); margin-top: 12px; text-transform: uppercase; }
+
+  footer {
+    flex-shrink: 0; border-top: 2px solid var(--rule-strong); background: var(--field);
+    padding: 16px 40px 20px; min-height: 122px;
+  }
+  .fhead { display: flex; align-items: baseline; gap: 16px; }
+  .fcount { font-family: var(--serif); font-size: clamp(20px, 2.4vw, 32px); line-height: 1; }
+  .fnote { font-family: var(--mono); font-size: 11px; letter-spacing: .14em;
+           color: var(--ink-faint); text-transform: uppercase; margin-left: auto; }
+  .who { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+  .who span {
+    font-size: clamp(12px, 1.15vw, 15px); background: var(--paper);
+    border: 1px solid var(--rule); border-left: 3px solid var(--teal);
+    padding: 4px 10px;
+  }
+  .waiting { font-size: 15px; color: var(--ink-soft); margin-top: 14px; }
+
+  @media (max-width: 900px) {
+    main { flex-direction: column; gap: 24px; align-items: flex-start; }
+    .right { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="brand">THE GONZALES COMPANY</span>
+  <span class="code" id="code">—</span>
+</header>
+
+<main>
+  <div class="left">
+    <div class="kicker">Open a browser and type this</div>
+    <div class="url" id="url">…</div>
+    <div class="alt" id="alt"></div>
+  </div>
+  <div class="right">
+    <canvas id="qr" width="300" height="300"></canvas>
+    <div class="qcap">or point a camera at this</div>
+  </div>
+</main>
+
+<footer>
+  <div class="fhead">
+    <span class="fcount" id="count">Nobody has joined yet</span>
+    <span class="fnote" id="note"></span>
+  </div>
+  <div class="who" id="who"></div>
+  <div class="waiting" id="waiting">When everyone is in, switch this screen to the projector view.</div>
+</footer>
+
+<script src="js/net.js"></script>
+<script src="js/qr.js"></script>
+<script>
+/* The server knows its own addresses; a browser cannot. So ask it. */
+(function () {
+  const $ = (id) => document.getElementById(id);
+
+  /* THE ADDRESS ON THE WALL.
+   *
+   * This screen gives one address the 90-pixel type AND the QR code, so
+   * picking the wrong one is wrong for thirty students at once. It happened:
+   * a teacher's VPN adapter enumerated first and the whole class was given an
+   * unreachable address.
+   *
+   * The server now ranks them (see rankedAddresses in server/serve.js), but a
+   * ranking is still inference. `confirmed` is not — it lists addresses a real
+   * client has actually connected on. So this re-asks every few seconds, and
+   * the moment one student gets in, the wall corrects itself for everybody
+   * else. A projector is the one screen in the room where being wrong is
+   * expensive and being self-correcting is nearly free. */
+  let shown = null;
+
+  function paint(w) {
+    if (!w || !w.ok) return;
+    $('code').textContent = 'CLASS CODE  ' + w.classCode;
+
+    /* proof beats ranking beats localhost */
+    const best = (w.confirmed && w.confirmed[0]) || w.student[0] ||
+                 ('http://localhost:' + w.port + '/p');
+    if (best !== shown) {
+      shown = best;
+      $('url').textContent = best.replace(/^https?:\/\//, '');
+      QR.draw($('qr'), best, { size: 300, dark: '#1B2A33' });
+    }
+
+    /* A laptop with wifi, ethernet and a couple of virtual adapters has
+     * several addresses and only some of them are reachable from the other
+     * side of the room. Show the rest rather than making anybody guess. */
+    const others = (w.student || []).filter((u) => u !== best);
+    $('alt').innerHTML = others.length
+      ? 'If that does not work, try: ' +
+        others.map((u) => '<b>' + u.replace(/^https?:\/\//, '') + '</b>').join(' &nbsp;or&nbsp; ')
+      : '';
+  }
+
+  function ask() {
+    fetch('api/where', { cache: 'no-store' }).then((r) => r.json()).then(paint).catch(() => {});
+  }
+  ask();
+  setInterval(ask, 5000);
+
+  /* who has joined, live */
+  Net.connect({ role: 'view' });
+  Net.on('state', function (s) {
+    const list = (s.students || []).slice().sort((a, b) => a.name.localeCompare(b.name));
+    const n = list.length;
+    $('count').textContent = n === 0 ? 'Nobody has joined yet'
+      : n === 1 ? '1 has joined' : n + ' have joined';
+    $('who').innerHTML = list.map((x) =>
+      /* tint, not color: the company colour is shared by five students, and
+       * this list is the first place a child looks for their own name. */
+      '<span style="border-left-color:' + (x.tint || x.color || 'var(--teal)') + '">' + x.name + '</span>').join('');
+    $('waiting').hidden = n > 0;
+    const cu = (s.caughtUp || []).length;
+    $('note').textContent = cu
+      ? cu + (cu === 1 ? ' student was' : ' students were') + ' caught up automatically'
+      : (s.started ? 'the lesson has started' : '');
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,401 @@
+{
+  "id": "S1.5",
+  "session": 1,
+  "title": "The Vote",
+  "date": "1835-10-01",
+  "map": "gonzales_town",
+  "kind": "COUNCIL",
+  "must_teach": [
+    "FACT_TOWN_DIVIDED",
+    "FACT_OLD_EIGHTEEN",
+    "FACT_1824_CONSTITUTION",
+    "FACT_FLAG_APOCRYPHAL"
+  ],
+  "npcs": [
+    {
+      "id": "NPC_PONTON",
+      "hex": "K6",
+      "name": "Alcalde Andrew Ponton"
+    },
+    {
+      "id": "NPC_FUQUA",
+      "hex": "L4",
+      "name": "The youngest riders"
+    }
+  ],
+  "depth_reserve": [
+    "S5_COUNT_THE_ROOM",
+    "S5_STAND_WITH_SOMEONE",
+    "S5_GO_HOME"
+  ],
+  "actions": [
+    {
+      "id": "S5_SPEAK_FOR_KEEPING",
+      "verb": "SPEAK",
+      "label": "Speak for keeping the cannon.",
+      "detail": "Say why, in front of people who will hold you to it.",
+      "requires": {},
+      "cost": {
+        "word": 1
+      },
+      "roll": {
+        "stat": "word",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "You make the case without making a speech, and you are honest about the cost. People who came in undecided walk out having decided.",
+          "teach": [
+            "FACT_TOWN_DIVIDED",
+            "FACT_1824_CONSTITUTION"
+          ],
+          "set_flags": [
+            "STOOD_FOR_THE_CANNON"
+          ],
+          "legacy": 2,
+          "clocks": {
+            "DEMAND": 1
+          },
+          "broadcast": "{name} spoke for keeping the cannon, and moved the room."
+        },
+        "partial": {
+          "narrate": "You are heard, and the room was mostly there already.",
+          "teach": [
+            "FACT_TOWN_DIVIDED"
+          ],
+          "set_flags": [
+            "STOOD_FOR_THE_CANNON"
+          ],
+          "legacy": 1
+        },
+        "weak": {
+          "narrate": "You say it too hot and the best answer against you is your own tone.",
+          "teach": [
+            "FACT_TOWN_DIVIDED"
+          ],
+          "set_flags": [
+            "STOOD_FOR_THE_CANNON"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S5_SPEAK_FOR_RETURNING",
+      "verb": "SPEAK",
+      "label": "Speak for handing it back.",
+      "detail": "This was the majority view in most of Texas, and it takes nerve here.",
+      "requires": {},
+      "cost": {
+        "word": 1
+      },
+      "roll": {
+        "stat": "word",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "You say the unpopular true thing: it is their gun, the law is on their side, and nobody has explained what is worth burying a boy over. The square does not thank you. Several people in it agree with you.",
+          "teach": [
+            "FACT_TOWN_DIVIDED",
+            "FACT_CANNON_LENT"
+          ],
+          "set_flags": [
+            "SPOKE_FOR_PEACE"
+          ],
+          "legacy": 3,
+          "broadcast": "{name} argued for handing it back, in front of everybody."
+        },
+        "partial": {
+          "narrate": "You are heard out, which in this square today is not nothing.",
+          "teach": [
+            "FACT_TOWN_DIVIDED"
+          ],
+          "set_flags": [
+            "SPOKE_FOR_PEACE"
+          ],
+          "legacy": 2
+        },
+        "weak": {
+          "narrate": "You get the word coward, twice, and one of the men who says it will be dead inside six months.",
+          "teach": [
+            "FACT_TOWN_DIVIDED"
+          ],
+          "set_flags": [
+            "SPOKE_FOR_PEACE"
+          ],
+          "legacy": 1,
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S5_PUT_YOUR_NAME_ON_IT",
+      "verb": "ACT",
+      "label": "Put your name on the refusal.",
+      "detail": "Shouting is free. Signing is not.",
+      "requires": {},
+      "roll": {
+        "stat": "arms",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Eighteen names go on it. History will call them the Old Eighteen. Tonight they are eighteen people who could not agree with their neighbours and wrote it down anyway.",
+          "teach": [
+            "FACT_OLD_EIGHTEEN"
+          ],
+          "set_flags": [
+            "SIGNED_THE_REFUSAL",
+            "STOOD_FOR_THE_CANNON"
+          ],
+          "legacy": 2,
+          "clocks": {
+            "DEMAND": 1
+          },
+          "broadcast": "{name} signed the refusal."
+        },
+        "partial": {
+          "narrate": "You sign. Your hand is not steady and you sign anyway.",
+          "teach": [
+            "FACT_OLD_EIGHTEEN"
+          ],
+          "set_flags": [
+            "SIGNED_THE_REFUSAL",
+            "STOOD_FOR_THE_CANNON"
+          ],
+          "clocks": {
+            "DEMAND": 1
+          }
+        },
+        "weak": {
+          "narrate": "You sign, and spend the rest of the evening explaining to your family why.",
+          "teach": [
+            "FACT_OLD_EIGHTEEN"
+          ],
+          "set_flags": [
+            "SIGNED_THE_REFUSAL"
+          ],
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S5_ASK_WHO_DECIDES",
+      "verb": "SEEK",
+      "label": "Ask who actually decides a thing like this.",
+      "detail": "The vote is happening. That is not the same as the vote mattering.",
+      "requires": {},
+      "outcomes": {
+        "all": {
+          "narrate": "The alcalde cannot. The ayuntamiento will not. And thirty feet away there are four young men with a cannon and their own opinion, who are not going to wait for a show of hands.",
+          "teach": [
+            "FACT_TOWN_DIVIDED",
+            "FACT_OLD_EIGHTEEN"
+          ],
+          "set_flags": [
+            "SAW_WHO_DECIDES"
+          ],
+          "legacy": 1
+        }
+      }
+    },
+    {
+      "id": "S5_TALK_TO_THE_BOYS",
+      "verb": "SPEAK",
+      "label": "Talk to the youngest riders before they do something.",
+      "detail": "Sixteen and seventeen years old, standing by the gun.",
+      "requires": {
+        "adjacent_npc": "NPC_FUQUA"
+      },
+      "cost": {
+        "word": 1
+      },
+      "roll": {
+        "stat": "talk",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "They listen to you, which is more than they have done for anybody else today. It does not change what happens. It changes whether somebody spoke to them like people first.",
+          "teach": [
+            "FACT_OLD_EIGHTEEN"
+          ],
+          "set_flags": [
+            "SPOKE_TO_THE_BOYS"
+          ],
+          "legacy": 3
+        },
+        "partial": {
+          "narrate": "They are polite and they are not listening.",
+          "teach": [
+            "FACT_OLD_EIGHTEEN"
+          ],
+          "set_flags": [
+            "SPOKE_TO_THE_BOYS"
+          ],
+          "legacy": 1
+        },
+        "weak": {
+          "narrate": "One of them tells you that you sound like his father. He does not mean it kindly.",
+          "teach": [
+            "FACT_OLD_EIGHTEEN"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S5_WHOSE_FLAG",
+      "verb": "SEEK",
+      "label": "Ask who is making the flag, and how they know.",
+      "detail": "A story is forming in real time. Watch it happen.",
+      "requires": {},
+      "outcomes": {
+        "all": {
+          "narrate": "You will be told, confidently, that Sarah DeWitt sewed it from her daughter’s wedding dress. TSHA calls that apocryphal. Somebody made it and we do not know who. You are watching a legend get made while the thing it describes is still going on.",
+          "teach": [
+            "FACT_FLAG_APOCRYPHAL"
+          ],
+          "set_flags": [
+            "CHECKED_THE_STORY"
+          ],
+          "legacy": 2
+        }
+      }
+    },
+    {
+      "id": "S5_ASK_THE_CONSTITUTION",
+      "verb": "SPEAK",
+      "label": "Ask what exactly everyone thinks they are defending.",
+      "detail": "Say the year out loud and see who knows it.",
+      "requires": {},
+      "cost": {
+        "word": 1
+      },
+      "roll": {
+        "stat": "word",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "The Constitution of 1824. Federal, with power in the states, and Santa Anna has been dismantling it for a year. Nobody in this square is asking for independence tonight — they are asking for their own government back.",
+          "teach": [
+            "FACT_1824_CONSTITUTION",
+            "FACT_TEJANO_FEDERALISTS"
+          ],
+          "legacy": 2,
+          "broadcast": "{name} made the square say which constitution it meant."
+        },
+        "partial": {
+          "narrate": "Half of them can name it. The other half are surprised there is a name.",
+          "teach": [
+            "FACT_1824_CONSTITUTION"
+          ],
+          "legacy": 1
+        },
+        "weak": {
+          "narrate": "Somebody answers \"our rights\" and everybody nods, which settles nothing.",
+          "teach": [
+            "FACT_1824_CONSTITUTION"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S5_ABSTAIN",
+      "verb": "HOLD",
+      "label": "Abstain, out loud, and say why.",
+      "detail": "A real position. Say it and let people hear it.",
+      "requires": {},
+      "outcomes": {
+        "all": {
+          "narrate": "You say you will not vote for a thing you cannot explain to a widow afterwards. Nobody argues. Two people look at the ground.",
+          "teach": [
+            "FACT_TOWN_DIVIDED"
+          ],
+          "set_flags": [
+            "ABSTAINED"
+          ],
+          "legacy": 2
+        }
+      }
+    },
+    {
+      "id": "S5_COUNT_THE_ROOM",
+      "verb": "SEEK",
+      "depth": true,
+      "label": "Count the room honestly before the hands go up.",
+      "detail": "You have said your piece. Now find out where this town really is.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "It is close, and it is closer than the loudest people in the square believe. Most of them do not want this. Most of them are going to get it anyway.",
+          "teach": [
+            "FACT_TOWN_DIVIDED"
+          ],
+          "set_flags": [
+            "READ_THE_ROOM"
+          ],
+          "legacy": 1
+        }
+      }
+    },
+    {
+      "id": "S5_STAND_WITH_SOMEONE",
+      "verb": "GUARD",
+      "depth": true,
+      "label": "Go and stand next to whoever is about to be shouted at.",
+      "detail": "You do not have to agree with them.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ],
+        "adjacent_character": true
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "You stand there. The shouting happens and it happens to two people instead of one, which is a different thing entirely.",
+          "teach": [
+            "FACT_TOWN_DIVIDED"
+          ],
+          "guard_target": true,
+          "legacy": 3,
+          "set_flags": [
+            "STOOD_WITH_SOMEONE"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S5_GO_HOME",
+      "verb": "HOLD",
+      "depth": true,
+      "label": "Go home before it is decided.",
+      "detail": "Some people did. It is in the record as an absence.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "You are not in the square when it is settled. Whatever this town becomes, it becomes it without you in the room, and you will hear about it the same way everyone outside Gonzales does.",
+          "teach": [
+            "FACT_TOWN_DIVIDED"
+          ],
+          "legacy": 1,
+          "clear_resolve": 1,
+          "set_flags": [
+            "WENT_HOME"
+          ]
+        }
+      }
+    }
+  ],
+  "time": "DUSK",
+  "weather": "CLEAR",
+  "clock": "sundown — about ten before six"
+}

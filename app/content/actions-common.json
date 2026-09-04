@@ -1,0 +1,1094 @@
+{
+  "note": "Authored once, reused by every scene. This is Stage 2 of design/13-migration-plan.md — the Calling Cards, 8 Callings × situation kinds, which was the highest-yield migration in the project because the prose already existed. A scene gets these for free and only has to author what is specific to it.",
+  "actions": [
+    {
+      "id": "SMITH_COUNCIL_MOUNT",
+      "verb": "ACT",
+      "label": "Mount the cannon on something that will hold.",
+      "detail": "It has sat under a tarpaulin for eight years. The carriage is rotten through.",
+      "requires": {
+        "calling": [
+          "SMITH"
+        ],
+        "scene_kind": [
+          "COUNCIL"
+        ],
+        "world_flag_absent": [
+          "CANNON_MOUNTED"
+        ]
+      },
+      "cost": {
+        "move": 1
+      },
+      "roll": {
+        "stat": "arms",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "It will hold. You know exactly how long it will hold, which is not as long as anybody watching believes.",
+          "teach": [
+            "FACT_CANNON_LENT"
+          ],
+          "set_flags": [
+            "MOUNTED_THE_CANNON"
+          ],
+          "legacy": 1,
+          "world": {
+            "CANNON_MOUNTED": true
+          }
+        },
+        "partial": {
+          "narrate": "It will hold. Nobody asks how long and you do not volunteer it.",
+          "teach": [
+            "FACT_CANNON_LENT"
+          ],
+          "set_flags": [
+            "MOUNTED_THE_CANNON"
+          ],
+          "resolve": 1,
+          "world": {
+            "CANNON_MOUNTED": true
+          }
+        },
+        "weak": {
+          "narrate": "The axle splits while four men are watching. You will need the whole afternoon and somebody's wagon.",
+          "teach": [
+            "FACT_CANNON_LENT"
+          ],
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "SMITH_MARCH_SHOE",
+      "verb": "ACT",
+      "label": "Shoe the horses that are going out.",
+      "detail": "A rider with a thrown shoe is a rider who does not arrive.",
+      "requires": {
+        "calling": [
+          "SMITH"
+        ],
+        "scene_kind": [
+          "MARCH"
+        ]
+      },
+      "roll": {
+        "stat": "arms",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Every horse leaving this town today leaves sound. Somebody will get somewhere because of that and never know why.",
+          "teach": [
+            "FACT_SEVENTY_MILES"
+          ],
+          "clocks": {
+            "WORD": 1
+          },
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "Most of them. You run out of iron before you run out of horses.",
+          "teach": [
+            "FACT_SEVENTY_MILES"
+          ]
+        },
+        "weak": {
+          "narrate": "You are still working when the first rider goes without you.",
+          "teach": [
+            "FACT_SEVENTY_MILES"
+          ],
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "RIDER_COUNCIL_AHEAD",
+      "verb": "ACT",
+      "label": "Ride for help before anyone tells you not to.",
+      "detail": "Mina is forty miles. San Felipe is eighty. Nobody there knows anything yet.",
+      "requires": {
+        "calling": [
+          "RIDER"
+        ],
+        "scene_kind": [
+          "COUNCIL"
+        ]
+      },
+      "roll": {
+        "stat": "land",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "You are gone before the argument in the square has finished. By tonight two more towns know.",
+          "teach": [
+            "FACT_SEVENTY_MILES"
+          ],
+          "clocks": {
+            "WORD": 2
+          },
+          "set_flags": [
+            "RODE_FOR_HELP"
+          ],
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "You get there. It costs you a horse and a day.",
+          "teach": [
+            "FACT_SEVENTY_MILES"
+          ],
+          "clocks": {
+            "WORD": 1
+          },
+          "set_flags": [
+            "RODE_FOR_HELP"
+          ],
+          "resolve": 1
+        },
+        "weak": {
+          "narrate": "The road is longer than the map says and you arrive after somebody else's rumour did.",
+          "teach": [
+            "FACT_SEVENTY_MILES"
+          ],
+          "clocks": {
+            "WORD": 1
+          },
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "RIDER_MARCH_SCOUT",
+      "verb": "SEEK",
+      "label": "Ride the Béxar road until you can see something.",
+      "detail": "Ahead of the news is the only place you are ever any use.",
+      "requires": {
+        "calling": [
+          "RIDER"
+        ],
+        "scene_kind": [
+          "MARCH"
+        ]
+      },
+      "roll": {
+        "stat": "land",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Dust, four hours west, moving at the pace of men on foot. You have bought this town most of a day.",
+          "teach": [
+            "FACT_SEVENTY_MILES",
+            "FACT_NO_TELEGRAPH"
+          ],
+          "set_flags": [
+            "SAW_THEM_COMING"
+          ],
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "Nothing on the road. That is worth knowing and it is not worth much.",
+          "teach": [
+            "FACT_NO_TELEGRAPH"
+          ]
+        },
+        "weak": {
+          "narrate": "You go further than you meant to and come back later than you should have.",
+          "teach": [
+            "FACT_NO_TELEGRAPH"
+          ],
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "CLERK_COUNCIL_CITE",
+      "verb": "SPEAK",
+      "label": "Cite the document, by name, in front of everyone.",
+      "detail": "Chapter and verse. It is the only weapon you brought.",
+      "requires": {
+        "calling": [
+          "CLERK"
+        ],
+        "scene_kind": [
+          "COUNCIL"
+        ]
+      },
+      "cost": {
+        "word": 1
+      },
+      "roll": {
+        "stat": "word",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "The square goes quiet while you read it. Whatever they do next, they do it knowing what they swore.",
+          "teach": [
+            "FACT_EMPRESARIO_OATH",
+            "FACT_1824_CONSTITUTION"
+          ],
+          "legacy": 2,
+          "broadcast": "{name} read the oath aloud in the square, and the square went quiet."
+        },
+        "partial": {
+          "narrate": "Half of them listen. That is more than usually listen.",
+          "teach": [
+            "FACT_EMPRESARIO_OATH"
+          ],
+          "legacy": 1
+        },
+        "weak": {
+          "narrate": "You are right, and you are the fourth person to say something this minute.",
+          "teach": [
+            "FACT_EMPRESARIO_OATH"
+          ]
+        }
+      }
+    },
+    {
+      "id": "CLERK_MARCH_WRITE",
+      "verb": "ACT",
+      "label": "Write the letter that goes with the rider.",
+      "detail": "A man arriving with a story is a rumour. A man arriving with a letter is news.",
+      "requires": {
+        "calling": [
+          "CLERK"
+        ],
+        "scene_kind": [
+          "MARCH"
+        ]
+      },
+      "roll": {
+        "stat": "word",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Dated, signed, and specific about numbers. Committees act on paper like this and ignore men who only talk.",
+          "teach": [
+            "FACT_COMMITTEES_OF_SAFETY"
+          ],
+          "clocks": {
+            "WORD": 2
+          },
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "It says what happened. It does not say what you want them to do about it.",
+          "teach": [
+            "FACT_COMMITTEES_OF_SAFETY"
+          ],
+          "clocks": {
+            "WORD": 1
+          }
+        },
+        "weak": {
+          "narrate": "You write it twice and the rider leaves with the first draft.",
+          "teach": [
+            "FACT_COMMITTEES_OF_SAFETY"
+          ]
+        }
+      }
+    },
+    {
+      "id": "TRADER_COUNCIL_LEDGER",
+      "verb": "SPEAK",
+      "label": "Name somebody who owes you. Out loud.",
+      "detail": "Credit is what this frontier actually runs on.",
+      "requires": {
+        "calling": [
+          "TRADER"
+        ],
+        "scene_kind": [
+          "COUNCIL"
+        ]
+      },
+      "cost": {
+        "word": 1
+      },
+      "roll": {
+        "stat": "talk",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "They help you, in front of witnesses, and everyone watching learns what the ledger is worth in this town.",
+          "teach": [
+            "FACT_TOWN_DIVIDED"
+          ],
+          "set_flags": [
+            "CALLED_THE_LEDGER"
+          ],
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "They help you, and they will remember being made to.",
+          "teach": [
+            "FACT_TOWN_DIVIDED"
+          ],
+          "set_flags": [
+            "CALLED_THE_LEDGER"
+          ]
+        },
+        "weak": {
+          "narrate": "They pay you instead, in front of everybody, and now they owe you nothing at all.",
+          "teach": [
+            "FACT_TOWN_DIVIDED"
+          ]
+        }
+      }
+    },
+    {
+      "id": "TRADER_MARCH_SUPPLY",
+      "verb": "ACT",
+      "label": "Put together what the riders will need.",
+      "detail": "Corn, a blanket, and somewhere to change horses at the far end.",
+      "requires": {
+        "calling": [
+          "TRADER"
+        ],
+        "scene_kind": [
+          "MARCH"
+        ]
+      },
+      "roll": {
+        "stat": "talk",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Two days of food and a name at the other end who will not ask questions.",
+          "teach": [
+            "FACT_EIGHTEEN_MEN"
+          ],
+          "clocks": {
+            "WORD": 1
+          },
+          "resource": {
+            "stores": -1
+          },
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "Enough to get there. Not enough to get back.",
+          "teach": [
+            "FACT_EIGHTEEN_MEN"
+          ],
+          "resource": {
+            "stores": -1
+          }
+        },
+        "weak": {
+          "narrate": "You give away more than the town could spare, and everyone saw you do it.",
+          "teach": [
+            "FACT_EIGHTEEN_MEN"
+          ],
+          "resource": {
+            "stores": -2
+          }
+        }
+      }
+    },
+    {
+      "id": "HOUSEHOLDER_COUNCIL_DAYS",
+      "verb": "SPEAK",
+      "label": "Say the true number of days this town can eat.",
+      "detail": "Everyone must act on it. That is what the number is for.",
+      "requires": {
+        "calling": [
+          "HOUSEHOLDER"
+        ],
+        "scene_kind": [
+          "COUNCIL"
+        ]
+      },
+      "roll": {
+        "stat": "land",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Forty days. You say it flatly and the argument changes shape around it.",
+          "teach": [
+            "FACT_POWDER_TWELVE"
+          ],
+          "legacy": 1,
+          "broadcast": "{name} said the number out loud: forty days of food, twelve rounds of powder."
+        },
+        "partial": {
+          "narrate": "Forty days. Two men tell you that you are wrong. You are not.",
+          "teach": [
+            "FACT_POWDER_TWELVE"
+          ]
+        },
+        "weak": {
+          "narrate": "You say it and it lands in the middle of a shouting match and is gone.",
+          "teach": [
+            "FACT_POWDER_TWELVE"
+          ]
+        }
+      }
+    },
+    {
+      "id": "HOUSEHOLDER_MARCH_WHOSTAYS",
+      "verb": "SPEAK",
+      "label": "Say plainly who cannot travel.",
+      "detail": "The old, the sick, the very young, and whoever has to mind them.",
+      "requires": {
+        "calling": [
+          "HOUSEHOLDER"
+        ],
+        "scene_kind": [
+          "MARCH"
+        ]
+      },
+      "roll": {
+        "stat": "land",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "You name them, and in naming them you make them somebody's responsibility instead of nobody's.",
+          "teach": [
+            "FACT_WHO_CANNOT_LEAVE"
+          ],
+          "legacy": 2,
+          "set_flags": [
+            "NAMED_THE_STAYING"
+          ]
+        },
+        "partial": {
+          "narrate": "The list is longer than anybody expected it to be.",
+          "teach": [
+            "FACT_WHO_CANNOT_LEAVE"
+          ],
+          "set_flags": [
+            "NAMED_THE_STAYING"
+          ]
+        },
+        "weak": {
+          "narrate": "You are told, kindly, that this is not the moment. It is exactly the moment.",
+          "teach": [
+            "FACT_WHO_CANNOT_LEAVE"
+          ]
+        }
+      }
+    },
+    {
+      "id": "RANCHERO_COUNCIL_CLAIM",
+      "verb": "SPEAK",
+      "label": "Assert a claim older than anybody's deed.",
+      "detail": "No one may out-argue it without producing a document.",
+      "requires": {
+        "calling": [
+          "RANCHERO"
+        ],
+        "scene_kind": [
+          "COUNCIL"
+        ]
+      },
+      "roll": {
+        "stat": "land",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Your family held this ground under a Spanish grant before the colony existed. Nobody in the square has paper that beats it, and everybody now knows it.",
+          "teach": [
+            "FACT_TEJANO_FEDERALISTS"
+          ],
+          "standing": {
+            "ranchos": 1
+          },
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "It is accepted, with the faint surprise of people who had not thought about it.",
+          "teach": [
+            "FACT_TEJANO_FEDERALISTS"
+          ]
+        },
+        "weak": {
+          "narrate": "Somebody asks, loudly, whose side you are on. That is the whole answer to your claim.",
+          "teach": [
+            "FACT_TEJANO_FEDERALISTS"
+          ],
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "RANCHERO_MARCH_GROUND",
+      "verb": "SEEK",
+      "label": "Take them the way your family goes.",
+      "detail": "There is a road, and there is the way people who live here actually travel.",
+      "requires": {
+        "calling": [
+          "RANCHERO"
+        ],
+        "scene_kind": [
+          "MARCH"
+        ]
+      },
+      "roll": {
+        "stat": "land",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Half a day saved, and a crossing nobody watching the road would think to watch.",
+          "teach": [
+            "FACT_SEVENTY_MILES"
+          ],
+          "clocks": {
+            "WORD": 1
+          },
+          "standing": {
+            "ranchos": 1
+          },
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "Faster, and wetter. They will complain and they will arrive.",
+          "teach": [
+            "FACT_SEVENTY_MILES"
+          ],
+          "clocks": {
+            "WORD": 1
+          }
+        },
+        "weak": {
+          "narrate": "Two of them will not follow a Tejano off the road. They take the long way and say why.",
+          "teach": [
+            "FACT_TEJANO_FEDERALISTS"
+          ],
+          "standing": {
+            "ranchos": -1
+          }
+        }
+      }
+    },
+    {
+      "id": "HEALER_ANY_HANDS",
+      "verb": "AID",
+      "label": "Take someone's hands and steady them.",
+      "detail": "Half this town has not slept. It shows.",
+      "requires": {
+        "calling": [
+          "HEALER"
+        ],
+        "adjacent_character": true
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "They are steadier for it, and so are you.",
+          "teach": [
+            "FACT_TOWN_DIVIDED"
+          ],
+          "aid_target": true,
+          "clear_resolve_target": 1,
+          "legacy": 1
+        }
+      }
+    },
+    {
+      "id": "RIFLEMAN_COUNCIL_STAND",
+      "verb": "GUARD",
+      "label": "Stand where the rider can see you.",
+      "detail": "Say nothing. Just be visible, and be armed.",
+      "requires": {
+        "calling": [
+          "RIFLEMAN"
+        ],
+        "scene_kind": [
+          "COUNCIL"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "He counts you. That is what he came to do, and now his count includes a man who meant to be counted.",
+          "teach": [
+            "FACT_TOWN_DIVIDED"
+          ],
+          "set_flags": [
+            "STOOD_FOR_THE_CANNON"
+          ],
+          "clocks": {
+            "DEMAND": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "RIFLEMAN_MARCH_COUNT",
+      "verb": "SEEK",
+      "label": "Count who in this town can actually shoot.",
+      "detail": "Not who says they can. Who can.",
+      "requires": {
+        "calling": [
+          "RIFLEMAN"
+        ],
+        "scene_kind": [
+          "MARCH"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "Eighteen. Maybe twenty if you count two boys and a man with one good arm. That is the whole of it.",
+          "teach": [
+            "FACT_EIGHTEEN_MEN"
+          ],
+          "set_flags": [
+            "COUNTED_THE_GUNS"
+          ]
+        }
+      }
+    },
+    {
+      "id": "GEN_AID",
+      "verb": "AID",
+      "repeatable": true,
+      "label": "Help {adjacent}. Give them your hands for one turn.",
+      "detail": "They get a better roll. You get nothing but the Legacy.",
+      "requires": {
+        "adjacent_character": true
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "You do the unglamorous half of somebody else's job, and it goes better than it would have.",
+          "aid_target": true,
+          "legacy": 1
+        }
+      }
+    },
+    {
+      "id": "GEN_GUARD",
+      "verb": "GUARD",
+      "repeatable": true,
+      "label": "Stand in front of {adjacent}.",
+      "detail": "One consequence lands on you instead of them.",
+      "requires": {
+        "adjacent_character": true
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "Nothing happens to you. That is the point of it, and it is why nobody will mention it later.",
+          "guard_target": true,
+          "legacy": 1
+        }
+      }
+    },
+    {
+      "id": "GEN_HOLD",
+      "verb": "HOLD",
+      "repeatable": true,
+      "label": "Do nothing, and keep your Word for later.",
+      "detail": "Sometimes this is the right answer. It is not a wasted turn.",
+      "requires": {},
+      "outcomes": {
+        "all": {
+          "narrate": "You keep your mouth shut and your powder dry, and the day goes on without your help.",
+          "legacy": 1,
+          "clear_resolve": 1
+        }
+      }
+    },
+    {
+      "id": "RIFLEMAN_FIGHT_LINE",
+      "verb": "ACT",
+      "label": "Hold the line where it is thinnest.",
+      "detail": "Three rounds a minute, if your hands are steady.",
+      "requires": {
+        "calling": [
+          "RIFLEMAN"
+        ],
+        "scene_kind": [
+          "BATTLE",
+          "SIEGE"
+        ]
+      },
+      "roll": {
+        "stat": "arms",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "You hold, and the men either side of you hold because you did.",
+          "teach": [
+            "FACT_SKIRMISH_NOT_BATTLE"
+          ],
+          "clocks": {
+            "BEXAR": 2
+          },
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "You hold. It costs powder you will want later.",
+          "teach": [
+            "FACT_SKIRMISH_NOT_BATTLE"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          },
+          "resource": {
+            "powder": -1
+          }
+        },
+        "weak": {
+          "narrate": "The line holds without you being much use to it.",
+          "teach": [
+            "FACT_SKIRMISH_NOT_BATTLE"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          },
+          "resource": {
+            "powder": -2
+          }
+        }
+      }
+    },
+    {
+      "id": "SMITH_FIGHT_LOAD",
+      "verb": "ACT",
+      "label": "Cut up scrap iron and chain for the gun.",
+      "detail": "There is no proper shot. There never was.",
+      "requires": {
+        "calling": [
+          "SMITH"
+        ],
+        "scene_kind": [
+          "BATTLE",
+          "SIEGE"
+        ]
+      },
+      "roll": {
+        "stat": "arms",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Chain, nails, and a broken plough share. It is not artillery. It will do exactly once.",
+          "teach": [
+            "FACT_SCRAP_IRON"
+          ],
+          "clocks": {
+            "BEXAR": 2
+          },
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "Enough for a load. You will be doing this again in an hour.",
+          "teach": [
+            "FACT_SCRAP_IRON"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          }
+        },
+        "weak": {
+          "narrate": "You cut your hand badly and keep working.",
+          "teach": [
+            "FACT_SCRAP_IRON"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          },
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "RIDER_FIGHT_SCOUT",
+      "verb": "SEEK",
+      "label": "Get around behind them and look.",
+      "detail": "Somebody has to know what is actually there.",
+      "requires": {
+        "calling": [
+          "RIDER"
+        ],
+        "scene_kind": [
+          "BATTLE",
+          "SIEGE"
+        ]
+      },
+      "roll": {
+        "stat": "land",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "You come back with numbers instead of rumours, which is the rarest thing in this war.",
+          "teach": [
+            "FACT_GRASS_FIGHT"
+          ],
+          "clocks": {
+            "BEXAR": 2
+          },
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "You get a look. Some of it is even right.",
+          "teach": [
+            "FACT_GRASS_FIGHT"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          }
+        },
+        "weak": {
+          "narrate": "You come back certain of something that turns out to be grass.",
+          "teach": [
+            "FACT_GRASS_FIGHT"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "TRADER_FIGHT_POWDER",
+      "verb": "ACT",
+      "label": "Keep the powder moving to whoever is shooting.",
+      "detail": "An army runs on this and nobody writes songs about it.",
+      "requires": {
+        "calling": [
+          "TRADER"
+        ],
+        "scene_kind": [
+          "BATTLE",
+          "SIEGE"
+        ]
+      },
+      "roll": {
+        "stat": "talk",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Every company has what it needs when it needs it. Nobody will remember that this was a person doing it.",
+          "teach": [
+            "FACT_POWDER_TWELVE"
+          ],
+          "clocks": {
+            "BEXAR": 2
+          },
+          "legacy": 1,
+          "resource": {
+            "powder": 1
+          }
+        },
+        "partial": {
+          "narrate": "Most of them, most of the time.",
+          "teach": [
+            "FACT_POWDER_TWELVE"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          }
+        },
+        "weak": {
+          "narrate": "You are carrying a keg to the wrong end of the line when it matters.",
+          "teach": [
+            "FACT_POWDER_TWELVE"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          },
+          "resource": {
+            "powder": -1
+          }
+        }
+      }
+    },
+    {
+      "id": "RANCHERO_FIGHT_GUIDE",
+      "verb": "ACT",
+      "label": "Take the column through streets you know.",
+      "detail": "The Anglos have never been inside Béxar. You have.",
+      "requires": {
+        "calling": [
+          "RANCHERO"
+        ],
+        "scene_kind": [
+          "BATTLE",
+          "SIEGE"
+        ]
+      },
+      "roll": {
+        "stat": "land",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "You put three hundred men where they need to be, through yards and alleys nobody outside this town knows exist.",
+          "teach": [
+            "FACT_TEJANO_FEDERALISTS"
+          ],
+          "clocks": {
+            "BEXAR": 2
+          },
+          "legacy": 2,
+          "standing": {
+            "ranchos": 1
+          }
+        },
+        "partial": {
+          "narrate": "They follow you. Two of them complain the whole way.",
+          "teach": [
+            "FACT_TEJANO_FEDERALISTS"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          }
+        },
+        "weak": {
+          "narrate": "Somebody says out loud that they are being led by a Mexican. In Béxar. Into a fight against Mexicans.",
+          "teach": [
+            "FACT_TEJANO_FEDERALISTS"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          },
+          "resolve": 1,
+          "standing": {
+            "ranchos": -1
+          }
+        }
+      }
+    },
+    {
+      "id": "HEALER_FIGHT_WOUNDED",
+      "verb": "AID",
+      "label": "Work on whoever is brought to you.",
+      "detail": "This is the job. It does not stop when the shooting does.",
+      "requires": {
+        "calling": [
+          "HEALER"
+        ],
+        "scene_kind": [
+          "BATTLE",
+          "SIEGE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "They live, or they do not, and either way somebody was with them. You will do this again tomorrow.",
+          "teach": [
+            "FACT_WHO_CANNOT_LEAVE"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          },
+          "legacy": 2
+        }
+      }
+    },
+    {
+      "id": "CLERK_FIGHT_RECORD",
+      "verb": "SEEK",
+      "label": "Write down what actually happened, while it is happening.",
+      "detail": "In thirty years this will be the only account that is not a legend.",
+      "requires": {
+        "calling": [
+          "CLERK"
+        ],
+        "scene_kind": [
+          "BATTLE",
+          "SIEGE"
+        ]
+      },
+      "roll": {
+        "stat": "word",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Names, times, numbers, and what people actually said. Everything anybody knows about today will come from this.",
+          "teach": [
+            "FACT_SKIRMISH_NOT_BATTLE",
+            "FACT_FLAG_APOCRYPHAL"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          },
+          "legacy": 2
+        },
+        "partial": {
+          "narrate": "You get most of it. You will fill the gaps later and not mark which parts.",
+          "teach": [
+            "FACT_SKIRMISH_NOT_BATTLE"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          },
+          "legacy": 1
+        },
+        "weak": {
+          "narrate": "You write it afterwards, from memory, and it is already becoming a better story than it was.",
+          "teach": [
+            "FACT_FLAG_APOCRYPHAL"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "HOUSEHOLDER_FIGHT_HOLD",
+      "verb": "GUARD",
+      "label": "Hold a town that has no men left in it.",
+      "detail": "They all went to Béxar. Somebody is still here.",
+      "requires": {
+        "calling": [
+          "HOUSEHOLDER"
+        ],
+        "scene_kind": [
+          "BATTLE",
+          "SIEGE"
+        ]
+      },
+      "roll": {
+        "stat": "land",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Fed, watched, and running. A town does not stop needing to be a town because there is a siege seventy miles away.",
+          "teach": [
+            "FACT_WHO_CANNOT_LEAVE"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          },
+          "legacy": 2
+        },
+        "partial": {
+          "narrate": "It holds together. Barely, and by people nobody is counting.",
+          "teach": [
+            "FACT_WHO_CANNOT_LEAVE"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          },
+          "legacy": 1
+        },
+        "weak": {
+          "narrate": "Something goes wrong that would not have gone wrong with twenty more hands here.",
+          "teach": [
+            "FACT_WHO_CANNOT_LEAVE"
+          ],
+          "clocks": {
+            "BEXAR": 1
+          },
+          "resolve": 1
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,735 @@
+/* play.css — the student client. A virtual tabletop, not a questionnaire.
+ *
+ * The map is the screen. Abilities are a bar. Reading is minimised on purpose:
+ * tools/reading-load.js says the bottom quartile has no words to spare. */
+
+body.play {
+  background: var(--paper); color: var(--ink);
+  height: 100vh; overflow: hidden;
+}
+
+/* ---------------------------------------------------- pick your name */
+.pick { height: 100vh; overflow-y: auto; display: flex; align-items: center; justify-content: center; padding: 28px 20px; }
+.pick[hidden] { display: none; }
+.pick-in { width: 100%; max-width: 1180px; }
+.brandline { font-size: 11px; letter-spacing: .22em; color: var(--oxide); font-weight: 500; }
+.pick h1 { font-family: var(--serif); font-size: clamp(30px, 5vw, 46px); font-weight: 400; margin: 12px 0 6px; }
+.pick .sub { font-size: 11px; letter-spacing: .14em; color: var(--ink-faint); margin: 0 0 26px; }
+.pick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(214px, 1fr)); gap: 10px; }
+.pcard {
+  display: block; text-align: left; background: #F7F8F4; border: 1px solid var(--rule);
+  border-left: 3px solid var(--rule-strong); padding: 12px 14px; min-height: 62px; cursor: pointer;
+}
+.pcard:hover { background: #fff; }
+.pcard .pn { font-size: 14px; line-height: 1.25; }
+.pcard .pr { font-family: var(--mono); font-size: 9.5px; letter-spacing: .08em; color: var(--ink-faint); margin-top: 5px; display: block; }
+
+/* ---------------------------------------------------- frame */
+.wrap { height: 100vh; display: flex; flex-direction: column; }
+.wrap[hidden] { display: none; }
+
+/* ---------------------------------------------------- HUD */
+.hud {
+  flex-shrink: 0; display: flex; align-items: center; gap: 16px;
+  padding: 0 16px; height: 62px; background: var(--field);
+  border-bottom: 2px solid var(--rule-strong);
+}
+.hud .swatch { width: 5px; height: 30px; flex-shrink: 0; background: var(--oxide); }
+.hud .who { min-width: 0; flex-grow: 1; }
+.hud .nm { font-family: var(--serif); font-size: 19px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hud .rl { font-size: 9.5px; letter-spacing: .1em; color: var(--ink-faint); margin-top: 3px; text-transform: uppercase; }
+.hud .lbl { font-size: 8.5px; letter-spacing: .14em; color: var(--ink-faint); text-transform: uppercase; }
+.pips { flex-shrink: 0; }
+.pipset { display: flex; gap: 4px; margin-top: 5px; }
+.pipset i { width: 13px; height: 13px; background: var(--paper); border: 1px solid var(--rule-strong); display: block; }
+.pipset i.on { background: var(--oxide); border-color: var(--oxide); }
+.pipset i.word { transform: rotate(45deg); }
+.pipset i.spent { background: var(--ink-soft); border-color: var(--ink-soft); }
+.hud .mv { flex-shrink: 0; text-align: right; }
+.hud .mv .val { font-size: 25px; font-weight: 500; line-height: 1.05; }
+.hud .mv .val.none { color: var(--ink-faint); }
+
+/* ---------------------------------------------------- the world */
+.board { flex-grow: 1; min-height: 0; position: relative; background: var(--paper); }
+#map { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: manipulation; }
+
+.turnbar {
+  position: absolute; left: 50%; transform: translateX(-50%); top: 10px;
+  display: flex; align-items: center; gap: 14px;
+  background: rgba(242,243,238,.95); border: 1px solid var(--rule-strong);
+  padding: 8px 16px; max-width: calc(100% - 24px);
+}
+.tb-label { font-size: 12px; letter-spacing: .16em; font-weight: 600; color: var(--oxide); }
+.tb-count { font-size: 19px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.tb-count.low { color: var(--oxide); }
+.tb-hint { font-size: 12.5px; color: var(--ink-soft); min-width: 0; }
+
+/* MOVEMENT, AS PIPS.
+ *
+ * A teacher played a real period and reported that students "effectively get
+ * to move infinitely". The rule was being enforced the whole time — the
+ * budget just never appeared anywhere a student would look. Three dots that
+ * go out one at a time is a quantity a twelve-year-old feels; "2 movement
+ * left" in a sentence is a fact they have to read, parse and believe. */
+.tb-move { display: flex; align-items: center; gap: 4px; flex: none; }
+.pip-label {
+  font-size: 9.5px; letter-spacing: .16em; font-weight: 600;
+  color: var(--ink-soft); margin-right: 4px;
+}
+.tb-move .pip {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: #2F5A62; border: 1px solid #2F5A62;
+  display: inline-block; transition: background .18s ease;
+}
+/* hollow, not hidden: the size of the budget stays legible after it is spent,
+ * so "I had three and used them" is readable without remembering */
+.tb-move .pip.spent { background: transparent; border-color: var(--rule-strong); }
+
+.hexinfo {
+  position: absolute; left: 12px; bottom: 12px;
+  background: rgba(242,243,238,.95); border: 1px solid var(--rule);
+  padding: 7px 11px; font-size: 10.5px; letter-spacing: .06em; color: var(--ink-soft);
+  max-width: 60%;
+}
+
+/* the lock. Deliberately near-empty: if there is something to tap, they tap it
+ * instead of watching the board at the front of the room. */
+.scrim {
+  position: absolute; inset: 0; background: rgba(233,235,228,.94);
+  display: flex; align-items: center; justify-content: center; text-align: center; padding: 24px;
+}
+.scrim[hidden] { display: none; }
+.scrim-kicker { font-size: 10.5px; letter-spacing: .2em; color: var(--ink-faint); text-transform: uppercase; }
+.scrim-title { font-family: var(--serif); font-size: clamp(28px, 5vw, 46px); line-height: 1.1; margin-top: 14px; }
+.scrim-note { font-size: 11px; letter-spacing: .1em; color: var(--rule-strong); margin-top: 20px; text-transform: uppercase; }
+
+/* ---------------------------------------------------- ability bar */
+.bar {
+  flex-shrink: 0; display: flex; gap: 10px; align-items: stretch;
+  padding: 10px 14px 14px; background: var(--field); border-top: 1px solid var(--rule);
+}
+.verbs { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; flex-grow: 1; }
+.verb {
+  display: flex; flex-direction: column; justify-content: center; gap: 3px;
+  background: #F7F8F4; border: 1px solid var(--rule); border-bottom: 3px solid var(--rule-strong);
+  padding: 9px 8px; min-height: 62px; cursor: pointer; text-align: center;
+}
+.verb:hover:not(:disabled) { background: #fff; }
+.verb .vn { font-family: var(--mono); font-size: 12.5px; letter-spacing: .12em; font-weight: 600; }
+.verb .vc { font-family: var(--mono); font-size: 8.5px; letter-spacing: .05em; color: var(--ink-faint); line-height: 1.3; }
+.verb.sel { background: #fff; border-bottom-color: var(--oxide); }
+.verb.sel .vn { color: var(--oxide); }
+.verb:disabled { opacity: .34; cursor: default; }
+
+.ability {
+  width: 30%; max-width: 320px; flex-shrink: 0; text-align: left; cursor: pointer;
+  background: #F7F8F4; border: 1px solid var(--rule-strong); border-left: 3px solid var(--oxide);
+  padding: 9px 13px; display: flex; flex-direction: column; gap: 2px; justify-content: center;
+}
+.ability:hover:not(:disabled) { background: #fff; }
+.ability:disabled { opacity: .34; cursor: default; }
+.ab-kicker { font-size: 8.5px; letter-spacing: .16em; color: var(--oxide); text-transform: uppercase; }
+.ab-name { font-family: var(--serif); font-size: 15px; line-height: 1.15; }
+.ab-blurb { font-size: 10.5px; color: var(--ink-soft); line-height: 1.35; }
+
+/* ---------------------------------------------------- commit */
+.commit { position: fixed; inset: 0; background: rgba(27,42,51,.34); display: flex; align-items: flex-end; z-index: 20; }
+.commit[hidden] { display: none; }
+.commit-in { width: 100%; background: var(--field); border-top: 3px solid var(--oxide); padding: 20px 20px 22px; }
+.c-kicker { font-size: 11px; letter-spacing: .18em; color: var(--oxide); font-weight: 600; }
+.c-text { font-family: var(--serif); font-size: clamp(18px, 2.6vw, 26px); line-height: 1.32; margin: 10px 0 16px; max-width: 46ch; }
+.c-row { display: flex; gap: 10px; }
+.c-row .btn { height: 52px; padding: 0 20px; background: var(--paper); color: var(--ink-soft); border: 1px solid var(--rule-strong); font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+.c-row .btn.primary { background: var(--oxide); border-color: var(--oxide); color: #F4F1E8; font-weight: 600; flex-grow: 1; }
+
+/* ---------------------------------------------------- small screens */
+@media (max-width: 720px) {
+  .bar { flex-direction: column; }
+  .ability { width: auto; max-width: none; }
+  .verbs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .verb { min-height: 56px; }
+  .hud { height: 56px; gap: 10px; }
+  .hud .nm { font-size: 16px; }
+  .pips[title="Resolve"] { display: none; }
+}
+
+/* ---------------------------------------------------- the action list
+ * Computed by the engine, not a fixed menu. Each one carries its verb in the
+ * gutter (design/05 taught through the interface, every turn), what gates it to
+ * you, and what it costs. */
+.acts {
+  display: flex; gap: 8px; flex-grow: 1; min-width: 0;
+  overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin;
+}
+.act {
+  flex: 0 0 236px; text-align: left; cursor: pointer; min-height: 78px;
+  background: #F7F8F4; border: 1px solid var(--rule);
+  border-bottom: 3px solid var(--rule-strong);
+  padding: 9px 12px; display: flex; flex-direction: column; gap: 4px;
+}
+.act:hover { background: #fff; }
+.act.promoted { border-left: 3px solid var(--oxide); background: #F2F3EE; }
+.act .a-top { display: flex; align-items: baseline; gap: 8px; }
+.act .a-verb {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .14em;
+  font-weight: 600; color: var(--teal); flex-shrink: 0;
+}
+.act.promoted .a-verb { color: var(--oxide); }
+.act .a-gate {
+  font-family: var(--mono); font-size: 8.5px; letter-spacing: .06em;
+  color: var(--ink-faint); margin-left: auto; flex-shrink: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%;
+}
+.act .a-label { font-size: 13.5px; line-height: 1.3; color: var(--ink); }
+.act .a-detail { font-size: 11px; line-height: 1.35; color: var(--ink-soft); }
+
+/* ---------------------------------------------------- outcome */
+.outcome { position: fixed; inset: 0; background: rgba(27,42,51,.42); display: flex;
+           align-items: center; justify-content: center; z-index: 30; padding: 20px; }
+.outcome[hidden] { display: none; }
+.oc-in { background: var(--field); border: 1px solid var(--rule-strong);
+         border-top: 4px solid var(--oxide); padding: 26px 30px 28px;
+         width: 640px; max-width: 100%; max-height: 92vh; overflow-y: auto; }
+.oc-roll { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.oc-roll .die { width: 44px; height: 44px; }
+.oc-math { font-size: 13px; color: var(--ink-soft); }
+.oc-total { font-size: 30px; font-weight: 500; margin-left: auto; }
+.oc-tier { font-size: 16px; letter-spacing: .18em; font-weight: 600; color: var(--oxide);
+           padding-bottom: 12px; border-bottom: 2px solid var(--oxide); margin-bottom: 16px; }
+.oc-text { font-family: var(--serif); font-size: 19px; line-height: 1.5; text-wrap: pretty; }
+.oc-learn { margin-top: 20px; background: var(--paper); border-left: 3px solid var(--teal);
+            padding: 14px 17px; }
+.oc-learn-cap { font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase;
+                color: var(--teal); font-weight: 600; }
+.oc-learn-body { font-size: 14.5px; line-height: 1.5; margin-top: 8px; }
+.oc-learn-note { font-size: 8.5px; letter-spacing: .1em; text-transform: uppercase;
+                 color: var(--ink-faint); margin-top: 9px; }
+.oc-earn { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+.oc-earn span { font-family: var(--mono); font-size: 9.5px; letter-spacing: .08em;
+                color: var(--oxide); border: 1px solid var(--rule-strong); padding: 5px 9px; }
+#oc-close { width: 100%; height: 52px; margin-top: 22px; background: var(--oxide);
+            border: 0; color: #F4F1E8; font-family: var(--mono); font-size: 12px;
+            letter-spacing: .12em; text-transform: uppercase; font-weight: 600; }
+
+@media (max-width: 720px) {
+  .act { flex: 0 0 210px; }
+}
+
+/* ---------------------------------------------------- stats + kit */
+.stats { display: flex; gap: 9px; flex-shrink: 0; }
+.stats .stat { display: flex; align-items: baseline; gap: 3px; font-size: 14px; font-weight: 500; }
+.stats .stat b { font-size: 8.5px; letter-spacing: .1em; color: var(--ink-faint); font-weight: 500; }
+.kitbar {
+  flex-shrink: 0; display: flex; gap: 7px; align-items: center; flex-wrap: wrap;
+  padding: 7px 16px; background: #EFF0EA; border-bottom: 1px solid var(--rule);
+}
+.kitbar[hidden] { display: none; }
+.kit {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .05em;
+  color: var(--ink-soft); background: var(--field);
+  border: 1px solid var(--rule-strong); border-left: 3px solid var(--oxide); padding: 4px 9px;
+}
+
+/* ---------------------------------------------------- where you are
+ *
+ * The map itself says what time it is — the ground is lit for the hour and the
+ * windows come on after dark. This bar only names the place, and confirms the
+ * hour in words for anyone who does not read the light. */
+.placebar { position: absolute; left: 12px; top: 10px; pointer-events: none; }
+.place-name {
+  font-family: var(--serif); font-size: 17px; line-height: 1.1; color: var(--ink);
+  text-shadow: 0 0 6px rgba(242,243,238,.9), 0 0 3px rgba(242,243,238,1);
+}
+.place-time {
+  font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase;
+  margin-top: 4px; color: var(--ink-soft); display: inline-block;
+  background: rgba(242,243,238,.86); border: 1px solid var(--rule); padding: 3px 8px;
+}
+.place-time.dawn, .place-time.night { background: #22304A; border-color: #3B4A66; color: #C9D6E6; }
+.place-time.dusk { background: #4A3446; border-color: #6A4A5E; color: #EFD3C4; }
+.place-time.morning, .place-time.afternoon { background: #F2EBDA; border-color: #DBCFB2; color: #6E5B36; }
+
+body.play.indoors .place-name { text-shadow: 0 0 6px rgba(222,217,201,.95); }
+
+/* ---------------------------------------------------- the way through */
+.portal {
+  position: absolute; left: 50%; transform: translateX(-50%); bottom: 14px;
+  background: var(--teal); color: #F4F1E8; border: 0; border-bottom: 3px solid #2B4E54;
+  font-family: var(--mono); font-size: 12.5px; letter-spacing: .12em; text-transform: uppercase;
+  font-weight: 600; padding: 0 26px; height: 52px; cursor: pointer; z-index: 6;
+  box-shadow: 0 6px 20px rgba(27,42,51,.22);
+}
+.portal[hidden] { display: none; }
+.portal:hover { background: #2F565C; }
+
+/* ---------------------------------------------------- the map key */
+.key-btn {
+  position: absolute; right: 12px; top: 10px; z-index: 6;
+  display: flex; align-items: center; gap: 7px; cursor: pointer;
+  background: rgba(242,243,238,.94); border: 1px solid var(--rule-strong);
+  color: var(--ink-soft); font-size: 10px; letter-spacing: .14em; font-weight: 600;
+  padding: 0 12px; height: 34px;
+}
+.key-btn:hover { background: #fff; color: var(--ink); }
+.key-btn.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.kb-hex {
+  width: 13px; height: 15px; background: currentColor; display: block;
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+}
+
+.keypanel {
+  position: absolute; right: 0; top: 0; bottom: 0; width: 372px; max-width: 88%;
+  background: var(--field); border-left: 2px solid var(--rule-strong);
+  display: flex; flex-direction: column; z-index: 12;
+  box-shadow: -14px 0 34px rgba(27,42,51,.16);
+}
+.keypanel[hidden] { display: none; }
+.kp-head {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  padding: 14px 16px 12px; border-bottom: 2px solid var(--rule-strong); flex-shrink: 0;
+}
+.kp-eyebrow { font-size: 8.5px; letter-spacing: .2em; color: var(--oxide); font-weight: 600; }
+.kp-title { font-family: var(--serif); font-size: 21px; font-weight: 400; margin: 5px 0 0; line-height: 1.15; }
+.kp-close {
+  flex-shrink: 0; background: none; border: 1px solid var(--rule-strong); cursor: pointer;
+  font-size: 9.5px; letter-spacing: .12em; color: var(--ink-soft); padding: 6px 10px;
+}
+.kp-close:hover { background: var(--paper); color: var(--ink); }
+.kp-body { overflow-y: auto; padding: 0 16px 22px; }
+.kp-sec {
+  font-size: 9px; letter-spacing: .2em; color: var(--ink-faint); font-weight: 600;
+  padding: 16px 0 8px; border-bottom: 1px solid var(--rule); margin-bottom: 8px;
+}
+.kgrid { display: flex; flex-direction: column; gap: 2px; }
+.krow { display: flex; align-items: center; gap: 11px; padding: 5px 0; }
+.krow canvas.kswatch { width: 52px; height: 45px; flex-shrink: 0; display: block; }
+.krow span.kswatch { width: 52px; flex-shrink: 0; display: flex; justify-content: center; }
+.ktext { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.ktext b { font-size: 13.5px; font-weight: 500; line-height: 1.2; }
+.ktext em { font-style: normal; font-size: 11px; color: var(--ink-soft); line-height: 1.35; }
+.ktext u { text-decoration: none; font-family: var(--mono); font-size: 9px;
+           letter-spacing: .08em; color: var(--ink-faint); margin-top: 2px; }
+
+/* the token swatches — the same shapes the canvas draws */
+.tok { display: block; width: 17px; height: 17px; border-radius: 50%; }
+.tok.you { background: var(--ink); border: 2px solid var(--field); box-shadow: 0 0 0 1px var(--ink); }
+.tok.mate { background: var(--teal); border: 2px solid var(--field); box-shadow: 0 0 0 1px rgba(57,100,107,.4); }
+.tok.ring { background: var(--oxide); border: 2px solid var(--field); box-shadow: 0 0 0 2px var(--teal); }
+.tok.ghost { background: var(--field); border: 3px solid var(--teal); }
+.tok.npc { background: var(--wheat, #C39355); border-radius: 2px; transform: rotate(45deg);
+           width: 14px; height: 14px; border: 2px solid var(--field); }
+.tok.reach { background: rgba(57,100,107,.2); border: 2px dashed var(--teal); border-radius: 3px; }
+
+@media (max-width: 720px) {
+  .keypanel { width: 100%; max-width: 100%; }
+  .place-name { font-size: 15px; }
+  .portal { bottom: 10px; height: 48px; font-size: 11.5px; padding: 0 18px; }
+}
+
+/* ---------------------------------------------------- read it to me
+ * Off by default, because thirty devices talking at once is not a lesson.
+ * One button, obvious, and it stays how the student left it. */
+.readme {
+  flex-shrink: 0; display: flex; align-items: center; gap: 7px; cursor: pointer;
+  background: var(--paper); border: 1px solid var(--rule-strong); color: var(--ink-soft);
+  font-size: 9.5px; letter-spacing: .12em; font-weight: 600; padding: 0 11px; height: 36px;
+}
+.readme:hover { background: #fff; color: var(--ink); }
+.readme.on { background: var(--teal); border-color: var(--teal); color: #F4F1E8; }
+.rm-ico {
+  width: 13px; height: 13px; display: block; background: currentColor;
+  clip-path: polygon(0 32%, 34% 32%, 62% 4%, 62% 96%, 34% 68%, 0 68%);
+}
+.readme.on .rm-ico { clip-path: polygon(0 32%, 34% 32%, 62% 4%, 62% 96%, 34% 68%, 0 68%, 0 32%); }
+
+@media (max-width: 720px) {
+  .readme .rm-txt { display: none; }
+  .readme { padding: 0 9px; }
+}
+
+/* ---------------------------------------------------- practice
+ *
+ * Under the map, above the cards — where the student is already looking. The
+ * oxide left edge and the PRACTICE tag are there so nobody can mistake this
+ * for the real thing at a glance across a classroom. */
+.tut {
+  flex-shrink: 0; display: flex; align-items: center; gap: 16px;
+  padding: 12px 16px; background: var(--field);
+  border-top: 3px solid var(--oxide); border-bottom: 1px solid var(--rule);
+}
+.tut[hidden] { display: none; }
+.tut-left { flex-grow: 1; min-width: 0; }
+.tut-top { display: flex; align-items: center; gap: 10px; }
+.tut-tag {
+  font-size: 8.5px; letter-spacing: .2em; font-weight: 600; color: #F4F1E8;
+  background: var(--oxide); padding: 3px 7px;
+}
+.tut-count { font-size: 9.5px; letter-spacing: .12em; color: var(--ink-faint); }
+.tut-dots { display: flex; gap: 3px; margin-left: auto; }
+.tut-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--rule); display: block; }
+.tut-dots i.on { background: var(--oxide); }
+.tut-say { font-size: 15px; line-height: 1.4; margin-top: 7px; max-width: 74ch; text-wrap: pretty; }
+.tut-hint { font-size: 12px; line-height: 1.35; color: var(--ink-soft); margin-top: 5px; max-width: 74ch; }
+.tut-hint[hidden] { display: none; }
+.tut-right { flex-shrink: 0; display: flex; flex-direction: column; gap: 7px; align-items: stretch; }
+#tut-next {
+  height: 46px; padding: 0 26px; background: var(--oxide); border: 0; color: #F4F1E8;
+  font-family: var(--mono); font-size: 11.5px; letter-spacing: .12em;
+  text-transform: uppercase; font-weight: 600; cursor: pointer;
+}
+#tut-next[hidden] { display: none; }
+.tut-quit {
+  background: none; border: 1px solid var(--rule-strong); color: var(--ink-faint);
+  font-size: 9px; letter-spacing: .14em; padding: 6px 10px; cursor: pointer;
+}
+.tut-quit:hover { color: var(--ink); background: var(--paper); }
+
+/* a practice turn has no clock, so do not show a frozen one */
+body.practising .tb-count { display: none; }
+body.practising .tb-label { color: var(--oxide); }
+
+.scrim-tut {
+  margin-top: 26px; background: var(--field); border: 1px solid var(--rule-strong);
+  border-bottom: 3px solid var(--teal); color: var(--ink); cursor: pointer;
+  font-family: var(--mono); font-size: 11px; letter-spacing: .12em;
+  text-transform: uppercase; padding: 0 22px; height: 48px;
+}
+.scrim-tut[hidden] { display: none; }
+.scrim-tut:hover { background: #fff; }
+
+@media (max-width: 720px) {
+  .tut { flex-direction: column; align-items: stretch; gap: 10px; padding: 10px 12px; }
+  .tut-right { flex-direction: row; }
+  #tut-next { flex-grow: 1; }
+  .tut-say { font-size: 14px; }
+  .tut-dots { display: none; }
+}
+
+/* ---------------------------------------------------- picking a person
+ * A nudge before a rule. The trades nobody has taken are named at the top and
+ * marked on the cards, so most classes never meet the cap at all. */
+.pick-need {
+  font-size: 14px; color: var(--oxide); margin: -14px 0 22px; font-weight: 500;
+}
+.pcard { position: relative; }
+.pcard.wanted { border-left-width: 5px; background: #FBF7F0; }
+.pcard .pw {
+  display: block; font-family: var(--mono); font-size: 8px; letter-spacing: .16em;
+  color: var(--oxide); font-weight: 600; margin-bottom: 3px;
+}
+.pcard.full { opacity: .55; cursor: default; background: var(--paper); }
+.pcard.full .pr { color: var(--oxide); }
+
+/* ---------------------------------------------------- what you missed
+ * A returning student gets four sentences and the facts, then plays. It is not
+ * a summary of the session — it is the minimum that makes the next hour make
+ * sense, which is a different and much shorter document. */
+.catchup { position: fixed; inset: 0; background: rgba(27,42,51,.46); display: flex;
+           align-items: center; justify-content: center; z-index: 40; padding: 20px; }
+.catchup[hidden] { display: none; }
+.cu-in { background: var(--field); border: 1px solid var(--rule-strong);
+         border-top: 4px solid var(--teal); padding: 26px 30px 28px;
+         width: 660px; max-width: 100%; max-height: 92vh; overflow-y: auto; }
+.cu-kicker { font-size: 10px; letter-spacing: .2em; color: var(--teal); font-weight: 600; }
+.cu-title { font-family: var(--serif); font-size: clamp(22px, 3.4vw, 31px); font-weight: 400;
+            margin: 10px 0 4px; line-height: 1.12; }
+.cu-body { margin-top: 16px; }
+.cu-body .was { font-size: 15.5px; line-height: 1.5; margin: 0 0 12px; text-wrap: pretty; }
+.cu-body .yours {
+  font-size: 14.5px; line-height: 1.45; margin: 0 0 12px; padding: 11px 14px;
+  background: var(--paper); border-left: 3px solid var(--oxide); color: var(--ink);
+}
+.cu-body .today {
+  font-family: var(--mono); font-size: 11.5px; letter-spacing: .04em; line-height: 1.45;
+  margin: 0 0 9px; color: var(--ink-soft);
+}
+.cu-body .stamp { font-family: var(--mono); font-size: 10px; letter-spacing: .14em;
+                  color: var(--ink-faint); margin: 0 0 14px; text-transform: uppercase; }
+.cu-facts { margin-top: 18px; background: var(--paper); border-left: 3px solid var(--teal);
+            padding: 14px 17px; }
+.cu-facts[hidden] { display: none; }
+.cu-facts-cap { font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase;
+                color: var(--teal); font-weight: 600; }
+.cu-facts p { font-size: 14px; line-height: 1.5; margin: 9px 0 0; }
+.cu-facts-note { font-size: 8.5px; letter-spacing: .1em; text-transform: uppercase;
+                 color: var(--ink-faint); margin-top: 11px; }
+#cu-close { width: 100%; height: 52px; margin-top: 22px; background: var(--teal);
+            border: 0; color: #F4F1E8; font-family: var(--mono); font-size: 12px;
+            letter-spacing: .12em; text-transform: uppercase; font-weight: 600; cursor: pointer; }
+
+/* ============================================================ COACH MARKS
+ *
+ * A bubble that points at one control and says what it is for. Driven by
+ * app/js/coach.js; used by the tutorial, which previously said "press the
+ * green button" while pointing at nothing.
+ *
+ * EVERYTHING HERE IS pointer-events: none, deliberately and without exception.
+ * A coach mark that tells a child to press a button and then intercepts the
+ * press is worse than no coach mark, and it is the usual way these break. The
+ * dim panels, the ring and the bubble are all decoration; the control
+ * underneath keeps every tap. */
+.coach { position: fixed; inset: 0; z-index: 60; pointer-events: none; display: none; }
+.coach.on { display: block; }
+
+.coach-dim { position: fixed; background: rgba(20, 28, 33, .55); pointer-events: none; }
+
+/* the hole's edge, so the eye lands on the control rather than the darkness */
+.coach-ring {
+  position: fixed; pointer-events: none;
+  border: 2px solid var(--d-teal, #6FA6AC);
+  box-shadow: 0 0 0 3px rgba(111, 166, 172, .3);
+  border-radius: 3px;
+  animation: coach-breathe 2.1s ease-in-out infinite;
+}
+@keyframes coach-breathe {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(111, 166, 172, .3); }
+  50%      { box-shadow: 0 0 0 7px rgba(111, 166, 172, .12); }
+}
+/* Some children find movement hard to read past. The breathing is decoration
+ * only — the ring is fully visible without it. */
+@media (prefers-reduced-motion: reduce) {
+  .coach-ring { animation: none; }
+}
+
+.coach-bub {
+  position: fixed; pointer-events: none;
+  background: var(--paper, #F2F3EE);
+  border: 1px solid var(--rule-strong, #B9BCB2);
+  box-shadow: 0 6px 22px rgba(20, 28, 33, .28);
+  padding: 11px 13px;
+}
+.coach-title {
+  font-size: 9.5px; letter-spacing: .16em; font-weight: 600;
+  color: var(--oxide, #D2604C); margin-bottom: 4px;
+}
+.coach-text { font-size: 13.5px; line-height: 1.42; color: var(--ink, #1B2A33); }
+
+/* the caret, as a rotated square with two borders, so it inherits the bubble's
+   own edge and needs no second colour to keep in sync */
+.coach-caret {
+  position: absolute; width: 10px; height: 10px;
+  background: var(--paper, #F2F3EE);
+  border-left: 1px solid var(--rule-strong, #B9BCB2);
+  border-top: 1px solid var(--rule-strong, #B9BCB2);
+  transform: rotate(45deg);
+  top: -6px; margin-left: -5px;
+}
+.coach-bub.above .coach-caret {
+  top: auto; bottom: -6px;
+  border-left: none; border-top: none;
+  border-right: 1px solid var(--rule-strong, #B9BCB2);
+  border-bottom: 1px solid var(--rule-strong, #B9BCB2);
+}
+
+/* ================================================ MAKE YOUR FIGURINE
+ *
+ * The second beat of creation. Tapping a name used to drop a student straight
+ * onto the board — which is exactly why a teacher testing it could not find
+ * character creation. There was nothing to find. */
+.make { height: 100vh; overflow-y: auto; display: flex; align-items: center; justify-content: center; padding: 24px 20px; }
+.make[hidden] { display: none; }
+.make-in { width: 100%; max-width: 880px; }
+
+.make-head { border-bottom: 2px solid var(--rule-strong); padding-bottom: 14px; }
+.make-head h2 { font-family: var(--serif); font-size: clamp(26px, 4.4vw, 40px); font-weight: 400; margin: 10px 0 5px; }
+.make-role { font-size: 10px; letter-spacing: .14em; color: var(--ink-faint); margin: 0; }
+
+.make-body { display: flex; gap: 26px; align-items: flex-start; padding: 22px 0; flex-wrap: wrap; }
+.make-fig { flex: none; text-align: center; }
+/* the ground the figure stands on, so it reads as a piece on a board rather
+   than a drawing floating in a box */
+#make-canvas {
+  width: 200px; height: 200px; display: block;
+  background: radial-gradient(ellipse at 50% 74%, #DCE0D6 0%, #DCE0D6 34%, var(--field) 70%);
+  border: 1px solid var(--rule);
+}
+.make-cap { font-size: 9px; letter-spacing: .16em; color: var(--ink-faint); margin: 8px 0 0; }
+
+.make-side { flex: 1 1 320px; min-width: 260px; }
+.make-lede { font-size: 15px; line-height: 1.5; margin: 0 0 20px; }
+
+.make-pick-colour .lbl { font-size: 9.5px; letter-spacing: .16em; color: var(--ink-faint); display: block; margin-bottom: 9px; }
+.swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+/* 34px, because this is tapped with a finger on a touchscreen Chromebook and
+   the usual 24px swatch is a coin toss for a twelve-year-old */
+.swatches .sw {
+  width: 34px; height: 34px; border: 2px solid transparent; cursor: pointer;
+  position: relative; padding: 0; border-radius: 2px;
+  box-shadow: inset 0 0 0 1px rgba(27,42,51,.22);
+}
+.swatches .sw:hover { border-color: var(--rule-strong); }
+.swatches .sw.on { border-color: var(--ink); box-shadow: inset 0 0 0 2px var(--paper); }
+/* how many classmates already chose it — a nudge, never a bar */
+.swatches .sw-n {
+  position: absolute; right: -3px; bottom: -3px;
+  min-width: 14px; height: 14px; line-height: 14px;
+  background: var(--paper); border: 1px solid var(--rule-strong);
+  font-family: var(--mono); font-size: 9px; font-style: normal; color: var(--ink-soft);
+}
+.make-note { font-size: 9.5px; letter-spacing: .1em; color: var(--ink-faint); margin: 11px 0 0; }
+
+.make-stats { display: flex; gap: 16px; margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--rule); }
+.make-stats .ms { font-size: 8.5px; letter-spacing: .12em; color: var(--ink-faint); text-align: center; }
+.make-stats .ms b { display: block; font-size: 21px; font-weight: 500; color: var(--ink); letter-spacing: 0; }
+
+.make-foot { display: flex; align-items: center; gap: 18px; border-top: 2px solid var(--rule-strong); padding-top: 16px; }
+.make-back { background: none; border: none; cursor: pointer; font-size: 10px; letter-spacing: .12em; color: var(--ink-faint); text-decoration: underline; }
+.make-back:hover { color: var(--ink); }
+
+/* ==================================================== OFFLINE
+ *
+ * A teacher closed the server mid-lesson and the student screen carried on
+ * accepting taps. The old warning was #scrim-note, which lives inside the
+ * lock screen — and the lock screen is hidden exactly when the turn is open,
+ * so the message could appear at every moment except the one that mattered.
+ *
+ * This sits on the board itself and is impossible to be playing underneath. */
+.offline {
+  position: absolute; left: 50%; transform: translateX(-50%); bottom: 14px;
+  display: flex; align-items: center; gap: 9px; z-index: 30;
+  background: var(--oxide, #D2604C); color: #fff;
+  padding: 9px 15px; font-size: 12.5px;
+  box-shadow: 0 4px 16px rgba(20,28,33,.3);
+  max-width: calc(100% - 24px);
+}
+.offline[hidden] { display: none; }
+.off-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #fff; flex: none;
+  animation: off-blink 1.1s steps(2, start) infinite;
+}
+@keyframes off-blink { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .off-dot { animation: none; } }
+
+/* Grey what cannot be used, so the screen looks refused rather than broken.
+   The map stays legible on purpose — a student can still read the town while
+   they wait, and taking the world away would be a punishment for a laptop. */
+body.offline .verbs,
+body.offline .acts,
+body.offline #portal,
+body.offline .tb-move { opacity: .4; pointer-events: none; }
+
+/* ================================================== THE DOCUMENTS
+ *
+ * There is no paper any more, so a primary source has to survive being on a
+ * Chromebook. The thing that makes that work is not fidelity to a printed
+ * sheet — it is making the DOCUMENT'S OWN WORDS visibly different from our
+ * apparatus around them. A student must be able to see at a glance which
+ * sentences an 1832 committee wrote and which ones we wrote about it. */
+.docs {
+  position: fixed; inset: 0; z-index: 50;
+  background: rgba(20,28,33,.5);
+  display: flex; align-items: stretch; justify-content: center;
+  padding: 18px;
+}
+.docs[hidden] { display: none; }
+.docs-in {
+  background: #F6F5EF; border: 1px solid var(--rule-strong);
+  box-shadow: 0 18px 60px rgba(20,28,33,.4);
+  width: 100%; max-width: 1080px; display: flex; flex-direction: column; min-height: 0;
+}
+
+.docs-bar {
+  flex: none; display: flex; align-items: flex-start; gap: 16px;
+  padding: 15px 20px 13px; border-bottom: 2px solid var(--rule-strong);
+}
+.docs-head { flex: 1 1 auto; min-width: 0; }
+.docs-kicker { font-size: 9px; letter-spacing: .2em; color: var(--oxide); }
+.docs-bar h2 {
+  font-family: var(--serif); font-size: clamp(19px, 2.6vw, 27px);
+  font-weight: 400; line-height: 1.2; margin: 6px 0 0;
+}
+.doc-close {
+  flex: none; background: none; border: 1px solid var(--rule-strong); cursor: pointer;
+  font-size: 9.5px; letter-spacing: .14em; color: var(--ink-soft); padding: 7px 11px;
+}
+.doc-close:hover { background: var(--field); color: var(--ink); }
+
+/* the one-sentence orientation, so nobody has to read a provenance table to
+   find out what they are holding */
+.doc-blurb {
+  flex: none; margin: 0; padding: 12px 20px;
+  background: var(--field); border-bottom: 1px solid var(--rule);
+  font-size: 14px; line-height: 1.5; color: var(--ink);
+}
+
+.docs-cols { flex: 1 1 auto; display: flex; min-height: 0; }
+.doc-body {
+  flex: 1 1 auto; overflow-y: auto; padding: 20px 26px 40px;
+  min-width: 0;
+  /* a comfortable measure even on a wide screen — 100 characters of an 1836
+     letter across a 1366px Chromebook is unreadable */
+  font-size: 14.5px; line-height: 1.62;
+}
+.doc-h { font-family: var(--serif); font-weight: 400; margin: 26px 0 8px; line-height: 1.25; }
+h3.doc-h { font-size: 19px; }
+h4.doc-h { font-size: 15px; font-family: var(--sans); font-weight: 600; letter-spacing: .01em; }
+.doc-p { margin: 0 0 12px; max-width: 66ch; }
+.doc-body hr { border: none; border-top: 1px solid var(--rule); margin: 22px 0; }
+.doc-ul { margin: 0 0 14px; padding-left: 20px; max-width: 66ch; }
+.doc-ul li { margin-bottom: 6px; }
+
+/* THE DOCUMENT ITSELF. Serif, ruled, indented — the visual break that tells a
+   student these are the original words. */
+.doc-q {
+  margin: 16px 0 20px; padding: 4px 0 4px 18px;
+  border-left: 3px solid var(--wheat, #C39355);
+  background: rgba(195,147,85,.06);
+  font-family: var(--serif); font-size: 16px; line-height: 1.6;
+  max-width: 62ch;
+}
+.doc-q p { margin: 0 0 11px; }
+.doc-q p:last-child { margin-bottom: 0; }
+
+/* the provenance box: scrolls inside itself rather than pushing the page */
+.doc-tw { overflow-x: auto; margin: 0 0 18px; }
+.doc-t { border-collapse: collapse; font-size: 12.5px; min-width: 100%; }
+.doc-t th, .doc-t td {
+  border: 1px solid var(--rule); padding: 7px 10px;
+  text-align: left; vertical-align: top; line-height: 1.45;
+}
+.doc-t th { background: var(--field); font-weight: 600; white-space: nowrap; width: 1%; }
+
+/* the shelf */
+.doc-side {
+  flex: none; width: 232px; border-left: 1px solid var(--rule);
+  background: var(--field); padding: 16px 14px; overflow-y: auto;
+}
+.doc-side .lbl { font-size: 9px; letter-spacing: .16em; color: var(--ink-faint); display: block; margin-bottom: 10px; }
+.doc-shelf { display: flex; flex-direction: column; gap: 7px; }
+.doc-card {
+  text-align: left; background: #F7F8F4; border: 1px solid var(--rule);
+  border-left: 3px solid var(--rule-strong); padding: 9px 11px; cursor: pointer;
+}
+.doc-card:hover { background: #fff; }
+.doc-card.on { border-left-color: var(--oxide); background: #fff; }
+.dc-t { display: block; font-size: 12.5px; line-height: 1.3; }
+.dc-s {
+  display: block; font-size: 10px; color: var(--ink-faint); margin-top: 4px; line-height: 1.35;
+  /* two lines of the blurb, so eight cards still fit on a Chromebook */
+  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.doc-none { font-size: 11.5px; color: var(--ink-faint); line-height: 1.5; margin: 0; }
+
+/* On a narrow screen the shelf goes under the document rather than squeezing
+   the text into a gutter. */
+@media (max-width: 720px) {
+  .docs { padding: 0; }
+  .docs-cols { flex-direction: column; }
+  .doc-side { width: auto; border-left: none; border-top: 1px solid var(--rule); }
+}
+
+/* the button that opens it */
+.docs-btn {
+  position: absolute; right: 12px; top: 52px;
+  display: flex; align-items: center; gap: 7px;
+  background: rgba(242,243,238,.95); border: 1px solid var(--rule-strong);
+  padding: 7px 11px; font-size: 9.5px; letter-spacing: .12em; cursor: pointer;
+  color: var(--ink-soft);
+}
+.docs-btn[hidden] { display: none; }
+.docs-btn:hover { background: #fff; color: var(--ink); }
+/* a sheet of paper, which is the one icon that needs no explaining */
+.db-ico {
+  width: 9px; height: 12px; background: #fff;
+  border: 1px solid var(--ink-soft); border-top-width: 3px; flex: none;
+}

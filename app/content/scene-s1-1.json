@@ -1,0 +1,494 @@
+{
+  "id": "S1.1",
+  "session": 1,
+  "title": "The Letter on the Table",
+  "date": "1835-09-30",
+  "map": "gonzales_town",
+  "kind": "COUNCIL",
+  "must_teach": [
+    "FACT_EMPRESARIO_OATH",
+    "FACT_LAW_APRIL_6_1830",
+    "FACT_ZACATECAS",
+    "FACT_POWDER_TWELVE",
+    "FACT_SEVENTY_MILES"
+  ],
+  "npcs": [
+    {
+      "id": "NPC_PONTON",
+      "hex": "K6",
+      "name": "Alcalde Andrew Ponton"
+    },
+    {
+      "id": "NPC_DRAGOON",
+      "hex": "K8",
+      "name": "Ugartechea's rider"
+    }
+  ],
+  "depth_reserve": [
+    "S1_WATCH_THE_CROWD",
+    "S1_CHECK_YOUR_OWN_HOUSE",
+    "S1_MIND_THE_CHILDREN"
+  ],
+  "actions": [
+    {
+      "id": "S1_ASK_THE_LAW",
+      "verb": "SEEK",
+      "label": "Ask Ponton what the law actually requires.",
+      "detail": "He is not a soldier and he did not ask for any of this.",
+      "requires": {
+        "adjacent_npc": "NPC_PONTON"
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "He reads it to you twice. The cannon belongs to the government, it was lent for defence against the Comanche, and Ugartechea is entitled to ask for it. The law is not on your side and Ponton knows it.",
+          "teach": [
+            "FACT_CANNON_LENT",
+            "FACT_EMPRESARIO_OATH"
+          ],
+          "set_flags": [
+            "READ_THE_LAW"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S1_DRAFT_REPLY",
+      "verb": "ACT",
+      "label": "Offer to draft the alcalde's reply yourself.",
+      "detail": "Ponton would hand you the pen. He is looking for somebody to hand it to.",
+      "requires": {
+        "calling": [
+          "CLERK"
+        ],
+        "adjacent_npc": "NPC_PONTON",
+        "world_flag_absent": [
+          "REPLY_SENT"
+        ]
+      },
+      "cost": {
+        "move": 1
+      },
+      "roll": {
+        "stat": "word",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "You write the third kind of letter — courteous, procedural, and so thoroughly beside the point that answering it will take a colonel two weeks.",
+          "teach": [
+            "FACT_PONTON_STALLED"
+          ],
+          "set_flags": [
+            "DREW_THE_LETTER",
+            "PLAYED_FOR_TIME"
+          ],
+          "world": {
+            "REPLY_DRAFTED": true
+          },
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "It is a good letter and it takes you too long. The rider is already mounted when you come out with it.",
+          "teach": [
+            "FACT_PONTON_STALLED"
+          ],
+          "set_flags": [
+            "DREW_THE_LETTER"
+          ],
+          "resolve": 1
+        },
+        "weak": {
+          "narrate": "You write it. Reading it back, it says plainly that Gonzales refuses — which is not what you meant, and is now in your handwriting.",
+          "teach": [
+            "FACT_PONTON_STALLED"
+          ],
+          "set_flags": [
+            "DREW_THE_LETTER",
+            "STOOD_FOR_THE_CANNON"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S1_READ_THE_LETTER",
+      "verb": "SEEK",
+      "label": "Read the letter over his shoulder. Word for word.",
+      "detail": "Most people in this square are hearing it secondhand.",
+      "requires": {
+        "mark": [
+          "LETTERED"
+        ],
+        "adjacent_npc": "NPC_PONTON"
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "It is shorter and politer than the rumour going round the square. Ugartechea does not threaten anybody. He does not have to.",
+          "teach": [
+            "FACT_CANNON_LENT",
+            "FACT_SEVENTY_MILES"
+          ],
+          "set_flags": [
+            "READ_THE_LETTER"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S1_PROMISE_PONTON",
+      "verb": "SPEAK",
+      "label": "Tell him the town will back whatever he decides.",
+      "detail": "Whether that is true is another matter entirely.",
+      "requires": {
+        "adjacent_npc": "NPC_PONTON"
+      },
+      "cost": {
+        "word": 1
+      },
+      "roll": {
+        "stat": "talk",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "His hands steady. He believes you, and he writes better for it.",
+          "teach": [
+            "FACT_PONTON_STALLED"
+          ],
+          "set_flags": [
+            "PROMISED_PONTON"
+          ],
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "He believes you. You are not certain you believe yourself.",
+          "teach": [
+            "FACT_PONTON_STALLED"
+          ],
+          "set_flags": [
+            "PROMISED_PONTON"
+          ]
+        },
+        "weak": {
+          "narrate": "He looks at you a moment too long. Somebody in the doorway heard you say it, and will remember that you did.",
+          "teach": [
+            "FACT_PONTON_STALLED"
+          ],
+          "set_flags": [
+            "PROMISED_PONTON",
+            "OVERHEARD"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S1_TALK_TO_RIDER",
+      "verb": "SPEAK",
+      "label": "Walk over and talk to Ugartechea's rider.",
+      "detail": "He has not dismounted. He is watering his horse and waiting.",
+      "requires": {
+        "adjacent_npc": "NPC_DRAGOON"
+      },
+      "roll": {
+        "stat": "talk",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "He is a soldier doing an errand, and he tells you plainly what happened at Zacatecas in May, because he thinks you ought to know before anybody here does anything stupid.",
+          "teach": [
+            "FACT_ZACATECAS",
+            "FACT_SEVENTY_MILES"
+          ],
+          "set_flags": [
+            "SAW_THE_DRAGOON"
+          ],
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "He answers what he is asked and nothing more. Zacatecas comes up. He does not enjoy saying it.",
+          "teach": [
+            "FACT_ZACATECAS"
+          ],
+          "set_flags": [
+            "SAW_THE_DRAGOON"
+          ]
+        },
+        "weak": {
+          "narrate": "He decides you are the sort of person he was warned about, and says only that he will carry back whatever answer he is given.",
+          "teach": [
+            "FACT_ZACATECAS"
+          ],
+          "set_flags": [
+            "SAW_THE_DRAGOON"
+          ],
+          "clocks": {
+            "DEMAND": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "S1_COUNT_POWDER",
+      "verb": "SEEK",
+      "label": "Find out how much powder this town actually has.",
+      "detail": "People are talking about a fight. Somebody should check.",
+      "requires": {},
+      "outcomes": {
+        "all": {
+          "narrate": "Twelve rounds. Not twelve barrels — twelve rounds, for the whole town, and one of them is damp.",
+          "teach": [
+            "FACT_POWDER_TWELVE"
+          ],
+          "set_flags": [
+            "KNOWS_THE_POWDER"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S1_LISTEN",
+      "verb": "SEEK",
+      "label": "Stay in the square and listen.",
+      "detail": "Not to what people say to you. To what they say to each other.",
+      "requires": {},
+      "outcomes": {
+        "all": {
+          "narrate": "Most of them do not want this. They want the cotton in, the winter got through, and the government to leave them alone. Wanting to stay out of it is the ordinary opinion here.",
+          "teach": [
+            "FACT_TOWN_DIVIDED",
+            "FACT_1824_CONSTITUTION"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S1_CREDIT_AT_THE_STORE",
+      "verb": "ACT",
+      "label": "Take powder and lead on credit at the store.",
+      "detail": "Zumwalt’s door faces the plaza. The ledger is on the counter, and whoever is running the store will remember this.",
+      "requires": {
+        "world_flag_absent": [
+          "STORE_EMPTY"
+        ],
+        "adjacent_hex": "N5"
+      },
+      "cost": {
+        "move": 1
+      },
+      "roll": {
+        "stat": "talk",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "He writes your name in the book without looking up. You are now one of the reasons this town can fight, and one of the reasons Zumwalt can be ruined.",
+          "teach": [
+            "FACT_POWDER_TWELVE"
+          ],
+          "set_flags": [
+            "OWES_ZUMWALT"
+          ],
+          "resource": {
+            "powder": 2
+          }
+        },
+        "partial": {
+          "narrate": "He gives you half of what you asked for and writes down all of it.",
+          "teach": [
+            "FACT_POWDER_TWELVE"
+          ],
+          "set_flags": [
+            "OWES_ZUMWALT"
+          ],
+          "resource": {
+            "powder": 1
+          }
+        },
+        "weak": {
+          "narrate": "He has heard this from four people already this morning. He writes your name down anyway, and you can see him deciding what that will cost him.",
+          "teach": [
+            "FACT_POWDER_TWELVE"
+          ],
+          "set_flags": [
+            "OWES_ZUMWALT"
+          ],
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S1_ASK_THE_RANCHOS",
+      "verb": "SPEAK",
+      "label": "Ask the ranchero families where they stand.",
+      "detail": "Somebody here is about to assume they know. They do not.",
+      "requires": {},
+      "cost": {
+        "word": 1
+      },
+      "roll": {
+        "stat": "talk",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "They are federalists, and were before you got here. Their quarrel with Santa Anna is older than yours and their titles are older than the colony.",
+          "teach": [
+            "FACT_TEJANO_FEDERALISTS",
+            "FACT_1824_CONSTITUTION"
+          ],
+          "set_flags": [
+            "STOOD_WITH_THE_RANCHOS"
+          ],
+          "standing": {
+            "ranchos": 1
+          },
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "You get an answer, and the sense that you should have asked sooner.",
+          "teach": [
+            "FACT_TEJANO_FEDERALISTS"
+          ],
+          "set_flags": [
+            "STOOD_WITH_THE_RANCHOS"
+          ]
+        },
+        "weak": {
+          "narrate": "You ask it the way a man asks whose side somebody is on. They notice. They answer anyway, which is more than you deserved.",
+          "teach": [
+            "FACT_TEJANO_FEDERALISTS"
+          ],
+          "standing": {
+            "ranchos": -1
+          }
+        }
+      }
+    },
+    {
+      "id": "S1_HOW_FAR_IS_BEXAR",
+      "verb": "SEEK",
+      "label": "Work out how far Béxar is, and how long that takes.",
+      "detail": "Everyone here has made the trip or knows somebody who has.",
+      "requires": {},
+      "outcomes": {
+        "all": {
+          "narrate": "Seventy miles. Two days on a good horse, four with an oxcart. Whatever this town decides today, nobody can answer it for four days.",
+          "teach": [
+            "FACT_SEVENTY_MILES"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S1_WHO_HAS_NO_TITLE",
+      "verb": "SEEK",
+      "label": "Ask who in this town has no legal title.",
+      "detail": "It is not a secret. It is just not said out loud often.",
+      "requires": {},
+      "outcomes": {
+        "all": {
+          "narrate": "The Law of April 6, 1830 shut the door, and a good number of people here walked through it afterwards anyway. Their deeds are worth nothing in a Mexican court, which is a thing worth knowing before you ask them to be law-abiding.",
+          "teach": [
+            "FACT_LAW_APRIL_6_1830",
+            "FACT_EMPRESARIO_OATH"
+          ]
+        }
+      }
+    },
+    {
+      "id": "HEALER_COUNCIL_HANDS",
+      "verb": "AID",
+      "label": "Take someone's hands and steady them.",
+      "detail": "Half this square has not slept. It shows.",
+      "requires": {
+        "calling": [
+          "HEALER"
+        ],
+        "adjacent_character": true
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "They are steadier for it, and so are you.",
+          "teach": [
+            "FACT_TOWN_DIVIDED"
+          ],
+          "aid_target": true,
+          "clear_resolve_target": 1,
+          "legacy": 1
+        }
+      }
+    },
+    {
+      "id": "S1_WATCH_THE_CROWD",
+      "verb": "SEEK",
+      "depth": true,
+      "label": "Having spoken, watch who agrees with you.",
+      "detail": "Faces, not voices. The voices are all saying the same thing.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "Four people are nodding and none of them will say so out loud. You now know something about this town that nobody has told you.",
+          "teach": [
+            "FACT_TOWN_DIVIDED"
+          ],
+          "set_flags": [
+            "READ_THE_ROOM"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S1_CHECK_YOUR_OWN_HOUSE",
+      "verb": "HOLD",
+      "depth": true,
+      "label": "Go and look at your own house for a minute.",
+      "detail": "Whatever is decided here, it happens to that roof too.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "Forty days of food is a number until you are standing in front of it. Then it is a shelf.",
+          "teach": [
+            "FACT_POWDER_TWELVE"
+          ],
+          "legacy": 1,
+          "clear_resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S1_MIND_THE_CHILDREN",
+      "verb": "GUARD",
+      "depth": true,
+      "label": "Get the children out of the square.",
+      "detail": "There are forty adults arguing and nobody is watching them.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "Nobody thanks you. Somebody would have, later, if it had gone differently.",
+          "teach": [
+            "FACT_TOWN_DIVIDED"
+          ],
+          "legacy": 2,
+          "set_flags": [
+            "MINDED_THE_CHILDREN"
+          ]
+        }
+      }
+    }
+  ],
+  "time": "MIDDAY",
+  "weather": "CLEAR",
+  "clock": "about noon, by the sun"
+}
