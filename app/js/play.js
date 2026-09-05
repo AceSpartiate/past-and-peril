@@ -273,7 +273,19 @@
      * than inventing a biography for a real person. */
     if (!res || !res.card) { box.hidden = true; return; }
     box.hidden = false;
+    /* Rendered, but collapsed. The words exist for whoever wants them and cost
+     * nothing to whoever does not. */
     if (window.Docs) Docs.renderBlocks($('make-card-body'), res.card.blocks);
+  }
+
+  if ($('make-card-toggle')) {
+    $('make-card-toggle').addEventListener('click', function () {
+      const body = $('make-card-body');
+      const open = body.hidden;
+      body.hidden = !open;
+      this.setAttribute('aria-expanded', open ? 'true' : 'false');
+      this.querySelector('.mct-arrow').innerHTML = open ? '&#9662;' : '&#9656;';
+    });
   }
 
   $('make-swatches').addEventListener('click', function (e) {
@@ -347,32 +359,50 @@
     draw();
   }
 
-  /* THE DOCUMENT ARRIVES BY ITSELF.
+  /* A DOCUMENT ARRIVES. IT DOES NOT TAKE OVER THE SCREEN.
    *
-   * A segment can declare `handout: "01"`, and the server then puts that id on
-   * every student's shelf. This opens it the first time it appears — once, and
-   * never again, so a student who closes it to look at the map is not fought
-   * with. Re-opening is the DOCUMENTS button.
+   * This used to open the document full-screen the moment the lesson reached
+   * the cold open. It was measured afterwards, and it was the single worst
+   * thing in the app: the Turtle Bayou Resolutions is 1,663 words — eighteen
+   * and a half minutes at ninety words a minute — landing unasked on thirty
+   * screens before anyone had made a decision. Total reading before the first
+   * real choice of the lesson came to 2,323 words, most of it that.
    *
-   * Why open it rather than badge it: the cold open runs four minutes and the
-   * student screen showed nothing but "Watch the board" for all of them. The
-   * document IS the activity in that segment, and a twelve-year-old who has to
-   * discover a button first will spend the four minutes not reading it. */
+   * A class played it and said there was far too much text at the start, and
+   * that it felt like a textbook with a game around it. They were describing
+   * this.
+   *
+   * So the document ARRIVES — one line, at the bottom, ignorable — and a
+   * student opens it when they want it or when an action asks for it. It is a
+   * thing you reach for, which is what a primary source is. tools/
+   * reading-first-ten.mjs keeps the number honest. */
   let docsSeen = {};
   function maybeDocs(you) {
     if (!window.Docs) return;
     const ids = (you && you.docs) || [];
+    const before = Docs.count;
     Docs.setMine(ids);
     renderDocsBtn();
-    /* Never over the tutorial: that is a self-paced solo thing with its own
-     * screen, and a document opening on top of it would be baffling. */
     if (SIM) return;
     for (let i = 0; i < ids.length; i += 1) {
       if (docsSeen[ids[i]]) continue;
       docsSeen[ids[i]] = true;
-      Docs.open(ids[i]);
-      break;                    // one at a time; the rest are on the shelf
+      if (Docs.count > before) announceDoc(ids[i]);
+      break;
     }
+  }
+
+  /* Eleven words and a button. It sits for twelve seconds and goes away; the
+   * DOCUMENTS button keeps it for the rest of the unit. */
+  let docToastT = 0;
+  function announceDoc(id) {
+    const box = $('doc-toast');
+    if (!box || !window.Docs) return;
+    $('doc-toast-t').textContent = Docs.titleOf(id);
+    box.setAttribute('data-doc', id);
+    box.hidden = false;
+    clearTimeout(docToastT);
+    docToastT = setTimeout(function () { box.hidden = true; }, 12000);
   }
 
   function renderDocsBtn() {
@@ -907,6 +937,15 @@
     });
   }
   if (window.Docs) Docs.wire();
+
+  if ($('doc-toast')) {
+    $('doc-toast').addEventListener('click', function (e) {
+      const id = this.getAttribute('data-doc');
+      this.hidden = true;
+      if (e.target.closest('[data-dismiss]')) return;
+      if (id && window.Docs) Docs.open(id);
+    });
+  }
 
   /* Your own name in the HUD opens your card. It is the one place on the
    * screen a student already looks to answer "who am I", so it is where "and

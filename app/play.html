@@ -59,8 +59,17 @@
          record does NOT say — is the part that never reached a student while
          this lived on card stock, and it is the more useful half. -->
     <div class="make-card" id="make-card" hidden>
-      <span class="mono lbl">WHAT THE RECORD SAYS</span>
-      <div class="make-card-body" id="make-card-body"></div>
+      <!-- BEHIND A TAP, not in front of one.
+           Measured at 92 words on average, on a screen a student passes
+           through in a hurry to start playing. The biography is worth reading
+           and is not worth blocking on — so it is offered, and it is also on
+           the HUD name for the whole rest of the unit. -->
+      <button class="make-card-toggle mono" id="make-card-toggle" type="button"
+              aria-expanded="false">
+        <span class="mct-arrow">&#9656;</span>
+        <span>WHO HE REALLY WAS</span>
+      </button>
+      <div class="make-card-body" id="make-card-body" hidden></div>
     </div>
 
     <div class="make-foot">
@@ -174,6 +183,20 @@
          a student was not playing. A teacher closed the server mid-lesson and
          the student screen carried on accepting taps as though nothing had
          happened. -->
+    <!-- A DOCUMENT ARRIVED. Eleven words, not eighteen minutes.
+         This replaces opening the full primary source over every student's
+         screen at the cold open — measured at 1,663 words landing unasked,
+         which is most of why a class said it felt like a textbook. -->
+    <button class="doc-toast" id="doc-toast" type="button" hidden>
+      <span class="db-ico"></span>
+      <span class="dt-mid">
+        <span class="dt-lead">You are handed a paper.</span>
+        <span class="dt-name" id="doc-toast-t"></span>
+      </span>
+      <span class="mono dt-go">READ</span>
+      <span class="dt-x" data-dismiss>&times;</span>
+    </button>
+
     <div class="offline" id="offline" hidden>
       <span class="off-dot"></span>
       <span class="off-txt" id="off-txt">Lost the classroom server. Trying again…</span>

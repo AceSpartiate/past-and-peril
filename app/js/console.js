@@ -480,6 +480,29 @@
     $('cl-code').addEventListener('keydown', function (e) { if (e.key === 'Enter') make(); });
   }
 
+  /* WHERE THE STUDENTS GO, on the screen the teacher is actually looking at.
+   *
+   * /api/where has always computed this — every LAN address ranked with a
+   * reason, and self-correcting once a student actually connects. Its only
+   * reader was the projector page, which the teacher had to already know about
+   * to reach. So the one screen that is definitely open never answered the
+   * first question of every period. */
+  function showWhereStudentsGo() {
+    fetch('api/where', { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (w) {
+        if (!w || !w.ok) return;
+        const best = (w.confirmed && w.confirmed[0]) || w.student[0] || '';
+        if (!best) return;
+        $('sc-url').textContent = best.replace(/^https?:\/\//, '');
+        const others = (w.student || []).filter(function (u) { return u !== best; });
+        $('sc-alt').textContent = others.length
+          ? 'or ' + others.map(function (u) { return u.replace(/^https?:\/\//, ''); }).join(' · ')
+          : '';
+      })
+      .catch(function () {});
+  }
+
   /* ---------------------------------------------------------------- boot */
   function fail(html) {
     $('preflight').innerHTML = '<div class="warnbox">' + html + '</div>';
@@ -501,6 +524,7 @@
         document.querySelector('.gate-in h1').textContent = json.title;
         preflight();
         loadClasses();
+        showWhereStudentsGo();
         /* Opening the desk on a class is enough to point the students' short
          * URL at it. Without this a teacher could pick period 3, not press
          * anything yet, and have the class walk into period 1 — which is

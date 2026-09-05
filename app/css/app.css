@@ -344,3 +344,27 @@ body.console {
   border: 1px solid var(--d-rule-strong); color: var(--d-ink); text-transform: uppercase;
 }
 .cl-note { font-size: 9.5px; letter-spacing: .06em; color: var(--d-faint); margin-top: 8px; }
+
+/* ================================================ THE THREE SCREENS
+ *
+ * A teacher could not work out how to get from the QR screen to the lesson.
+ * The desk never showed the student address and had no link to the join
+ * screen — /api/where computed it all correctly and only the projector page
+ * ever read it, which the teacher had to already know about to reach. */
+.screens { text-align: left; border: 1px solid var(--d-rule); background: var(--d-field);
+           padding: 14px 16px 16px; margin-bottom: 18px; }
+.sc-where { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.sc-where b { font-size: 19px; font-weight: 600; letter-spacing: .02em; }
+.sc-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.sc-card {
+  display: flex; flex-direction: column; gap: 4px; text-align: left;
+  background: var(--d-paper); border: 1px solid var(--d-rule);
+  border-top: 3px solid var(--d-rule-strong);
+  padding: 11px 13px; cursor: pointer; text-decoration: none; color: var(--d-ink);
+  font: inherit;
+}
+.sc-card:hover { background: #fff; border-top-color: var(--d-teal); }
+.sc-n { font-size: 10px; letter-spacing: .14em; color: var(--d-oxide); }
+.sc-t { font-size: 13.5px; }
+.sc-d { font-size: 10px; color: var(--d-faint); line-height: 1.4; }
+@media (max-width: 720px) { .sc-row { grid-template-columns: 1fr; } }

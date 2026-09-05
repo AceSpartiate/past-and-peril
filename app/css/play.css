@@ -850,3 +850,38 @@ button.who:hover .nm { text-decoration: underline; text-underline-offset: 3px; }
   .verbs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .ability { width: 40%; }
 }
+
+/* A DOCUMENT ARRIVED — eleven words, not eighteen minutes.
+ *
+ * The full primary source used to open over the whole screen at the cold open.
+ * Measured: 1,663 words, unasked, on thirty screens, before anyone had made a
+ * decision. This is what replaced it. */
+.doc-toast {
+  position: absolute; left: 50%; transform: translateX(-50%); bottom: 14px;
+  display: flex; align-items: center; gap: 10px; z-index: 25;
+  background: var(--field); border: 1px solid var(--rule-strong);
+  border-left: 3px solid var(--wheat, #C39355);
+  box-shadow: 0 4px 18px rgba(20,28,33,.22);
+  padding: 9px 12px; cursor: pointer; max-width: calc(100% - 24px);
+  text-align: left; font: inherit; color: var(--ink);
+}
+.doc-toast[hidden] { display: none; }
+.doc-toast:hover { background: #fff; }
+.dt-mid { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dt-lead { font-size: 12.5px; }
+.dt-name { font-size: 10px; color: var(--ink-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dt-go { font-size: 9.5px; letter-spacing: .14em; color: var(--oxide); flex: none; }
+.dt-x { font-size: 17px; color: var(--ink-faint); line-height: 1; padding: 0 2px; flex: none; }
+.dt-x:hover { color: var(--ink); }
+
+/* The biography, behind a tap. 92 words on average is worth reading and is not
+   worth standing between a student and the start of the game. */
+.make-card-toggle {
+  display: flex; align-items: center; gap: 7px; width: 100%;
+  background: none; border: none; padding: 4px 0; cursor: pointer;
+  font-size: 9.5px; letter-spacing: .16em; color: var(--ink-faint);
+  font-family: var(--mono); text-align: left;
+}
+.make-card-toggle:hover { color: var(--ink); }
+.mct-arrow { font-size: 11px; }
+.make-card-body[hidden] { display: none; }

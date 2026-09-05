@@ -56,10 +56,35 @@
     <div class="row" style="justify-content:center">
       <button class="btn big primary" id="b-start" style="flex-grow:1">Open the room &nbsp;&#9654;</button>
     </div>
-    <div class="row" style="justify-content:center;margin-top:10px">
-      <a class="btn" id="b-stage" href="stage.html" target="_blank" rel="noopener"
-         style="display:flex;align-items:center;text-decoration:none">Stage in a second window &#8599;</a>
-      <button class="btn" id="b-stage-inline">Stage on this screen</button>
+    <!-- ============== THE THREE SCREENS ==============
+         A teacher could not work out how to get from the QR screen to the
+         lesson. The desk was part of why: it never showed the student address
+         at all, and had no link to the join screen — /api/where computes all
+         of it correctly and app/join.html was its only reader, reachable only
+         by typing /join or reading the black terminal window. -->
+    <div class="screens" id="screens">
+      <div class="sc-where">
+        <span class="c-cap">students go to</span>
+        <b class="mono" id="sc-url">…</b>
+        <span class="c-cap" id="sc-alt"></span>
+      </div>
+      <div class="sc-row">
+        <a class="sc-card" id="b-join" href="join.html" target="_blank" rel="noopener">
+          <span class="sc-n mono">1</span>
+          <span class="sc-t">While they arrive</span>
+          <span class="sc-d">The address in huge type, a QR code, and who has joined</span>
+        </a>
+        <a class="sc-card" id="b-stage" href="stage.html" target="_blank" rel="noopener">
+          <span class="sc-n mono">2</span>
+          <span class="sc-t">During the lesson</span>
+          <span class="sc-d">The board everyone watches — swap the projector to this</span>
+        </a>
+        <button class="sc-card" id="b-stage-inline" type="button">
+          <span class="sc-n mono">·</span>
+          <span class="sc-t">Stage on this screen</span>
+          <span class="sc-d">If you only have one display</span>
+        </button>
+      </div>
     </div>
     <div class="note" style="margin-top:18px;text-align:left" id="gate-note"></div>
   </div>
