@@ -546,27 +546,129 @@
   });
 
   /* ------------------------------------------------------------ board */
+  /* ===================================================== PHONES AND TABLETS
+   *
+   * Measured on a 375-pixel phone before any of this: the whole town fitted on
+   * screen, as designed, which put a hex at 23 pixels tall against a 44-pixel
+   * minimum tap target. A thumb cannot reliably hit that, and every mis-tap
+   * inside a turn window costs a child their turn.
+   *
+   * Worse, the route preview added for movement legibility is driven by
+   * mousemove. A touch screen has no hover, so on a phone it did not exist at
+   * all — the exact affordance that stops a walk looking like a teleport was
+   * invisible on the devices most likely to need it.
+   *
+   * Both are fixed by the same idea: on touch, TAPPING A HEX DOES NOT MOVE
+   * YOU. It selects — showing the route, the cost, and what is there — and a
+   * second tap on the same hex commits. So the preview happens on the device
+   * that has no hover, and a mis-tap costs a tap rather than a turn. */
+  const TOUCH = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+  let armedHex = null;                  // touch: selected, awaiting confirmation
+
+  function isPhone() {
+    return TOUCH && Math.min(window.innerWidth, window.innerHeight) < 820;
+  }
+
   function wireBoard() {
     const c = $('map');
     function pos(ev) {
       const r = c.getBoundingClientRect();
-      const t = ev.touches ? ev.touches[0] : ev;
+      const t = (ev.touches && ev.touches[0]) || (ev.changedTouches && ev.changedTouches[0]) || ev;
       return [t.clientX - r.left, t.clientY - r.top];
     }
+
+    /* ---- pointer, for anything with a hover ---- */
     c.addEventListener('mousemove', function (ev) {
+      if (TOUCH) return;
       const p = pos(ev);
       const h = R.hitTest(p[0], p[1]);
       const same = (h && hover && h.c === hover.c && h.r === hover.r) || (!h && !hover);
       hover = h;
       if (!same) { showHexInfo(h); draw(); }
     });
-    c.addEventListener('mouseleave', function () { hover = null; $('hexinfo').hidden = true; draw(); });
+    c.addEventListener('mouseleave', function () {
+      if (TOUCH) return;
+      hover = null; $('hexinfo').hidden = true; draw();
+    });
     c.addEventListener('click', function (ev) {
+      if (TOUCH) return;                 // touch is handled by touchend below
       const p = pos(ev);
       const h = R.hitTest(p[0], p[1]);
       if (h) tapHex(h);
     });
-    window.addEventListener('resize', draw);
+
+    /* ---- touch: pan, pinch, and select-then-confirm ---- */
+    let t0 = null, moved = 0, pinch = null, panFrom = null;
+
+    c.addEventListener('touchstart', function (ev) {
+      if (ev.touches.length === 2) {
+        const a = ev.touches[0], b = ev.touches[1];
+        pinch = {
+          d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY),
+          s: R.getView().s,
+        };
+        panFrom = null;
+        return;
+      }
+      t0 = pos(ev);
+      moved = 0;
+      const v = R.getView();
+      panFrom = { x: v.x, y: v.y, px: t0[0], py: t0[1] };
+    }, { passive: true });
+
+    c.addEventListener('touchmove', function (ev) {
+      if (pinch && ev.touches.length === 2) {
+        const a = ev.touches[0], b = ev.touches[1];
+        const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+        R.setView({ s: pinch.s * (d / (pinch.d || 1)) });
+        draw();
+        ev.preventDefault();
+        return;
+      }
+      if (!panFrom || ev.touches.length !== 1) return;
+      const p = pos(ev);
+      const dx = p[0] - panFrom.px, dy = p[1] - panFrom.py;
+      moved = Math.max(moved, Math.hypot(dx, dy));
+      /* Only pan once zoomed in; at the fitted scale there is nowhere to go and
+       * a drag should stay a tap that wandered. */
+      if (R.getView().s > 1) {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        R.setView({ x: panFrom.x + dx * dpr, y: panFrom.y + dy * dpr });
+        draw();
+        ev.preventDefault();
+      }
+    }, { passive: false });
+
+    c.addEventListener('touchend', function (ev) {
+      if (pinch) { pinch = null; return; }
+      panFrom = null;
+      if (moved > 12) return;            // that was a drag, not a tap
+      const p = pos(ev);
+      const h = R.hitTest(p[0], p[1]);
+      if (h) tapHex(h);
+    });
+
+    window.addEventListener('resize', function () { fitForDevice(); draw(); });
+    window.addEventListener('orientationchange', function () {
+      setTimeout(function () { fitForDevice(); draw(); }, 250);
+    });
+    fitForDevice();
+  }
+
+  /* Zoom so a hex is worth tapping, and keep the student in the middle.
+   *
+   * A student should never have to work out that they need to pinch. On a
+   * phone the map arrives already at a usable scale and follows them as they
+   * walk; pinching out to see the whole town is then a thing they can choose
+   * rather than a thing they must do. */
+  function fitForDevice() {
+    if (!R) return;
+    if (!isPhone()) { R.setView({ s: 1 }); return; }
+    const WANT = 46;                     // CSS px per hex, above the 44 minimum
+    for (let i = 0; i < 8 && R.tapSize < WANT; i += 1) {
+      R.setView({ s: R.getView().s * 1.25 });
+    }
+    if (ME && ME.hex) R.centreOn(ME.hex);
   }
 
   function showHexInfo(h) {
@@ -608,7 +710,9 @@
    * disagree the server wins and the screen was lying — which is why this asks
    * MAP the question rather than guessing from the reach set. */
   function routeTo(h) {
-    if (!ME || !MAP || reachSet[h.c + ',' + h.r] === undefined) return null;
+    /* h is null whenever nothing is hovered or selected — which on a touch
+     * screen is most of the time, since there is no hover to fall back on. */
+    if (!h || !ME || !MAP || reachSet[h.c + ',' + h.r] === undefined) return null;
     return MAP.pathTo(ME.hex, MAP.label(h.c, h.r), ME.moveLeft || 0,
                       { occupied: occupiedHexes(), cheapTerrain: moveHelp() });
   }
@@ -651,7 +755,30 @@
       showOffline(false, 'Waiting for the classroom server. You cannot move yet.');
       return;
     }
-    if (reachSet[h.c + ',' + h.r] === undefined) return;   // out of range: nothing happens, no scolding
+    if (reachSet[h.c + ',' + h.r] === undefined) {
+      /* Out of range: nothing happens, no scolding. On touch, clear any
+       * selection so a stray tap does not leave a route pointing nowhere. */
+      if (armedHex) { armedHex = null; draw(); }
+      return;
+    }
+
+    /* ON TOUCH, THE FIRST TAP SELECTS.
+     *
+     * It draws the route and the cost — the preview a phone otherwise never
+     * gets, because there is no hover — and a second tap on the same hex
+     * commits. A mis-tap then costs a tap instead of a turn, which on a 23-pixel
+     * hex is the difference between playable and not. */
+    if (TOUCH) {
+      const same = armedHex && armedHex.c === h.c && armedHex.r === h.r;
+      if (!same) {
+        armedHex = { c: h.c, r: h.r };
+        showHexInfo(h);
+        draw();
+        return;
+      }
+      armedHex = null;
+    }
+
     const route = routeTo(h);
     doMove(MAP.label(h.c, h.r));                            // the server decides
     /* Started after the intent, not before: if the server refuses, the token
@@ -666,7 +793,10 @@
              npcs: ME.npcs || [], features: ME.features,
              occupied: occupiedHexes(), light: ME.light,
              target: ME.target || null,
-             route: hover && !walking ? routeTo(hover) : null,
+             /* hover on a pointer; the selected hex on a touch screen, which
+              * has no hover at all */
+             route: !walking ? routeTo(TOUCH ? armedHex : hover) : null,
+             armed: TOUCH ? armedHex : null,
              walk: walking,
              /* so your own figurine is your Calling in the colour you chose,
               * rather than a black dot that looks like nobody in particular */

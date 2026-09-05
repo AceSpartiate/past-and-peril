@@ -779,3 +779,74 @@ button.who {
   font: inherit; color: inherit; cursor: pointer;
 }
 button.who:hover .nm { text-decoration: underline; text-underline-offset: 3px; }
+
+/* ============================================ PHONES AND TABLETS
+ *
+ * Measured on a 375px phone before any of this: the action bar held 1736px of
+ * cards in 347px of space — five screens of sideways scrolling to see your
+ * options — and took 17% of the screen doing it. The map was left 23px hexes
+ * against a 44px minimum tap target.
+ *
+ * The map is handled in JS (zoom, pan, tap-to-select). This is the chrome. */
+@media (max-width: 620px) {
+  /* The HUD carries five things a student rarely reads mid-turn. Keep the two
+     that identify them and put the numbers where the turn bar already is. */
+  .hud { height: 50px; gap: 10px; padding: 0 10px; }
+  .hud .pips, .hud .stats { display: none; }
+  .hud .nm { font-size: 16px; }
+  .hud .rl { font-size: 8.5px; }
+  .hud .mv .val { font-size: 19px; }
+  .readme .rm-txt { display: none; }
+  .readme { padding: 8px 10px; }
+
+  /* ACTIONS AS A LIST, NOT A ROW.
+     Seven cards side by side on a phone is a horizontal scroll nobody
+     discovers. Stacked and scrolled vertically, in a sheet that is capped so
+     the map keeps most of the screen. */
+  /* 40vh was measured and is too much: the map is the game, and seven cards
+     do not need to be visible at once to be reachable. Capped so the board
+     keeps roughly three fifths of the screen, and the list scrolls. */
+  .bar { padding: 7px 9px 9px; max-height: 32vh; }
+  .acts { flex-direction: column; overflow-y: auto; overflow-x: hidden; gap: 6px; }
+  /* tighter cards, because the vertical budget is now the scarce one */
+  .acts .verb, .acts .ability { padding: 8px 11px; min-height: 46px; }
+  .acts .vc, .acts .ab-blurb { font-size: 10px; line-height: 1.3; }
+  .acts > * { width: 100% !important; max-width: none !important; flex: none !important; }
+  .verbs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ability { width: 100%; max-width: none; }
+
+  /* Tap targets. 44px is the floor, and a twelve-year-old's aim is worse than
+     an adult's, so nothing interactive goes below it. */
+  .verb { min-height: 52px; }
+  .btn, .key-btn, .docs-btn, .portal { min-height: 44px; }
+  .key-btn, .docs-btn { padding: 11px 13px; }
+
+  /* The turn bar is the one thing that must never be covered. */
+  .turnbar { top: 8px; padding: 7px 12px; gap: 10px; max-width: calc(100% - 16px); }
+  .tb-hint { display: none; }          /* the map says it better than the words */
+  .tb-count { font-size: 17px; }
+
+  /* Panels become full-screen rather than floating: on a small screen a
+     floating panel is a panel with no room to float. */
+  .keypanel { position: fixed; inset: 0; width: auto; max-width: none; border: none; }
+  .docs { padding: 0; }
+  .docs-in { max-width: none; }
+
+  .hexinfo { left: 8px; right: 8px; bottom: 8px; max-width: none; font-size: 10px; }
+
+  /* creation, on a phone */
+  .make-body { gap: 16px; }
+  #make-canvas { width: 150px; height: 150px; }
+  .make-side { flex: 1 1 100%; }
+  .swatches .sw { width: 42px; height: 42px; }   /* thumbs, not cursors */
+  .make-card-body { max-height: 200px; }
+  .pick-grid { grid-template-columns: 1fr; }
+  .pcard { min-height: 56px; }
+}
+
+/* A tablet in portrait is a big phone for layout purposes but has room for the
+   hints, so it keeps them. */
+@media (min-width: 621px) and (max-width: 900px) {
+  .verbs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ability { width: 40%; }
+}

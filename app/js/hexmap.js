@@ -409,6 +409,57 @@ function figurine(ctx, cx, cy, size, calling, fill, rim, hollow) {
       oy = (canvas.height - gridH) / 2;
     }
 
+    /* ===================================================== ZOOM AND PAN
+     *
+     * layout() fits the whole place on screen, which is right on a Chromebook
+     * and unusable on a phone: a 17x13 town on a 375-pixel screen gives hexes
+     * 23 pixels tall, against a 44-pixel minimum tap target. A twelve-year-old
+     * with a thumb would mis-tap constantly, and every mis-tap in a turn window
+     * costs them their turn.
+     *
+     * So the whole world is drawn through one transform, applied once in
+     * draw() and inverted once in hitTest(). Every piece of drawing code below
+     * still works in the same coordinates it always did and none of it had to
+     * change — which is the only reason this was safe to add to a renderer
+     * with twenty decor functions in it.
+     *
+     * `s` is a multiplier on the fitted scale, so 1 always means "the whole
+     * place, as before". */
+    let view = { s: 1, x: 0, y: 0 };
+
+    function setView(v) {
+      if (!v) return view;
+      if (v.s !== undefined) view.s = Math.max(1, Math.min(6, v.s));
+      if (v.x !== undefined) view.x = v.x;
+      if (v.y !== undefined) view.y = v.y;
+      clampView();
+      return view;
+    }
+    function getView() { return { s: view.s, x: view.x, y: view.y }; }
+
+    /* Never let the world be dragged off the screen entirely. At s=1 it is
+     * pinned, because the fitted layout is already centred. */
+    function clampView() {
+      if (view.s <= 1.001) { view.s = 1; view.x = 0; view.y = 0; return; }
+      const w = canvas.width, hgt = canvas.height;
+      const maxX = w * (view.s - 1);
+      const maxY = hgt * (view.s - 1);
+      view.x = Math.max(-maxX, Math.min(0, view.x));
+      view.y = Math.max(-maxY, Math.min(0, view.y));
+    }
+
+    /* Put a hex in the middle of the screen at the current zoom. What keeps a
+     * phone usable without the student ever touching a zoom control: the map
+     * follows them. */
+    function centreOn(hex) {
+      const p = typeof hex === 'string' ? map.parse(hex) : hex;
+      if (!p || view.s <= 1) return;
+      const c = centre(p.c, p.r);
+      view.x = canvas.width / 2 - c[0] * view.s;
+      view.y = canvas.height / 2 - c[1] * view.s;
+      clampView();
+    }
+
     function centre(c, r) {
       const w = Math.sqrt(3) * R;
       return [ox + w / 2 + c * w + (r % 2 ? w / 2 : 0), oy + R + r * 1.5 * R];
@@ -450,7 +501,11 @@ function figurine(ctx, cx, cy, size, calling, fill, rim, hollow) {
     /* Screen point → hex. Nearest-centre is exact enough at this radius and is
      * far more forgiving on a trackpad than true cube rounding. */
     function hitTest(px, py) {
-      const x = px * dpr, y = py * dpr;
+      /* Screen pixels in, world pixels out — the inverse of the transform draw
+       * applies. Without this, tapping at any zoom but 1 selects the wrong hex,
+       * and does so consistently enough to look like a rules bug. */
+      const x = (px * dpr - view.x) / view.s;
+      const y = (py * dpr - view.y) / view.s;
       let best = null, bestD = Infinity;
       for (let r = 0; r < map.rows; r++) {
         for (let c = 0; c < map.cols; c++) {
@@ -926,6 +981,14 @@ function figurine(ctx, cx, cy, size, calling, fill, rim, hollow) {
       ctx.fillStyle = map.indoors ? '#DED9C9' : '#E9EBE4';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+      /* The ground colour above fills the real canvas; everything after this is
+       * drawn in world coordinates and mapped by the view. See setView. */
+      if (state.view) setView(state.view);
+      clampView();
+      ctx.save();
+      ctx.translate(view.x, view.y);
+      ctx.scale(view.s, view.s);
+
       const reach = state.reach || {};
       const you = state.you ? map.parse(state.you) : null;
 
@@ -1278,6 +1341,31 @@ function figurine(ctx, cx, cy, size, calling, fill, rim, hollow) {
         }
       }
 
+      /* ---- 9a. THE HEX YOU HAVE SELECTED BUT NOT YET COMMITTED TO.
+       *
+       * Touch only. A phone has no hover, so the first tap selects and the
+       * second confirms — and the thing being confirmed has to be obvious
+       * enough to check with a thumb over it. A heavy ring, not a tint. */
+      if (state.armed) {
+        const a = state.armed;
+        if (map.terrain(a.c, a.r)) {
+          const p = centre(a.c, a.r);
+          path(p[0], p[1]);
+          ctx.strokeStyle = '#D2604C';
+          ctx.lineWidth = 3.4 * S;
+          ctx.stroke();
+          if (R > 13) {
+            ctx.font = '600 ' + (R * 0.3).toFixed(0) + 'px "IBM Plex Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.lineWidth = 3 * S;
+            ctx.strokeStyle = 'rgba(242,243,238,.9)';
+            ctx.strokeText('TAP AGAIN', p[0], p[1] - R * 0.72);
+            ctx.fillStyle = '#D2604C';
+            ctx.fillText('TAP AGAIN', p[0], p[1] - R * 0.72);
+          }
+        }
+      }
+
       /* ---- 9b. THE ROUTE YOU WOULD WALK.
        *
        * The other half of the teleport complaint. A hex three steps away is a
@@ -1523,6 +1611,8 @@ function figurine(ctx, cx, cy, size, calling, fill, rim, hollow) {
         figurine(ctx, p[0], p[1], R * 0.44, state.calling,
                  state.tint || '#1B2A33', '#F2F3EE', false);
       }
+
+      ctx.restore();
     }
 
     function hexA(hex, a) {
@@ -1531,7 +1621,14 @@ function figurine(ctx, cx, cy, size, calling, fill, rim, hollow) {
       return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
     }
 
-    return { draw: draw, hitTest: hitTest, layout: layout, get radius() { return R; } };
+    return {
+      draw: draw, hitTest: hitTest, layout: layout,
+      setView: setView, getView: getView, centreOn: centreOn,
+      get radius() { return R; },
+      /* the on-screen size of a hex in CSS pixels, which is what decides
+       * whether a thumb can hit one */
+      get tapSize() { return (R * 2 * view.s) / dpr; },
+    };
   }
 
   /* ------------------------------------------------------------- the key
