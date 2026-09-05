@@ -42,11 +42,11 @@
       "kind": "checklist",
       "seconds": 180,
       "eyebrow": "BEFORE WE START",
-      "title": "Slates out.",
+      "title": "Everyone in.",
       "items": [
-        "Character sheet in front of you",
-        "Two Words each — take them now",
-        "Slate and a dry-erase pen"
+        "Your person's name at the top of your screen",
+        "Two Words in your bar. Already yours.",
+        "Nothing to hold. It is all on the screen."
       ],
       "voice": {
         "speaker": "NARRATOR",
@@ -344,7 +344,7 @@
       "eyebrow": "DISPATCH",
       "title": "Write it in character.",
       "items": [
-        "Four sentences, from your Turn Log",
+        "Four sentences. Tap YOUR DAY to see what happened.",
         "To someone who is not here",
         "Sign it with your person's name"
       ],

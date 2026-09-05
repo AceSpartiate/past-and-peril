@@ -909,6 +909,7 @@ class Room {
       docs: (existing && existing.docs && existing.docs.length)
             ? existing.docs.slice()
             : (this.handedOut || []).slice(),
+      trail: (existing && existing.trail) ? existing.trail.slice() : [],
       tintIndex: Room.tintOf(tintIndex) !== null ? Number(tintIndex)
                  : (existing && existing.tintIndex !== undefined ? existing.tintIndex : null),
       calling: person.calling,
@@ -1029,6 +1030,7 @@ class Room {
       declared: st.declared, acted: st.acted, verb: st.verb,
       tint: st.tint, tintIndex: st.tintIndex,
       docs: st.docs || [],
+      trail: st.trail || [],
       flags: st.flags, taught: st.taught, taughtVia: st.taughtVia,
       used: st.used, paidLegacy: st.paidLegacy, items: st.items,
       place: st.place, anchor: st.anchor,
@@ -1226,6 +1228,29 @@ class Room {
     if (r.cost.word) st.wordsSpent += r.cost.word;
 
     this.applyOutcome(st, r.outcome, ctx);
+
+    /* WHAT YOU DID TODAY.
+     *
+     * The closing checklist asks for "four sentences, from your Turn Log", and
+     * the Turn Log was a sheet of paper. There is no paper, so it asked for
+     * four sentences from nothing.
+     *
+     * The server has always seen every one of these — what was tried, how the
+     * dice fell, what it taught — and thrown them away after painting one
+     * outcome sheet. Keeping them costs a few hundred bytes a student and turns
+     * the graded moment from "remember your day" into "read your day".
+     *
+     * Capped, because a saved period is written to disk every sixty seconds
+     * and an unbounded list would grow all term. Forty is more turns than a
+     * session has. */
+    st.trail = (st.trail || []).concat([{
+      scene: this.sceneId,
+      label: this.engine.fillIn(r.action.label, ctx),
+      verb: r.action.verb || 'ACT',
+      tier: r.tier,
+      taught: (r.outcome.teach || [])
+        .map((f) => (this.engine.facts[f] || {}).short).filter(Boolean),
+    }]).slice(-40);
 
     st.used[actionId] = true;
     st.acted = true;                 // has had their turn — see the note above
@@ -1439,6 +1464,7 @@ class Room {
           declared: st.declared, acted: st.acted, verb: st.verb,
           tint: st.tint, tintIndex: st.tintIndex,
           docs: st.docs || [],
+          trail: st.trail || [],
           flags: st.flags, taught: st.taught, taughtVia: st.taughtVia,
           used: st.used, paidLegacy: st.paidLegacy, items: st.items,
           place: st.place, anchor: st.anchor,
@@ -1656,6 +1682,8 @@ class Room {
       tint: st.tint || st.color, tintIndex: st.tintIndex,
       /* the documents this student has been given, oldest first */
       docs: (st.docs || []).slice(),
+      /* what they did today, in the order they did it */
+      trail: (st.trail || []).slice(),
       companyName: st.companyName, color: st.color,
       ability: st.ability, abilityBlurb: st.abilityBlurb,
       hex: st.hex, move: st.move, moveLeft: st.moveLeft,

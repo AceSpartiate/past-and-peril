@@ -376,6 +376,7 @@
     renderPlace();
     renderActions();
     drawPips();
+    renderDayBtn();
     maybeDocs(you);
     draw();
   }
@@ -424,6 +425,15 @@
     box.hidden = false;
     clearTimeout(docToastT);
     docToastT = setTimeout(function () { box.hidden = true; }, 12000);
+  }
+
+  /* The button appears the moment there is anything in it, and says how much. */
+  function renderDayBtn() {
+    const b = $('day-btn');
+    if (!b || !ME) return;
+    const n = (ME.trail || []).length;
+    b.hidden = n === 0;
+    $('day-btn-n').textContent = n === 1 ? '1 TURN' : n + ' TURNS';
   }
 
   function renderDocsBtn() {
@@ -996,6 +1006,12 @@
     });
   }
   if (window.Docs) Docs.wire();
+
+  if ($('day-btn')) {
+    $('day-btn').addEventListener('click', function () {
+      if (window.Docs && ME) Docs.showDay(ME.trail, ME.name);
+    });
+  }
 
   if ($('doc-toast')) {
     $('doc-toast').addEventListener('click', function (e) {

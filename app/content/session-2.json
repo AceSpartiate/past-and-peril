@@ -46,7 +46,7 @@
       "title": "Read your dispatch aloud.",
       "items": [
         "One of you reads what you wrote at the end of last session",
-        "Two Words each — take them now",
+        "Two Words in your bar. Already yours.",
         "The cannon is still in the ground"
       ],
       "voice": {
@@ -365,7 +365,7 @@
       "eyebrow": "DISPATCH",
       "title": "Write it in character.",
       "items": [
-        "Four sentences, from your Turn Log",
+        "Four sentences. Tap YOUR DAY to see what happened.",
         "To someone who is not here",
         "Sign it with your person’s name"
       ],

@@ -275,6 +275,65 @@
       return true;
     },
 
+    /* WHAT YOU DID TODAY.
+     *
+     * The closing checklist asks for four sentences "from your Turn Log", and
+     * the Turn Log was paper. This is the same list, kept by the server as the
+     * student played it: what they tried, how it went, and what it taught them.
+     *
+     * Shown in the reader with the documents because it is the same kind of
+     * thing — a record somebody kept. Theirs, this time. */
+    showDay(trail, who) {
+      openId = null;
+      const list = (trail || []).slice();
+      $('doc-title').textContent = 'What you did today';
+      $('doc-blurb').textContent = who || '';
+      $('doc-blurb').hidden = !who;
+
+      const body = $('doc-body');
+      body.textContent = '';
+
+      if (!list.length) {
+        const p = document.createElement('p');
+        p.className = 'doc-p';
+        p.textContent = 'You have not taken a turn yet.';
+        body.appendChild(p);
+      } else {
+        const ol = document.createElement('ol');
+        ol.className = 'day-list';
+        list.forEach((e) => {
+          const li = document.createElement('li');
+          li.className = 'day-row';
+
+          const lab = document.createElement('span');
+          lab.className = 'day-what';
+          lab.textContent = e.label || '';
+          li.appendChild(lab);
+
+          /* tier is null for the actions that do not roll — opening a door,
+           * walking through one. Those still belong in the record. */
+          if (e.tier) {
+            const t = document.createElement('span');
+            t.className = 'day-tier mono t-' + String(e.tier).replace(/[^a-z]/gi, '');
+            t.textContent = String(e.tier).replace(/_/g, ' ').toUpperCase();
+            li.appendChild(t);
+          }
+          if (e.taught && e.taught.length) {
+            const k = document.createElement('span');
+            k.className = 'day-learned';
+            k.textContent = 'you found out: ' + e.taught.join(', ');
+            li.appendChild(k);
+          }
+          ol.appendChild(li);
+        });
+        body.appendChild(ol);
+      }
+      body.scrollTop = 0;
+      paintShelf();
+      $('docs').hidden = false;
+      document.body.classList.add('reading');
+    },
+
     /* the shelf on its own, with nothing open */
     openShelf() {
       openId = null;
