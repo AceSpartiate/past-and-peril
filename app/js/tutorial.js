@@ -180,88 +180,55 @@ const Tutorial = (function () {
     get T_LAW() { return practice('law'); },
   };
 
+  /* FOUR STEPS.
+   *
+   * There were ten, and a class played it and could not work out how to play.
+   * Of course they could not: it taught identity, walking, obstacles, doors,
+   * private maps, searching, dice, failure, the map key and the lock — ten
+   * concepts in three minutes, before a child had any reason to care about a
+   * single one of them. That is a manual with a Next button.
+   *
+   * These are the three things you cannot play without, each learned by doing
+   * it once, plus the sentence that is the whole point of the game. Everything
+   * dropped is now taught by the interface at the moment it matters, which is
+   * both shorter and better:
+   *
+   *   who you are        the HUD has your name and role in it
+   *   you cannot walk    the map dims everywhere out of reach; people are
+   *   through people     drawn standing in the way
+   *   doors              a green button appears saying "Go inside", but only
+   *                      when you are standing in a doorway
+   *   your own map       discovered by walking through a door
+   *   the dice           the outcome sheet rolls them in front of you
+   *   the map key        is a button that says MAP KEY
+   *
+   * Keep this under fifty words. tools/reading-first-ten.mjs counts it. */
   const STEPS = [
     {
-      id: 'you',
-      say: function (s) { return 'You are ' + s.name + '. The black token is you.'; },
-      /* The words that used to sit in the hint line now sit in a bubble
-       * pointing at the thing they describe. Same words, at the thing. */
-      point: function (s) {
-        /* 'acts' and not 'ability': the ability button is built by
-         * renderActions and has a class, not an id — pointing at an id that
-         * does not exist put the bubble nowhere and was caught by a check
-         * that asserted every named control resolves. */
-        return { at: 'acts', title: 'YOUR OWN MOVE',
-                 text: s.ability ? '“' + s.ability + '”. Nobody else in the class has it.'
-                                 : 'Your one special move lives here.' };
-      },
-      next: 'Got it',
-    },
-    {
       id: 'walk',
-      say: 'Tap the ringed hex to walk there.',
-      point: { at: 'tb-move', title: 'HOW FAR YOU CAN GO',
-               text: 'One dot per step. The bright part of the map is as far as they reach.' },
+      say: 'Tap the ring.',
+      point: { at: 'tb-move', title: 'YOUR STEPS',
+               text: 'One dot per step. The bright part of the map is how far they go.' },
       want: { move: 'K6' },
     },
     {
-      id: 'through',
-      say: function () {
-        return extras[0].name.split(' ').slice(-1)[0] + ' is in the way. You cannot walk through people.';
-      },
-      hint: function () { return 'Go round. The ring is ' + mine().where + '.'; },
-      want: function () { return { move: mine().at }; },
-    },
-    {
-      id: 'inside',
-      say: 'Press the green button to go in.',
-      point: { at: 'portal', title: 'THE WAY IN',
-               text: 'This appears only when you are standing in a doorway. Going in costs one step, not your turn.' },
-      want: function () { return { enter: mine().door }; },
-    },
-    {
-      id: 'yours',
-      say: 'Only you can see in here. Outside, you look like a ring on the doorstep.',
-      point: { at: 'place-name', title: 'WHERE YOU ARE',
-               text: 'This changes when you go inside. Your classmates still see the square.' },
-      next: 'Alright',
-    },
-    {
-      id: 'search',
-      say: 'Walk to the ringed hex and search what is there.',
-      point: { at: 'acts', title: 'WHAT YOU CAN DO',
-               text: 'Your choices appear here, and they change with where you stand. Searching costs your whole turn.' },
-      want: function () { const m = mine(); return { move: m.counter, then: { act: 'LOOT:' + m.chest } }; },
-    },
-    {
-      id: 'roll',
-      say: function (s) {
-        return 'Now try your luck. Two dice, plus your ' + mine().stat.toUpperCase() + '.';
-      },
-      point: { at: 'hud-stats', title: 'WHAT YOU ADD',
-               text: 'These four numbers are added to the dice. Which one depends on what you try.' },
+      id: 'act',
+      say: 'Now do something. Pick a card.',
+      point: { at: 'acts', title: 'YOUR TURN',
+               text: 'These change with where you stand.' },
       want: { act: 'T_OWN' },
       pool: ['T_OWN'],
     },
     {
       id: 'bad',
-      say: 'One more. This one goes badly on purpose. Watch anyway.',
+      say: 'One more. This one goes wrong.',
       want: { act: 'T_LAW' },
       pool: ['T_LAW'],
     },
     {
-      id: 'key',
-      say: 'Open MAP KEY. Everything on the map is in there.',
-      point: { at: 'key-btn', title: 'MAP KEY',
-               text: 'Every symbol on this map, what it costs to cross, and what it is.' },
-      want: { key: true },
-    },
-    {
       id: 'end',
-      say: 'That is the game. When your teacher moves on, your screen locks and you look up.',
-      point: { at: 'tb-label', title: 'THE CLOCK',
-               text: 'This says what the class is doing now, and how long is left of it.' },
-      next: 'Ready',
+      say: 'It went wrong and you learned something anyway. That always happens.',
+      next: 'Play',
       last: true,
     },
   ];

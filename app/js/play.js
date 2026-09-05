@@ -592,11 +592,25 @@
    * YOU. It selects — showing the route, the cost, and what is there — and a
    * second tap on the same hex commits. So the preview happens on the device
    * that has no hover, and a mis-tap costs a tap rather than a turn. */
-  const TOUCH = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+  /* HYBRID DEVICES ARE THE NORMAL CASE, NOT THE EDGE CASE.
+   *
+   * Most school Chromebooks have a touchscreen AND a trackpad, and a student
+   * will use both in one lesson. An earlier version of this gated on device
+   * CAPABILITY — `if (TOUCH) return` in the click handler — which meant that on
+   * every touchscreen laptop the trackpad silently stopped working on the map.
+   * The device supports touch, so mouse input was discarded.
+   *
+   * So nothing here asks what the device can do. It tracks what the student
+   * just DID: a real touch sets the timestamp, and a click arriving within the
+   * ghost-click window after one is the browser's synthetic echo of that touch
+   * and is dropped. Both inputs work, always, on the same screen. */
+  const CAN_TOUCH = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+  let lastTouchAt = 0;
   let armedHex = null;                  // touch: selected, awaiting confirmation
+  const cameFromTouch = () => (Date.now() - lastTouchAt) < 700;
 
   function isPhone() {
-    return TOUCH && Math.min(window.innerWidth, window.innerHeight) < 820;
+    return CAN_TOUCH && Math.min(window.innerWidth, window.innerHeight) < 820;
   }
 
   function wireBoard() {
@@ -609,7 +623,7 @@
 
     /* ---- pointer, for anything with a hover ---- */
     c.addEventListener('mousemove', function (ev) {
-      if (TOUCH) return;
+      if (cameFromTouch()) return;      // the echo of a tap, not a real hover
       const p = pos(ev);
       const h = R.hitTest(p[0], p[1]);
       const same = (h && hover && h.c === hover.c && h.r === hover.r) || (!h && !hover);
@@ -617,20 +631,24 @@
       if (!same) { showHexInfo(h); draw(); }
     });
     c.addEventListener('mouseleave', function () {
-      if (TOUCH) return;
+      if (cameFromTouch()) return;
       hover = null; $('hexinfo').hidden = true; draw();
     });
     c.addEventListener('click', function (ev) {
-      if (TOUCH) return;                 // touch is handled by touchend below
+      /* A tap fires touchend AND, shortly after, a synthetic click. Dropping
+       * the echo is all that is needed — a genuine trackpad click on the same
+       * touchscreen laptop still lands here. */
+      if (cameFromTouch()) return;
       const p = pos(ev);
       const h = R.hitTest(p[0], p[1]);
-      if (h) tapHex(h);
+      if (h) tapHex(h, false);
     });
 
     /* ---- touch: pan, pinch, and select-then-confirm ---- */
     let t0 = null, moved = 0, pinch = null, panFrom = null;
 
     c.addEventListener('touchstart', function (ev) {
+      lastTouchAt = Date.now();
       if (ev.touches.length === 2) {
         const a = ev.touches[0], b = ev.touches[1];
         pinch = {
@@ -670,12 +688,13 @@
     }, { passive: false });
 
     c.addEventListener('touchend', function (ev) {
+      lastTouchAt = Date.now();
       if (pinch) { pinch = null; return; }
       panFrom = null;
       if (moved > 12) return;            // that was a drag, not a tap
       const p = pos(ev);
       const h = R.hitTest(p[0], p[1]);
-      if (h) tapHex(h);
+      if (h) tapHex(h, true);
     });
 
     window.addEventListener('resize', function () { fitForDevice(); draw(); });
@@ -776,7 +795,7 @@
     })();
   }
 
-  function tapHex(h) {
+  function tapHex(h, viaTouch) {
     /* Refuse rather than pretend. Moving a token locally while the server is
      * gone means the student is somewhere their classmates cannot see, and the
      * next state they receive yanks them back — which reads as the game
@@ -798,7 +817,7 @@
      * gets, because there is no hover — and a second tap on the same hex
      * commits. A mis-tap then costs a tap instead of a turn, which on a 23-pixel
      * hex is the difference between playable and not. */
-    if (TOUCH) {
+    if (viaTouch) {
       const same = armedHex && armedHex.c === h.c && armedHex.r === h.r;
       if (!same) {
         armedHex = { c: h.c, r: h.r };
@@ -825,8 +844,10 @@
              target: ME.target || null,
              /* hover on a pointer; the selected hex on a touch screen, which
               * has no hover at all */
-             route: !walking ? routeTo(TOUCH ? armedHex : hover) : null,
-             armed: TOUCH ? armedHex : null,
+             /* whichever the student last used: the selected hex after a tap,
+              * the hovered hex after a pointer move */
+             route: !walking ? routeTo(armedHex || hover) : null,
+             armed: armedHex,
              walk: walking,
              /* so your own figurine is your Calling in the colour you chose,
               * rather than a black dot that looks like nobody in particular */

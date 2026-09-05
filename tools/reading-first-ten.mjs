@@ -95,7 +95,8 @@ try {
   grab(/title:\s*'([^']{4,})'/g);
   grab(/return\s*'([^']{12,})'/g);
   const n = strings.reduce((a, s) => a + words(s), 0);
-  step('the tutorial', n, strings.length + ' authored lines across 10 steps');
+  const steps = (tut.match(/^      id: '/gm) || []).length;
+  step('the tutorial', n, strings.length + ' authored lines across ' + steps + ' steps');
 } catch (e) { step('the tutorial', 0, 'could not read'); }
 
 /* ---- 3. the cold open -------------------------------------------------- */
