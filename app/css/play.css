@@ -733,3 +733,16 @@ h4.doc-h { font-size: 15px; font-family: var(--sans); font-weight: 600; letter-s
   width: 9px; height: 12px; background: #fff;
   border: 1px solid var(--ink-soft); border-top-width: 3px; flex: none;
 }
+
+/* The receipt on the outcome sheet: the document a fact rests on, offered at
+   the moment the student has a reason to care about it. Shown only when it is
+   already on their shelf — naming a document they cannot open would be worse
+   than saying nothing. */
+.oc-doc {
+  display: inline-flex; align-items: center; gap: 7px; margin-top: 12px;
+  background: var(--paper); border: 1px solid var(--rule-strong);
+  padding: 8px 12px; font-size: 9.5px; letter-spacing: .12em;
+  color: var(--ink-soft); cursor: pointer;
+}
+.oc-doc[hidden] { display: none; }
+.oc-doc:hover { background: #fff; color: var(--ink); }

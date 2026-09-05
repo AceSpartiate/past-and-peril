@@ -741,6 +741,13 @@
   }
   if (window.Docs) Docs.wire();
 
+  if ($('oc-doc')) {
+    $('oc-doc').addEventListener('click', function () {
+      const id = this.getAttribute('data-doc');
+      if (id && window.Docs) Docs.open(id);
+    });
+  }
+
   $('portal').addEventListener('click', function () {
     if (!canAct()) {
       showOffline(false, 'Waiting for the classroom server. You cannot go in yet.');
@@ -1016,8 +1023,30 @@
     if (o.taught && o.taught.length) {
       learn.hidden = false;
       $('oc-learn-body').textContent = o.taught.map(function (f) { return f.statement; }).join(' ');
+
+      /* THE RECEIPT.
+       *
+       * The line under this panel says "this is true, and it is in the record",
+       * which until now was a claim with nothing behind it. Some facts rest on
+       * a document the student is holding — so offer it, by name, right at the
+       * moment they have a reason to care.
+       *
+       * Only when they actually have it. Naming a document a student cannot
+       * open is worse than saying nothing, and the shelf is filled by the
+       * lesson rather than by this. */
+      const doc = $('oc-doc');
+      if (doc) {
+        const id = (o.taught.filter(function (f) { return f.handout; })[0] || {}).handout;
+        const have = id && window.Docs && Docs.mine.indexOf(id) !== -1;
+        doc.hidden = !have;
+        if (have) {
+          doc.setAttribute('data-doc', id);
+          $('oc-doc-t').textContent = 'READ ' + Docs.titleOf(id).toUpperCase();
+        }
+      }
     } else {
       learn.hidden = true;
+      if ($('oc-doc')) $('oc-doc').hidden = true;
     }
 
     const earn = $('oc-earn');

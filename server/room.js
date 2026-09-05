@@ -666,7 +666,7 @@ class Room {
       const need = this.sessionMustTeach;
       Object.values(this.students).forEach((st) => {
         need.forEach((f) => {
-          if (!st.taught[f]) { st.taught[f] = true; st.taughtVia[f] = 'record'; }
+          if (!st.taught[f]) { st.taught[f] = true; st.taughtVia[f] = 'record'; this._giveDocFor(st, f); }
         });
       });
     }
@@ -958,6 +958,7 @@ class Room {
         if (st.taught[f.id]) return;
         st.taught[f.id] = true;
         st.taughtVia[f.id] = 'caught-up';
+        this._giveDocFor(st, f.id);
       });
       st.caughtUp = cu;
       this.note(st.name + ' was caught up on ' +
@@ -1254,11 +1255,34 @@ class Room {
     return { ok: true, outcome: st.lastOutcome };
   }
 
+  /* LEARNING A FACT HANDS YOU THE DOCUMENT IT RESTS ON.
+   *
+   * The outcome sheet tells a student "this is true, and it is in the record".
+   * That was a claim with nothing behind it. Four facts genuinely rest on a
+   * primary source that is now in the app, so the moment a student learns one,
+   * the document goes on their shelf and the outcome sheet offers to open it.
+   *
+   * This also fixes a gap that segment-declared handouts alone could not: the
+   * Law of April 6, 1830 is taught in session 1 and its document existed in the
+   * app, but nothing ever gave it to anybody. A citation nobody can follow is
+   * not a citation. */
+  _giveDocFor(st, factId) {
+    /* engine.facts is the id->fact map every scene's Engine is built with
+     * from the same factsData, and it is what closeOut and catchUp already
+     * read. Using it rather than a second index means one place to be wrong. */
+    const f = this.engine && this.engine.facts && this.engine.facts[factId];
+    const id = f && f.handout;
+    if (!id) return;
+    st.docs = st.docs || [];
+    if (st.docs.indexOf(id) === -1) st.docs.push(id);
+  }
+
   applyOutcome(st, o, ctx) {
     if (!o) return;
     (o.teach || []).forEach((f) => {
       if (!st.taught[f]) st.taughtVia[f] = ctx && ctx.viaFallback ? 'fallback' : 'play';
       st.taught[f] = true;
+      this._giveDocFor(st, f);
     });
     (o.set_flags || []).forEach((f) => { st.flags[f] = true; });
     (o.clear_flags || []).forEach((f) => { delete st.flags[f]; });
