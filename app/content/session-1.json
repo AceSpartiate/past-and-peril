@@ -342,15 +342,15 @@
       "kind": "checklist",
       "seconds": 240,
       "eyebrow": "DISPATCH",
-      "title": "Write it in character.",
+      "title": "What you did.",
       "items": [
-        "Four sentences. Tap YOUR DAY to see what happened.",
-        "To someone who is not here",
-        "Sign it with your person's name"
+        "Tap YOUR DAY. Every turn you took is in it.",
+        "Look at what the town has left.",
+        "The demand clock has not stopped."
       ],
       "voice": {
         "speaker": "NARRATOR",
-        "text": "Write four sentences to someone who is not in Gonzales tonight. Tell them what happened here today. Sign it with your own name — the real one, the one on your card."
+        "text": "Look at your own record. Every turn you took, how it went, and what you found out. Then look at what this town has left, and how close the colonel is to marching."
       }
     },
     {

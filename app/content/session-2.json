@@ -43,9 +43,9 @@
       "kind": "checklist",
       "seconds": 180,
       "eyebrow": "LAST TIME",
-      "title": "Read your dispatch aloud.",
+      "title": "Where we left it.",
       "items": [
-        "One of you reads what you wrote at the end of last session",
+        "Tap YOUR DAY. Last session is still in it.",
         "Two Words in your bar. Already yours.",
         "The cannon is still in the ground"
       ],
@@ -363,15 +363,15 @@
       "kind": "checklist",
       "seconds": 240,
       "eyebrow": "DISPATCH",
-      "title": "Write it in character.",
+      "title": "What you did.",
       "items": [
-        "Four sentences. Tap YOUR DAY to see what happened.",
-        "To someone who is not here",
-        "Sign it with your person’s name"
+        "Tap YOUR DAY. Every turn you took is in it.",
+        "Look at what the army has left.",
+        "Somebody still has to hold Béxar."
       ],
       "voice": {
         "speaker": "NARRATOR",
-        "text": "Write four sentences to somebody who was not at Béxar. Tell them what you think happens next. Sign it with your own name."
+        "text": "Look at your record from today. Then look at what is left, and at who is still standing in Béxar when the rest of the army goes home."
       }
     },
     {
@@ -409,7 +409,7 @@
           }
         }
       ],
-      "exitLine": "And here is what you did today: you decided who garrisons Béxar. Write it down. We will come back to it."
+      "exitLine": "And here is what you did today: you decided who garrisons Béxar. Remember that. We will come back to it."
     }
   ],
   "recap": [

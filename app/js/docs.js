@@ -283,9 +283,15 @@
      *
      * Shown in the reader with the documents because it is the same kind of
      * thing — a record somebody kept. Theirs, this time. */
-    showDay(trail, who) {
+    showDay(trail, who, session) {
       openId = null;
-      const list = (trail || []).slice();
+      /* Today, not the whole campaign. The trail survives into the next
+       * session on purpose — a student can be shown last week — but "what you
+       * did today" has to mean today. */
+      const all = (trail || []).slice();
+      const list = (session === undefined || session === null)
+        ? all
+        : all.filter((e) => e.session === undefined || e.session === session);
       $('doc-title').textContent = 'What you did today';
       $('doc-blurb').textContent = who || '';
       $('doc-blurb').hidden = !who;

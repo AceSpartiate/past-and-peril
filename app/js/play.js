@@ -431,7 +431,10 @@
   function renderDayBtn() {
     const b = $('day-btn');
     if (!b || !ME) return;
-    const n = (ME.trail || []).length;
+    const sess = WORLD && WORLD.meta ? (WORLD.meta.session - 1) : undefined;
+    const n = (ME.trail || []).filter(function (e) {
+      return sess === undefined || e.session === undefined || e.session === sess;
+    }).length;
     b.hidden = n === 0;
     $('day-btn-n').textContent = n === 1 ? '1 TURN' : n + ' TURNS';
   }
@@ -1009,7 +1012,10 @@
 
   if ($('day-btn')) {
     $('day-btn').addEventListener('click', function () {
-      if (window.Docs && ME) Docs.showDay(ME.trail, ME.name);
+      if (window.Docs && ME) {
+        Docs.showDay(ME.trail, ME.name,
+          WORLD && WORLD.meta ? (WORLD.meta.session - 1) : undefined);
+      }
     });
   }
 

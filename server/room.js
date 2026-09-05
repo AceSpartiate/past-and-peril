@@ -1244,6 +1244,10 @@ class Room {
      * and an unbounded list would grow all term. Forty is more turns than a
      * session has. */
     st.trail = (st.trail || []).concat([{
+      /* loadSession deliberately leaves student state alone, so the trail
+       * carries from one session to the next. Tag it, or "what you did today"
+       * shows last week too. */
+      session: this.sessionIndex,
       scene: this.sceneId,
       label: this.engine.fillIn(r.action.label, ctx),
       verb: r.action.verb || 'ACT',
