@@ -29,6 +29,7 @@ const crypto = require('crypto');
 const { Room } = require('./room.js');
 const { Store } = require('./store.js');
 const handouts = require('./handouts.js');
+const people = require('./people.js');
 
 const ROOT = path.join(__dirname, '..', 'app');
 const PORT = process.env.PORT ? Number(process.env.PORT) : 8099;
@@ -267,6 +268,36 @@ const server = http.createServer(async (req, res) => {
    * So they come through here, parsed into blocks the client renders by
    * building elements — never by assigning innerHTML. See server/handouts.js
    * for why that matters more than usual here. */
+  /* THE PERSON CARD.
+   *
+   * What the historical record says about the person a student is playing, and
+   * what it does not. Keyed by roster id rather than name so the client never
+   * has to know about the name-matching heuristic in server/people.js.
+   *
+   * The deck's teacher-only sections are stripped there, before anything is
+   * served. tools/check-people.mjs asserts it on every run. */
+  if (p === '/api/person') {
+    const id = String(url.searchParams.get('id') || '');
+    const person = (roster.roster || []).filter((x) => x.id === id)[0];
+    if (!person) return json(res, 404, { ok: false, error: 'no-such-character' });
+    const card = people.forName(person.name);
+    return json(res, 200, {
+      ok: true,
+      id: person.id,
+      name: person.name,
+      role: person.role,
+      calling: person.calling,
+      company: person.companyName,
+      origin: person.origin,
+      ability: person.ability,
+      abilityBlurb: person.abilityBlurb,
+      stats: person.stats,
+      /* null when the deck has no card for them — five characters are in that
+       * position, and saying so is better than inventing something */
+      card: card ? { name: card.name, blocks: card.blocks } : null,
+    });
+  }
+
   if (p === '/api/handouts') {
     return json(res, 200, { ok: true, handouts: handouts.list() });
   }
@@ -388,7 +419,7 @@ server.listen(PORT, '0.0.0.0', () => {
   const host = ips[0] || 'localhost';
   const line = (s) => console.log('  ' + s);
   console.log('');
-  console.log('THE GONZALES COMPANY — classroom server');
+  console.log('PAST & PERIL — classroom server');
   console.log('='.repeat(62));
   line('Session ' + session.session + ' — ' + session.title);
   line('Class code: ' + roster.classCode);
@@ -425,7 +456,7 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log('  the port until you allow it. If another machine cannot connect,');
   console.log('  run this ONCE in an Administrator PowerShell:');
   console.log('');
-  console.log('    New-NetFirewallRule -DisplayName "Gonzales Company" `');
+  console.log('    New-NetFirewallRule -DisplayName "Past and Peril" `');
   console.log('      -Direction Inbound -Protocol TCP -LocalPort ' + PORT + ' -Action Allow');
   console.log('');
   console.log('  If students still cannot reach it, your network has client isolation');

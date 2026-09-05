@@ -79,7 +79,7 @@
 
     if (!s.started) {
       show('idle');
-      $('idle-title').textContent = 'The Gonzales Company';
+      $('idle-title').textContent = 'Past & Peril';
       $('idle-note').textContent = 'waiting for the room';
       lastSegId = null;
       return;

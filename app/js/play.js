@@ -237,6 +237,43 @@
       calling: p.calling,
       tint: (tints[tintPick] || p.color),
     });
+
+    loadCard(p.id);
+  }
+
+  /* WHO THEY ACTUALLY WERE.
+   *
+   * These were real people, and the deck in player-materials holds what the
+   * record says about each of them — and, deliberately, what it does not. That
+   * second part is the more valuable half in a history classroom, and it never
+   * reached a student because it lived on card stock.
+   *
+   * Fetched once per character and cached: a student flicking between colours
+   * should not re-fetch a biography. */
+  const cardCache = {};
+  function loadCard(id) {
+    const box = $('make-card');
+    if (!box) return;
+    if (cardCache[id] !== undefined) return paintCard(cardCache[id]);
+    box.hidden = true;
+    fetch('api/person?id=' + encodeURIComponent(id), { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        cardCache[id] = (res && res.ok) ? res : null;
+        /* they may have moved on while it was in flight */
+        if (making && making.id === id) paintCard(cardCache[id]);
+      })
+      .catch(function () { cardCache[id] = null; });
+  }
+
+  function paintCard(res) {
+    const box = $('make-card');
+    if (!box) return;
+    /* Five of the thirty have no card in the deck. Saying nothing is better
+     * than inventing a biography for a real person. */
+    if (!res || !res.card) { box.hidden = true; return; }
+    box.hidden = false;
+    if (window.Docs) Docs.renderBlocks($('make-card-body'), res.card.blocks);
   }
 
   $('make-swatches').addEventListener('click', function (e) {
@@ -740,6 +777,21 @@
     });
   }
   if (window.Docs) Docs.wire();
+
+  /* Your own name in the HUD opens your card. It is the one place on the
+   * screen a student already looks to answer "who am I", so it is where "and
+   * who was he really" belongs. */
+  if ($('hud-who')) {
+    $('hud-who').addEventListener('click', function () {
+      if (!ME) return;
+      fetch('api/person?id=' + encodeURIComponent(ME.characterId), { cache: 'no-store' })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          if (!res || !res.ok || !res.card || !window.Docs) return;
+          Docs.showCard(res);
+        }).catch(function () {});
+    });
+  }
 
   if ($('oc-doc')) {
     $('oc-doc').addEventListener('click', function () {

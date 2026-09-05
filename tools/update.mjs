@@ -7,7 +7,7 @@
  *
  * CONFIGURATION lives in update.json at the project root:
  *
- *     { "repo": "yourname/gonzales-company" }
+ *     { "repo": "yourname/past-and-peril" }
  *
  * No token, no account, no npm package. A public repo's releases are readable
  * by anyone, so there is no secret to leak and nothing for a teacher to set up.
@@ -59,7 +59,7 @@ const PROTECTED = new Set([
   '.git',
 ]);
 
-const UA = { 'User-Agent': 'gonzales-company-launcher', Accept: 'application/vnd.github+json' };
+const UA = { 'User-Agent': 'past-and-peril-launcher', Accept: 'application/vnd.github+json' };
 
 /* Overridable so the swap-and-back-up logic below can be tested end to end
  * against a local stand-in for GitHub. Nothing a teacher ever sets. */
@@ -185,7 +185,7 @@ export async function checkAndApply(opts) {
   /* --- fetch ------------------------------------------------------------ */
   /* A release carries two zips on purpose (see tools/make-release.mjs):
    *   update-x.y.z.zip     ~20 MB, code and content only
-   *   gonzales-x.y.z.zip  ~110 MB, the same plus the bundled Node runtime,
+   *   past-and-peril-x.y.z.zip  ~110 MB, plus the bundled Node runtime,
    *                        which is what you hand to another teacher
    * Both work here, because `runtime` is PROTECTED either way — but pulling
    * 90 MB of node.exe over school wifi in order to discard it would be rude,

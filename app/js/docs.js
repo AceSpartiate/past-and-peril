@@ -186,7 +186,24 @@
       .catch(() => null);
   }
 
+  /* The block renderer is the only piece of this file the person card needs,
+   * and a second copy of it would be a second thing to keep in step. */
+  function renderBlocks(into, blocks, opts) {
+    opts = opts || {};
+    into.textContent = '';
+    let firstH1Skipped = false;
+    (blocks || []).forEach((b) => {
+      if (opts.skipFirstH1 && !firstH1Skipped && b.type === 'h' && b.level === 1) {
+        firstH1Skipped = true;
+        return;
+      }
+      const el = blockEl(b);
+      if (el) into.appendChild(el);
+    });
+  }
+
   const Docs = {
+    renderBlocks: renderBlocks,
     /* Called once at boot. Failing is survivable: the button simply says the
      * documents could not be loaded, and the lesson goes on. */
     init(opts) {
@@ -235,6 +252,27 @@
       document.body.classList.remove('reading');
       paintShelf();
       if (onNeedRedraw) onNeedRedraw();
+    },
+
+    /* WHO YOU ACTUALLY WERE.
+     *
+     * Shown in the same reader as the primary sources, on purpose: a student's
+     * own biography and Travis's letter are the same kind of thing — a record
+     * somebody kept, with gaps in it. Using a different panel would suggest
+     * otherwise. */
+    showCard(res) {
+      if (!res || !res.card) return false;
+      openId = null;
+      $('doc-title').textContent = res.name;
+      const bits = [res.role, res.calling, res.company].filter(Boolean);
+      $('doc-blurb').textContent = bits.join(' · ');
+      $('doc-blurb').hidden = !bits.length;
+      renderBlocks($('doc-body'), res.card.blocks);
+      $('doc-body').scrollTop = 0;
+      paintShelf();
+      $('docs').hidden = false;
+      document.body.classList.add('reading');
+      return true;
     },
 
     /* the shelf on its own, with nothing open */

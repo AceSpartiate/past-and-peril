@@ -4,7 +4,7 @@
  *
  * Writes into dist/:
  *
- *   gonzales-<version>.zip   ~110 MB   WHAT YOU GIVE A TEACHER.
+ *   past-and-peril-<version>.zip  ~110 MB  WHAT YOU GIVE A TEACHER.
  *                                      Everything, including the bundled Node
  *                                      runtime, so it runs on a machine where
  *                                      nothing can be installed.
@@ -72,7 +72,7 @@ const version = fs.readFileSync(path.join(ROOT, 'VERSION'), 'utf8').trim();
 
 function stage(name, includeRuntime) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gonzales-stage-'));
-  const top = path.join(tmp, 'gonzales-company');
+  const top = path.join(tmp, 'past-and-peril');
   fs.mkdirSync(top, { recursive: true });
 
   let n = 0;
@@ -93,7 +93,7 @@ function stage(name, includeRuntime) {
   fs.mkdirSync(DIST, { recursive: true });
   try { fs.rmSync(out, { force: true }); } catch (e) {}
 
-  const r = zip(out, tmp, 'gonzales-company');
+  const r = zip(out, tmp, 'past-and-peril');
   fs.rmSync(tmp, { recursive: true, force: true });
 
   if (!r.ok) {
@@ -110,7 +110,7 @@ say();
 say('Building release ' + version);
 say();
 
-const big = stage('gonzales-' + version + '.zip', true);
+const big = stage('past-and-peril-' + version + '.zip', true);
 const small = stage('update-' + version + '.zip', false);
 
 say();

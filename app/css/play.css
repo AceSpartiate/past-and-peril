@@ -746,3 +746,36 @@ h4.doc-h { font-size: 15px; font-family: var(--sans); font-weight: 600; letter-s
 }
 .oc-doc[hidden] { display: none; }
 .oc-doc:hover { background: #fff; color: var(--ink); }
+
+/* ============================ WHO THEY ACTUALLY WERE
+ *
+ * The research deck, on the creation screen. These were real people; the card
+ * says what the record holds about them and — the half that matters more in a
+ * history classroom, and the half that never left the card stock — what it
+ * does not. */
+.make-card {
+  margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--rule);
+}
+.make-card[hidden] { display: none; }
+.make-card .lbl {
+  font-size: 9.5px; letter-spacing: .16em; color: var(--ink-faint);
+  display: block; margin-bottom: 10px;
+}
+/* capped and scrollable: some cards run long, and creation must not become a
+   reading assignment before the lesson has started */
+.make-card-body {
+  max-height: 260px; overflow-y: auto; padding-right: 10px;
+  font-size: 13px; line-height: 1.55;
+}
+.make-card-body .doc-p { margin: 0 0 9px; max-width: none; }
+.make-card-body .doc-ul { margin: 0 0 10px; padding-left: 18px; }
+.make-card-body .doc-ul li { margin-bottom: 5px; }
+.make-card-body h4.doc-h { font-size: 11px; margin: 14px 0 6px; letter-spacing: .06em; }
+.make-card-body hr { display: none; }
+
+/* the HUD name, now a button */
+button.who {
+  background: none; border: none; padding: 0; margin: 0; text-align: left;
+  font: inherit; color: inherit; cursor: pointer;
+}
+button.who:hover .nm { text-decoration: underline; text-underline-offset: 3px; }

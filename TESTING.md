@@ -51,7 +51,7 @@ the software is broken.
 Open PowerShell **as Administrator** and run this once, ever:
 
 ```powershell
-New-NetFirewallRule -DisplayName "Gonzales Company" -Direction Inbound -Protocol TCP -LocalPort 8099 -Action Allow
+New-NetFirewallRule -DisplayName "Past and Peril" -Direction Inbound -Protocol TCP -LocalPort 8099 -Action Allow
 ```
 
 Preflight already checked and told you whether you need it. Right now, on this machine, **you do.**

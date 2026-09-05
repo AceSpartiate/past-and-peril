@@ -1,6 +1,6 @@
 @echo off
 rem ============================================================
-rem  THE GONZALES COMPANY
+rem  PAST & PERIL
 rem
 rem  Double-click this. That is the whole procedure.
 rem
@@ -19,7 +19,7 @@ rem  read. All this does is find a Node and hand over.
 rem ============================================================
 setlocal EnableExtensions
 chcp 65001 >nul 2>nul
-title The Gonzales Company  -  leave this window open
+title Past and Peril  -  leave this window open
 
 pushd "%~dp0" 2>nul
 if errorlevel 1 goto :nofolder

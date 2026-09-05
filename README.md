@@ -1,4 +1,5 @@
-# COME AND TAKE IT: The Gonzales Company
+# PAST & PERIL
+### Come and Take It — the Gonzales campaign
 ### A seven-session tabletop campaign that teaches the Texas Revolution
 **7th Grade Texas History · 19 TAC §113.19 (Adopted 2022) · ~30 students · one teacher · 45–50 minute periods · no prior gaming experience required**
 

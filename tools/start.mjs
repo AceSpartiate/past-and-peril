@@ -183,7 +183,7 @@ const NODE = process.execPath;
 const V = version();
 
 console.log('');
-console.log('  THE GONZALES COMPANY');
+console.log('  PAST & PERIL');
 console.log('  version ' + V + '   ·   Node ' + process.versions.node);
 rule();
 

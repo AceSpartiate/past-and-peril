@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>The Slate — Gonzales</title>
+<title>The Slate — Past &amp; Peril</title>
 <link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/app.css">
 <link rel="stylesheet" href="css/play.css">
@@ -13,7 +13,7 @@
 <!-- ============ PICK YOUR NAME ============ -->
 <div class="pick" id="pick">
   <div class="pick-in">
-    <div class="mono brandline">THE GONZALES COMPANY</div>
+    <div class="mono brandline">PAST &amp; PERIL</div>
     <h1>Tap your name</h1>
     <p class="mono sub" id="pick-sub">GONZALES-7B · SESSION 1</p>
     <p class="pick-need" id="pick-need" hidden></p>
@@ -54,6 +54,15 @@
       </div>
     </div>
 
+    <!-- WHO THEY ACTUALLY WERE.
+         From the research deck in player-materials. The second half — what the
+         record does NOT say — is the part that never reached a student while
+         this lived on card stock, and it is the more useful half. -->
+    <div class="make-card" id="make-card" hidden>
+      <span class="mono lbl">WHAT THE RECORD SAYS</span>
+      <div class="make-card-body" id="make-card-body"></div>
+    </div>
+
     <div class="make-foot">
       <button class="btn primary" id="make-go" type="button">This is me</button>
       <button class="mono make-back" id="make-back" type="button">Pick someone else</button>
@@ -66,10 +75,12 @@
 
   <header class="hud">
     <span class="swatch" id="hud-swatch"></span>
-    <div class="who">
+    <!-- clickable: the one place a student already looks to answer "who am
+         I", so it is where "and who was he really" belongs -->
+    <button class="who" id="hud-who" type="button" title="Who you really were">
       <div class="nm" id="hud-name">—</div>
       <div class="mono rl" id="hud-role">—</div>
-    </div>
+    </button>
 
     <div class="pips" title="Words">
       <div class="mono lbl">WORDS</div>

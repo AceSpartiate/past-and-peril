@@ -1,4 +1,4 @@
-# THE GONZALES COMPANY — the software
+# PAST & PERIL — the software
 
 Three screens, one server: **the console** you drive, **the Stage** on the projector, and **the
 Slate** on thirty Chromebooks.

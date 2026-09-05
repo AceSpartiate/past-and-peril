@@ -111,7 +111,7 @@ export function write(opts) {
   const note = opts.note || '';
 
   const body = [
-    'GONZALES COMPANY — problem report',
+    'PAST & PERIL — problem report',
     'version ' + version + '   ' + new Date().toISOString(),
     '',
     'This file was written on the teacher\'s machine and scrubbed before it was',

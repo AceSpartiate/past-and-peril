@@ -181,7 +181,7 @@ if (ruleFound === true) {
   console.log('');
   console.log('         Run this ONCE, in an Administrator PowerShell:');
   console.log('');
-  console.log('           New-NetFirewallRule -DisplayName "Gonzales Company" `');
+  console.log('           New-NetFirewallRule -DisplayName "Past and Peril" `');
   console.log('             -Direction Inbound -Protocol TCP -LocalPort ' + PORT + ' -Action Allow');
   console.log('');
   console.log('         Or, the first time you start the server, Windows may pop up');
