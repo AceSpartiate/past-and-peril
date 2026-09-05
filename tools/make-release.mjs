@@ -33,6 +33,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { spawnSync } from 'child_process';
 import { zip } from './zip.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -109,6 +110,23 @@ function stage(name, includeRuntime) {
 say();
 say('Building release ' + version);
 say();
+
+/* THE PERSON CARDS HAVE TO BE BAKED FIRST.
+ *
+ * They are read from player-materials/, which is excluded from both the repo
+ * and the zips. Without this step server/people.js finds nothing on every
+ * machine except this one and serves zero cards — silently, with the panel
+ * simply never appearing. That shipped once. */
+{
+  const r = spawnSync(process.execPath, [path.join(ROOT, 'tools', 'build-person-cards.mjs')],
+    { encoding: 'utf8' });
+  if (r.status !== 0) {
+    say('FAILED to bake the person cards — nothing has been built.');
+    say(String(r.stdout || '') + String(r.stderr || ''));
+    process.exit(1);
+  }
+  String(r.stdout || '').split(/\r?\n/).filter(Boolean).forEach((l) => say(l.trim()));
+}
 
 const big = stage('past-and-peril-' + version + '.zip', true);
 const small = stage('update-' + version + '.zip', false);

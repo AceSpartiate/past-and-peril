@@ -145,14 +145,40 @@ function load() {
   return cache;
 }
 
+/* THE BAKED CARDS.
+ *
+ * player-materials/ is deliberately absent from the repository and from the
+ * release — it carries each character's own secret, and publishing it would let
+ * every student read every other student's. So on any machine but this one the
+ * markdown above is simply not there, and this file was silently serving zero
+ * cards with nothing to indicate it.
+ *
+ * app/content/person-cards.json is the student-safe half, baked out by
+ * tools/build-person-cards.mjs at release time — already stripped of the
+ * teacher-only sections and of the metadata header that contradicts the roster.
+ * The markdown wins when it is present, so editing the deck on the authoring
+ * machine still takes effect immediately. */
+let baked = null;
+function bakedCards() {
+  if (baked !== null) return baked;
+  try {
+    const p = path.join(__dirname, '..', 'app', 'content', 'person-cards.json');
+    baked = JSON.parse(fs.readFileSync(p, 'utf8')).cards || {};
+  } catch (e) { baked = {}; }
+  return baked;
+}
+
 module.exports = {
-  /* The card for a roster character, matched by name. null when there is none
-   * — five characters are in that position and the client shows the app's own
-   * description instead. */
-  forName(name) {
+  /* The card for a roster character. `id` lets the baked file be used, which is
+   * keyed by roster id; `name` drives the name matching against the markdown.
+   * null when there is none — five characters are in that position, and the
+   * client shows the app's own description instead. */
+  forName(name, id) {
     const c = load();
     const k = nameKey(name);
-    return (k && c.byKey[k]) || null;
+    const fromDeck = (k && c.byKey[k]) || null;
+    if (fromDeck) return fromDeck;
+    return (id && bakedCards()[id]) || null;
   },
 
   /* for tools/check-people.mjs */

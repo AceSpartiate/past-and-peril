@@ -280,7 +280,7 @@ const server = http.createServer(async (req, res) => {
     const id = String(url.searchParams.get('id') || '');
     const person = (roster.roster || []).filter((x) => x.id === id)[0];
     if (!person) return json(res, 404, { ok: false, error: 'no-such-character' });
-    const card = people.forName(person.name);
+    const card = people.forName(person.name, person.id);
     return json(res, 200, {
       ok: true,
       id: person.id,
