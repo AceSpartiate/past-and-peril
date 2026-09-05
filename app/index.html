@@ -28,6 +28,29 @@
     <h1>Loyal Subjects of a Federal Republic</h1>
     <p id="gate-sub">Session 1 · Gonzales, DeWitt Colony · late September 1835</p>
 
+    <!-- ================= BEFORE THE BELL =================
+         Which class is this? A teacher runs five periods a day and each is its
+         own campaign. /api/periods has always been able to answer this; until
+         now nothing asked it, the desk was hardwired to one class code, and
+         changing it meant editing the address bar. -->
+    <div class="classes" id="classes">
+      <div class="cl-head">
+        <span class="c-cap">whose period is this</span>
+        <span class="c-cap" id="cl-now"></span>
+      </div>
+      <div class="cl-list" id="cl-list"></div>
+
+      <div class="cl-new">
+        <label class="c-cap" for="cl-code">start a new class</label>
+        <div class="row" style="margin-top:7px">
+          <input class="cl-input mono" id="cl-code" maxlength="12" autocomplete="off"
+                 spellcheck="false" placeholder="7A">
+          <button class="btn" id="cl-make">Create</button>
+        </div>
+        <div class="cl-note" id="cl-note">A short code you will recognise tomorrow — a period number is plenty.</div>
+      </div>
+    </div>
+
     <div class="pre" id="preflight"></div>
 
     <div class="row" style="justify-content:center">

@@ -735,6 +735,11 @@ class Room {
         this.startedAt = this.now();
         this._enter(0);
         break;
+      /* Nothing to do. It exists so that opening the desk on a class is enough
+       * to point the students' short URL at it — see activeRoom in serve.js.
+       * Without it a teacher could pick period 3, not press anything yet, and
+       * have the class walk into period 1. */
+      case 'open':   this._emit(); break;
       case 'pause':  this.running = false; this._emit(); break;
       case 'resume':
         this.resumedFromDisk = false;

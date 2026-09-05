@@ -91,6 +91,55 @@ function getRoom(code) {
   return room;
 }
 
+/* ===========================================================================
+ * WHICH ROOM IS THE CLASS IN?
+ *
+ * A teacher runs five periods a day and each is its own Room with its own
+ * saved campaign. That has always worked on the server. It did NOT work for
+ * the students:
+ *
+ *   the address on the board is http://<ip>:8099/p
+ *   /p redirected to /play.html with no room
+ *   app/js/net.js defaults to GN7B when no room is given
+ *
+ * So a teacher could open period 7C, press start, and have all thirty students
+ * land in GN7B. Measured, not theorised: teacher in 7C, student in GN7B, two
+ * live rooms, nobody in the one being taught. The desk would have said
+ * "0 connected" all period with no hint as to why.
+ *
+ * So the server now knows which room is being taught, and /p sends students
+ * there. The address on the board stays short and stays the same all year —
+ * the redirect does the work, which also means the QR code on the projector
+ * never has to change between periods. */
+let activeRoom = null;
+
+function normaliseRoom(code) {
+  return String(code || '').toUpperCase().slice(0, 12) || null;
+}
+
+/* On a restart mid-day, the most recently saved period is overwhelmingly the
+ * one being taught. Better than defaulting to GN7B and silently splitting the
+ * class in half. */
+function initialActiveRoom() {
+  try {
+    const codes = store.list();
+    let best = null, bestAt = -1;
+    codes.forEach((c) => {
+      const d = store.read(c);
+      /* epoch ms from the store, not an ISO string — see whenSaved in
+       * app/js/console.js, where assuming otherwise showed nothing at all */
+      const raw = d && d.savedAt;
+      const at = typeof raw === 'number' ? raw : (Date.parse(raw || 0) || 0);
+      if (at > bestAt) { bestAt = at; best = c; }
+    });
+    if (best) return normaliseRoom(best);
+  } catch (e) {}
+  return normaliseRoom(roster.classCode) || 'GN7B';
+}
+activeRoom = initialActiveRoom();
+
+function currentRoom() { return activeRoom || normaliseRoom(roster.classCode) || 'GN7B'; }
+
 /* Save every open room. Called on the way out, and periodically, because a
  * classroom laptop is not shut down politely. */
 function saveAll(reason) {
@@ -232,6 +281,27 @@ const server = http.createServer(async (req, res) => {
     return stream(req, res, room, sid, role);
   }
 
+  /* START A CLASS OVER. Archives rather than deletes — see Store#archive.
+   *
+   * Teacher-keyed, and it requires the class code to be sent twice: once as the
+   * room and once as a typed confirmation. A term of a class's work should not
+   * be one stray click from gone, and the second field is what the teacher
+   * types to show they meant this class and not the one above it. */
+  if (p === '/api/archive' && req.method === 'POST') {
+    const b = await readBody(req);
+    if (b.key !== TEACHER_KEY) return json(res, 403, { ok: false, error: 'not-the-teacher' });
+    const code = normaliseRoom(b.room);
+    if (!code) return json(res, 400, { ok: false, error: 'no-room' });
+    if (normaliseRoom(b.confirm) !== code) {
+      return json(res, 400, { ok: false, error: 'confirm-mismatch' });
+    }
+    /* Drop the live Room too, or the next save would write it straight back. */
+    rooms.delete(code);
+    const r = store.archive(code);
+    if (r.ok && activeRoom === code) activeRoom = initialActiveRoom();
+    return json(res, r.ok ? 200 : 404, r);
+  }
+
   if (p === '/api/periods') {
     /* What the "Before the bell" screen needs: every class code this machine
      * has ever run, and where each of them got to. */
@@ -353,6 +423,10 @@ const server = http.createServer(async (req, res) => {
   if (p === '/api/cmd' && req.method === 'POST') {
     const b = await readBody(req);
     if (b.key !== TEACHER_KEY) return json(res, 403, { ok: false, error: 'not-the-teacher' });
+    /* The teacher touching a room is what makes it the one being taught. No
+     * separate "open this room" step to forget — pressing anything on the desk
+     * points the students' short URL at it. */
+    if (b.room) activeRoom = normaliseRoom(b.room);
     const room = getRoom(b.room);
     return json(res, 200, room.command(b.type, b.payload));
   }
@@ -363,7 +437,12 @@ const server = http.createServer(async (req, res) => {
    * the port, and every student who fumbles it needs the teacher — the exact
    * thing the autopilot exists to prevent. /p is the same page. */
   if (p === '/p' || p === '/play') {
-    res.writeHead(302, { Location: '/play.html' + (url.search || '') });
+    /* Add the room the teacher is actually teaching, unless the URL already
+     * names one. This is why the address on the board never has to change
+     * between periods, and why the projector's QR code stays valid all year. */
+    const q = new URLSearchParams(url.search);
+    if (!q.get('room')) q.set('room', currentRoom());
+    res.writeHead(302, { Location: '/play.html?' + q.toString() });
     return res.end();
   }
 
@@ -389,7 +468,7 @@ const server = http.createServer(async (req, res) => {
     return json(res, 200, {
       ok: true,
       port: PORT,
-      classCode: roster.classCode,
+      classCode: currentRoom(),
       student: ips.map((ip) => 'http://' + ip + ':' + PORT + '/p'),
       studentLong: ips.map((ip) => 'http://' + ip + ':' + PORT + '/play.html'),
       confirmed: ips.filter((ip) => confirmedAddrs.has(ip))

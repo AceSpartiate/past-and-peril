@@ -370,6 +370,116 @@
     window.addEventListener('beforeunload', function () { Narrator.stop(); });
   }
 
+  /* ================================================== BEFORE THE BELL
+   *
+   * Which class is this? Five periods a day, each its own campaign, each with
+   * its own saved progress. /api/periods has always been able to answer that;
+   * nothing asked it. The desk was hardwired to one class code and the only
+   * way to change it was to edit the address bar, which is not a thing a
+   * teacher should ever have to know.
+   *
+   * Choosing a class RELOADS the page against it, deliberately. A desk that
+   * swapped rooms in place would have to unwind an SSE stream, a timer, a
+   * narrator and a dozen rendered panels; a reload is two hundred milliseconds
+   * and cannot be half-done. */
+  /* The URL is not the only way the desk knows its room — with no ?room= it is
+   * on whatever Net defaulted to, and marking nothing as current made the list
+   * read as though no class were open. Ask Net, which is the thing that
+   * actually connected. */
+  function roomInUrl() {
+    const q = (new URLSearchParams(location.search).get('room') || '').toUpperCase();
+    return q || (Net.room || '').toUpperCase();
+  }
+  function goToRoom(code) {
+    const q = new URLSearchParams(location.search);
+    q.set('room', String(code).toUpperCase());
+    location.search = q.toString();
+  }
+
+  /* savedAt comes off the store as epoch milliseconds, not an ISO string.
+   * Date.parse of a number returns NaN, so this silently rendered nothing —
+   * caught by looking at the actual payload rather than assuming its shape. */
+  function whenSaved(at) {
+    if (!at) return '';
+    const then = typeof at === 'number' ? at : Date.parse(at);
+    if (!then) return '';
+    const mins = Math.round((Date.now() - then) / 60000);
+    if (mins < 2) return 'just now';
+    if (mins < 60) return mins + ' minutes ago';
+    const hrs = Math.round(mins / 60);
+    if (hrs < 24) return hrs === 1 ? 'an hour ago' : hrs + ' hours ago';
+    const days = Math.round(hrs / 24);
+    return days === 1 ? 'yesterday' : days + ' days ago';
+  }
+
+  function loadClasses() {
+    const here = roomInUrl();
+    $('cl-now').textContent = here ? 'now showing ' + here : '';
+    fetch('api/periods', { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        const list = (res && res.periods) || [];
+        /* most recently played first: on a normal day that is the class you
+         * just taught, and the one you are about to teach is the one you make */
+        list.sort(function (a, b) {
+          return (Date.parse(b.savedAt || 0) || 0) - (Date.parse(a.savedAt || 0) || 0);
+        });
+        renderClasses(list, here);
+      })
+      .catch(function () { renderClasses([], here); });
+  }
+
+  function renderClasses(list, here) {
+    const box = $('cl-list');
+    if (!list.length) {
+      box.innerHTML = '<div class="cl-empty">No class has been played on this ' +
+        'computer yet. Make one below — or press Open the room to use ' +
+        (here || 'the default') + '.</div>';
+      return;
+    }
+    box.innerHTML = list.map(function (p) {
+      const on = p.code === here;
+      const where = p.finished
+        ? 'session ' + p.session + ' finished'
+        : p.segment > 0 ? 'session ' + p.session + ', part way through'
+        : 'session ' + p.session + ', not started';
+      const who = p.characters
+        ? p.characters + (p.characters === 1 ? ' character' : ' characters')
+        : 'nobody has joined';
+      return '<button class="cl-row' + (on ? ' on' : '') + '" data-room="' + p.code + '">' +
+        '<span class="cl-code mono">' + p.code + '</span>' +
+        '<span class="cl-mid">' +
+          '<span class="cl-where">' + where + '</span>' +
+          '<span class="cl-who c-cap">' + who +
+            (p.priorSessions ? ' · ' + p.priorSessions + ' session(s) behind them' : '') +
+          '</span>' +
+        '</span>' +
+        '<span class="cl-when c-cap">' + (on ? 'showing now' : whenSaved(p.savedAt)) + '</span>' +
+        '</button>';
+    }).join('');
+  }
+
+  if ($('cl-list')) {
+    $('cl-list').addEventListener('click', function (e) {
+      const b = e.target.closest('[data-room]');
+      if (!b) return;
+      const code = b.getAttribute('data-room');
+      if (code === roomInUrl()) return;         // already here
+      goToRoom(code);
+    });
+  }
+  if ($('cl-make')) {
+    const make = function () {
+      const raw = ($('cl-code').value || '').trim().toUpperCase()
+        .replace(/[^A-Z0-9-]/g, '').slice(0, 12);
+      if (!raw) { $('cl-note').textContent = 'Type a code first — 7A, or P3, or anything short.'; return; }
+      if (raw === roomInUrl()) { $('cl-note').textContent = 'That is the class already showing.'; return; }
+      goToRoom(raw);
+    };
+    $('cl-make').addEventListener('click', make);
+    $('cl-code').addEventListener('keydown', function (e) { if (e.key === 'Enter') make(); });
+  }
+
   /* ---------------------------------------------------------------- boot */
   function fail(html) {
     $('preflight').innerHTML = '<div class="warnbox">' + html + '</div>';
@@ -390,6 +500,12 @@
         $('gate-sub').textContent = 'Session ' + json.session + ' · ' + json.subtitle;
         document.querySelector('.gate-in h1').textContent = json.title;
         preflight();
+        loadClasses();
+        /* Opening the desk on a class is enough to point the students' short
+         * URL at it. Without this a teacher could pick period 3, not press
+         * anything yet, and have the class walk into period 1 — which is
+         * exactly what happened before /p learned about rooms. */
+        Net.cmd('open').catch(function () {});
         $('gate-note').textContent =
           'Space pauses. Arrow keys skip and step back. E adds thirty seconds. ' +
           'Nothing needs pressing after you start — the period runs to the bell on its own.';

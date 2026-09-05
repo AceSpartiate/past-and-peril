@@ -63,6 +63,34 @@ class Store {
     }
   }
 
+  /* START A CLASS OVER, WITHOUT DESTROYING IT.
+   *
+   * A saved period is a class's actual progress — who they played, what they
+   * found out, what their choices cost. Offering a "reset" that deletes it
+   * would put a term's work one misclick away, and the teacher who needs the
+   * button most is the one in a hurry.
+   *
+   * So it moves. data/archive/<code>-<stamp>.json keeps the old campaign
+   * intact and out of the way; the class code comes back fresh on the next
+   * request. Nothing here can lose anything. */
+  archive(key) {
+    const from = this._file(key);
+    if (!from || !fs.existsSync(from)) return { ok: false, error: 'no-such-period' };
+    try {
+      const dir = path.join(this.dir, 'archive');
+      fs.mkdirSync(dir, { recursive: true });
+      const d = new Date();
+      const p = (n) => String(n).padStart(2, '0');
+      const stamp = d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) +
+                    '-' + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds());
+      const to = path.join(dir, String(key).toUpperCase() + '-' + stamp + '.json');
+      fs.renameSync(from, to);
+      return { ok: true, archivedTo: path.relative(this.dir, to) };
+    } catch (e) {
+      return { ok: false, error: String(e && e.message) };
+    }
+  }
+
   list() {
     try {
       return fs.readdirSync(this.dir)

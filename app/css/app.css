@@ -306,3 +306,41 @@ body.console {
   .btn.big { height: 66px; }
   .ambient { height: 12px; }
 }
+
+/* ==================================================== BEFORE THE BELL
+ *
+ * Which class is this? Five periods a day, each its own campaign. The desk
+ * used to be hardwired to one class code, and the only way to change it was to
+ * edit the address bar. */
+.classes {
+  text-align: left; border: 1px solid var(--d-rule);
+  background: var(--d-field); padding: 14px 16px 16px; margin-bottom: 18px;
+}
+.cl-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; }
+.cl-head .c-cap:last-child { margin-left: auto; color: var(--d-teal); }
+
+.cl-list { display: flex; flex-direction: column; gap: 6px; }
+.cl-row {
+  display: flex; align-items: center; gap: 14px; width: 100%;
+  background: var(--d-paper); border: 1px solid var(--d-rule);
+  border-left: 3px solid var(--d-rule-strong);
+  padding: 10px 13px; cursor: pointer; text-align: left; font: inherit;
+  color: var(--d-ink);
+}
+.cl-row:hover { border-color: var(--d-rule-strong); background: #fff; }
+/* the one you are looking at, so a second click is obviously pointless */
+.cl-row.on { border-left-color: var(--d-teal); cursor: default; background: #fff; }
+.cl-code { font-size: 17px; font-weight: 600; letter-spacing: .06em; flex: none; min-width: 66px; }
+.cl-mid { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1 1 auto; }
+.cl-where { font-size: 13px; }
+.cl-who { font-size: 9.5px; }
+.cl-when { font-size: 9.5px; flex: none; text-align: right; }
+.cl-empty { font-size: 12.5px; color: var(--d-soft); line-height: 1.55; padding: 4px 0 2px; }
+
+.cl-new { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--d-rule); }
+.cl-input {
+  flex: none; width: 108px; font-size: 17px; font-weight: 600; letter-spacing: .08em;
+  padding: 8px 11px; background: var(--d-paper);
+  border: 1px solid var(--d-rule-strong); color: var(--d-ink); text-transform: uppercase;
+}
+.cl-note { font-size: 9.5px; letter-spacing: .06em; color: var(--d-faint); margin-top: 8px; }
