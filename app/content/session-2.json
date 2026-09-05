@@ -195,7 +195,7 @@
       "eyebrow": "CONSEQUENCE",
       "voice": {
         "speaker": "NARRATOR",
-        "text": "Castañeda withdraws. You have won, and the word goes out that Texas has fired on Mexican troops and won. Now everything happens at once. Goliad falls on the ninth. Austin is elected to command an army that does not obey him. On the first of November the Consultation meets and creates a provisional government that will spend three months arguing with itself. And General Cos, with fifteen hundred men, is fortified in Béxar — seventy miles up that road. As long as they hold it, this town is next."
+        "text": "Castañeda withdraws. Texas has fired on Mexican troops and won. Goliad falls on the ninth. Austin is elected to command an army that does not obey him. And Cos holds Béxar with fifteen hundred men. As long as he holds it, this town is next."
       }
     },
     {
@@ -307,7 +307,7 @@
       "eyebrow": "TURN 5 · THE MATAMOROS QUESTION · COUNCIL",
       "voice": {
         "speaker": "NARRATOR",
-        "text": "The war looks over. Cos has surrendered and marched south. There is no Mexican army in Texas. Most of the men want to go home — it is winter, and there are farms. And there is a plan on the table: take the army south to Matamoros and carry the revolution into Mexico itself. Somebody has to stay and garrison Béxar. Who?"
+        "text": "The war looks over. Cos has surrendered and marched south. There is no Mexican army in Texas. Most of the men want to go home — it is winter, and there are farms. And there is a plan: carry the revolution into Mexico. Somebody has to garrison Béxar. Who?"
       }
     },
     {
@@ -382,14 +382,14 @@
       "blocks": [
         {
           "head": "Real today",
-          "body": "The flag existed and it flew. The cannon was loaded with scrap iron. Castañeda really did choose not to force a battle — he withdrew. The Grass Fight really was a raid on grass-cutters that Texians were certain was a silver train. Ben Milam really said that line, and really died two days before the surrender.",
+          "body": "The flag existed and it flew. The cannon was loaded with scrap iron. Castañeda really did choose not to force a battle. The Grass Fight really was a raid on grass-cutters the Texians were certain was silver. Ben Milam said that line, and died two days before the surrender.",
           "voice": {
             "speaker": "HISTORIAN"
           }
         },
         {
           "head": "And here is one I have to correct, because I told it to you myself",
-          "body": "You have probably heard that Sarah DeWitt and her daughter sewed that flag out of a wedding dress. That story is traditional and it is not documented — the Texas State Historical Association itself calls the attribution apocryphal. Somebody in this town made that flag. We do not actually know who.",
+          "body": "You have probably heard that Sarah DeWitt and her daughter sewed that flag from a wedding dress. That story is traditional and undocumented — the Texas State Historical Association calls it apocryphal. Somebody here made that flag. We do not know who.",
           "voice": {
             "speaker": "HISTORIAN"
           }

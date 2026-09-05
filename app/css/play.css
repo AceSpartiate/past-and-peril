@@ -889,3 +889,69 @@ button.who:hover .nm { text-decoration: underline; text-underline-offset: 3px; }
 .make-card-toggle:hover { color: var(--ink); }
 .mct-arrow { font-size: 11px; }
 .make-card-body[hidden] { display: none; }
+
+/* ============================================ THE OPENING
+ *
+ * A class played this and said it felt like a textbook with a game around it.
+ * The opening was the proof: a student's first screen was a register — thirty
+ * strangers' names — and the situation that makes any of them matter arrived
+ * on the projector four minutes later, after they had already chosen.
+ *
+ * So the town is the first thing on screen, the situation is the headline, and
+ * the list is what you scroll to. Twelve words of hook, no exposition. */
+.pick { position: relative; }
+.pick-map {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  display: block; z-index: 0; opacity: .82;
+  /* Present enough to read as a place, faded where the names sit so they are
+     on paper rather than on terrain. At .5 with a hard mask it was so washed
+     out it registered as a smudge, which is worse than no map: it looks like
+     a rendering fault rather than a town. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 34%, rgba(0,0,0,.28) 62%, transparent 88%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 34%, rgba(0,0,0,.28) 62%, transparent 88%);
+  pointer-events: none;
+}
+/* the headline sits over terrain, so give it ground of its own */
+.pick-in::before {
+  content: ''; position: absolute; left: -24px; right: -24px; top: -20px; height: 210px;
+  background: linear-gradient(to bottom, rgba(233,235,228,.92), rgba(233,235,228,.55) 62%, transparent);
+  z-index: -1; pointer-events: none;
+}
+.pick-in { position: relative; z-index: 1; }
+.pick-when { font-size: 10px; letter-spacing: .2em; color: var(--ink-faint); margin: 14px 0 10px; }
+.pick h1 {
+  font-family: var(--serif); font-weight: 400; line-height: 1.08;
+  font-size: clamp(28px, 4.6vw, 52px); margin: 0 0 10px; max-width: 16ch;
+}
+.pick-ask { font-size: clamp(15px, 1.7vw, 20px); color: var(--ink-soft); margin: 0 0 22px; }
+.pick .sub { margin: 24px 0 0; opacity: .7; }
+
+/* the person you are looking at, standing where they stand */
+.pcard.lit { background: #fff; border-left-width: 5px; }
+
+/* THE COLD OPEN: PRESENCE, NOT A BLANKED SCREEN.
+ *
+ * For four minutes at the top of the lesson this covered the map with "Watch
+ * the board" while the projector played the best thing in the session. A class
+ * said the game felt like a textbook; a device switched off at the very start
+ * is the least game-like thing it does.
+ *
+ * Clear, so the student stands in the town and watches classmates arrive.
+ * Nothing is tappable — the turn is closed, so a tap already does nothing —
+ * which is why this can be presence without becoming permission. */
+.scrim.clear {
+  background: none;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 26px;
+  pointer-events: none;
+}
+.scrim.clear .scrim-in {
+  background: rgba(242,243,238,.93);
+  border: 1px solid var(--rule-strong);
+  padding: 10px 22px 13px;
+}
+.scrim.clear .scrim-title {
+  font-size: clamp(15px, 2vw, 22px); margin-top: 5px;
+}
+.scrim.clear .scrim-tut { display: none; }

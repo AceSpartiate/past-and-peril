@@ -99,6 +99,7 @@
     return Net.maps().then(function (res) {
       (res.maps || []).forEach(function (m) { MAPS[m.id] = HexMap.make(m); });
       MAP = MAPS[Object.keys(MAPS)[0]] || null;
+      paintPickMap();
       Net.connect({ role: 'student' });
       /* The documents. Loaded once at boot rather than when one is needed,
        * because the moment one IS needed is the top of a lesson on school
@@ -107,6 +108,26 @@
       loadRoster();
     });
   });
+
+  /* THE TOWN, BEHIND THE CHOOSING.
+   *
+   * The first thing a student saw was a register of thirty strangers, and the
+   * situation that makes any of them matter arrived on the projector four
+   * minutes later. So Gonzales is drawn behind the list: before reading a
+   * single name they are looking at a place, at the hour the lesson is set,
+   * with the cannon and the ford and the square in it.
+   *
+   * No tokens, nothing to press. It is scenery, and scenery is the cheapest
+   * way to say "this is a game" without spending a word on saying it. */
+  let pickR = null;
+  function paintPickMap() {
+    const cv = $('pick-map');
+    const town = MAPS.gonzales_town || MAP;
+    if (!cv || !town) return;
+    if (!pickR) pickR = HexMap.Renderer(cv, town);
+    pickR.draw({ light: { phase: 'AFTERNOON', weather: 'CLEAR' }, showLabels: false });
+  }
+  window.addEventListener('resize', function () { if (!joined) paintPickMap(); });
 
   let rosterCache = [];
   function loadRoster() {
@@ -854,6 +875,23 @@
              calling: ME.calling, tint: ME.tint || null });
   }
 
+  /* "GONZALES · 29 SEPTEMBER 1835" — where and when, and nothing else.
+   *
+   * The cold open needs a caption, not a caption plus an instruction. The
+   * instruction would be the thing that made it feel like school again. */
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+                  'August', 'September', 'October', 'November', 'December'];
+
+  function placeAndDate() {
+    const where = (MAP && MAP.title) || 'Gonzales';
+    /* "1835-09-30" is a machine's date, and an ISO string in a game set in
+     * 1835 breaks the spell in the one place the spell is all there is. */
+    const raw = (ME && ME.light && ME.light.date) || '';
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
+    const when = m ? (Number(m[3]) + ' ' + MONTHS[Number(m[2]) - 1] + ' ' + m[1]) : raw;
+    return when ? where + ' · ' + when : where;
+  }
+
   /* Movement as pips rather than a number in a sentence. Three dots that go
    * out one at a time is a budget a twelve-year-old can feel; "moveLeft: 2" is
    * a fact they have to read and convert. */
@@ -1152,6 +1190,32 @@
 
     $('turnbar').hidden = true;
     $('scrim').hidden = false;
+
+    /* THE COLD OPEN IS NOT A WAITING ROOM.
+     *
+     * For four minutes at the top of the lesson this screen said "Watch the
+     * board" over an opaque sheet, while the projector played the best thing
+     * in the whole session — the map of the colony, Ugartechea's demand for
+     * the cannon, and the line "he is entitled to it".
+     *
+     * A class said the game felt like a textbook. Four minutes of a blanked
+     * device at the very start is the least game-like thing it does.
+     *
+     * So during the cold open the sheet goes clear: the student stands in
+     * Gonzales, lit for the hour, and watches their classmates arrive in it
+     * while the story plays at the front. Nothing is tappable — the turn is
+     * closed, so reachSet is empty and every tap already does nothing — which
+     * keeps "eyes up front" intact. Presence, not permission. */
+    const cinematic = WORLD.started && WORLD.running &&
+                      seg && seg.kind === 'sequence';
+    $('scrim').classList.toggle('clear', !!cinematic);
+    if (cinematic) {
+      $('scrim-kicker').textContent = seg.eyebrow || 'COLD OPEN';
+      $('scrim-title').textContent = placeAndDate();
+      $('scrim-note').textContent = '';
+      return;
+    }
+
     if (!WORLD.started) {
       $('scrim-kicker').textContent = 'NOT YET';
       $('scrim-title').textContent = 'Wait for your teacher.';

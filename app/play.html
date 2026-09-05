@@ -12,12 +12,21 @@
 
 <!-- ============ PICK YOUR NAME ============ -->
 <div class="pick" id="pick">
+  <!-- THE TOWN IS THE FIRST THING YOU SEE.
+       A class said this felt like a textbook with a game around it, and the
+       opening was the evidence: a list of thirty strangers' names, chosen
+       before a student knew there was a cannon, a colonel, or a town in
+       trouble. The situation was on the projector four minutes LATER.
+       So the world comes first and the register second. -->
+  <canvas class="pick-map" id="pick-map" aria-hidden="true"></canvas>
   <div class="pick-in">
     <div class="mono brandline">PAST &amp; PERIL</div>
-    <h1>Tap your name</h1>
-    <p class="mono sub" id="pick-sub">GONZALES-7B · SESSION 1</p>
+    <p class="mono pick-when" id="pick-when">GONZALES · SEPTEMBER 1835</p>
+    <h1>Soldiers are coming for the town&rsquo;s cannon.</h1>
+    <p class="pick-ask">You live here. Who are you?</p>
     <p class="pick-need" id="pick-need" hidden></p>
     <div class="pick-grid" id="pick-grid"></div>
+    <p class="mono sub" id="pick-sub">GONZALES-7B · SESSION 1</p>
   </div>
 </div>
 
