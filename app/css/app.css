@@ -368,3 +368,29 @@ body.console {
 .sc-t { font-size: 13.5px; }
 .sc-d { font-size: 10px; color: var(--d-faint); line-height: 1.4; }
 @media (max-width: 720px) { .sc-row { grid-template-columns: 1fr; } }
+
+/* ============================== WHAT STUDENTS SHOULD BE DOING
+ *
+ * Six of the twenty segments in a session carried an `instruction`, and several
+ * of those were flavour rather than an instruction. For the other fourteen —
+ * every read, the cold open, the record — the board showed content and never
+ * said what a student should be doing.
+ *
+ * This band sits outside the views, is never empty, and is read from the back
+ * of a classroom. It is the answer to "what am I supposed to be doing", which
+ * is the question a twelve-year-old asks most often and asks out loud. */
+.nowbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 40;
+  display: flex; align-items: baseline; gap: 20px;
+  background: var(--d-ink); color: var(--d-paper);
+  padding: 14px 40px 16px;
+}
+.now-cap { font-size: 12px; letter-spacing: .28em; color: var(--d-wheat, #C39355); flex: none; }
+/* big, because it is read from the back row */
+.now-do { font-size: clamp(20px, 2.9vw, 40px); line-height: 1.1; font-weight: 500; }
+.now-sub {
+  margin-left: auto; flex: none; text-align: right;
+  font-size: clamp(12px, 1.3vw, 18px); letter-spacing: .1em; opacity: .72;
+}
+/* the views must not run underneath it */
+.stage-body .view { padding-bottom: 92px; }

@@ -66,8 +66,80 @@
     }).join('');
   }
 
+  /* ============================================ WHAT TO DO, ALWAYS
+   *
+   * Never returns nothing. Every branch answers the only question that matters
+   * from the back row — what am I supposed to be doing right now — in an
+   * imperative a twelve-year-old can act on without asking a neighbour.
+   *
+   * The authored `instruction` on a segment is deliberately NOT used here. It
+   * is the teacher's flavour line ("One unarmed man, doing something perfectly
+   * legal. Watch.") and it already has a home in the beat view. Flavour and
+   * instruction are different jobs, and conflating them is how fourteen
+   * segments ended up saying nothing at all.
+   *
+   * The counts during a turn are the most useful line in the room: a student
+   * who has not gone can see they are the holdup, and one who has can see the
+   * class is still working. */
+  function whatToDo(s) {
+    if (!s || !s.started) {
+      return { now: 'Open the link on your device.', sub: whereLine || '' };
+    }
+    if (!s.running) return { now: 'Hold. Eyes up front.', sub: '' };
+
+    const seg = s.segment || {};
+    const rs = s.room_status || {};
+
+    if (s.turnOpen) {
+      const n = rs.connected || 0;
+      const gone = rs.acted || 0;
+      return {
+        now: 'Move, then choose what you do.',
+        sub: n ? gone + ' of ' + n + ' have gone' : '',
+      };
+    }
+
+    switch (seg.kind) {
+      case 'sequence':
+        return { now: 'Watch. You are standing in the town.', sub: '' };
+      case 'read':
+        return { now: 'Listen. Your screen is locked.', sub: '' };
+      case 'tally':
+        return { now: 'Hands up when your company is called.', sub: '' };
+      case 'checklist':
+        return { now: 'Follow along.', sub: '' };
+      case 'record':
+        return { now: 'Read the board.', sub: '' };
+      default:
+        return { now: 'Eyes up front.', sub: '' };
+    }
+  }
+
+  /* The address, for the one moment it is the instruction. */
+  let whereLine = '';
+  fetch('api/where', { cache: 'no-store' })
+    .then(function (r) { return r.json(); })
+    .then(function (w) {
+      if (!w || !w.ok) return;
+      const best = (w.confirmed && w.confirmed[0]) || w.student[0] || '';
+      whereLine = best.replace(/^https?:\/\//, '');
+    })
+    .catch(function () {});
+
+  function paintNow(s) {
+    const w = whatToDo(s);
+    $('now-do').textContent = w.now;
+    $('now-sub').textContent = w.sub || '';
+  }
+
   function render(s) {
     if (!s) return;
+
+    /* FIRST, and outside every conditional. The band's whole promise is that
+     * it is never blank, and painting it inside `if (s.meta)` would have
+     * broken exactly that on the states where a student is most likely to be
+     * lost — before the room has started and has no meta yet. */
+    paintNow(s);
 
     if (s.meta) {
       $('fl-date').textContent = s.meta.datestamp || '';
