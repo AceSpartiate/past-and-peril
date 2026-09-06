@@ -248,7 +248,8 @@ ever wrong it corrects itself in front of the class.
 
 So you don't go looking for it:
 
-- **Sessions 3 to 6.** Only 1 and 2 exist.
+- **Sessions 3 to 6 in the app.** Only 1 and 2 are playable. All six are designed on paper in
+  `gm-materials/` — the thinking is done, the JSON is not written.
 - **Fog of war.** You can see the whole map, always.
 - **The Alamo at its own scale.** It reads as a walled block at 110 yards a hex.
 - **Bodies to search** exist only on the Béxar map and were placed by hand — nothing in the content

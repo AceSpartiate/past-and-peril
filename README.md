@@ -1,6 +1,6 @@
 # PAST & PERIL
 ### Come and Take It — the Gonzales campaign
-### A seven-session tabletop campaign that teaches the Texas Revolution
+### A seven-session digital classroom RPG that teaches the Texas Revolution
 **7th Grade Texas History · 19 TAC §113.19 (Adopted 2022) · ~30 students · one teacher · 45–50 minute periods · no prior gaming experience required**
 
 **7 core sessions + 2 optional · ~45 min each · ~315 min of core instruction**
@@ -9,15 +9,18 @@
 
 ## What this is
 
-A classroom tabletop roleplaying game in which your class becomes the town of **Gonzales, Texas, in
+A classroom roleplaying game, played on the students' own screens, in which your class becomes the town of **Gonzales, Texas, in
 October 1835** — and lives through the Texas Revolution from the first shot to annexation.
 
 Gonzales is not a generic setting. It was chosen because its real history is a complete tragic arc
 that requires no invention:
 
-> The war's first shots are fired **there**, over **their** cannon. The Gonzales Ranging Company —
-> the "Immortal 32" — rides to the Alamo and dies to a man. Houston burns the town during the
+> The war's first shots are fired **there**, over **their** cannon. The Gonzales Ranging Company
+> rides to the Alamo and dies there to a man. Houston burns the town during the
 > Runaway Scrape. And Gonzales survivors stand in the line at San Jacinto.
+
+They are remembered as the "Immortal 32" — though that count was reconstructed later from
+several imperfect lists, and appears whole in no 1836 document. The game says so out loud.
 
 Your town starts the war, pays for it, burns, and wins it. **Every emotional beat is documented
 fact.**

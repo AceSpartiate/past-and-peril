@@ -33,6 +33,14 @@ design-canvas-student/
 overview.html
 .claude/
 
+# BUNDLES OF THE PRIVATE DIRECTORIES ABOVE.
+# tools/bundle-notes.mjs makes one so the design work can travel to another
+# machine. It contains run sheets and per-student secrets. It must never land
+# in this repo, and it is written OUTSIDE the repo by default — this is the
+# belt-and-braces in case somebody drops one here by hand.
+*-notes.zip
+past-and-peril-notes.zip
+
 # THIS MACHINE'S OWN STATE
 data/
 .teacher-key
