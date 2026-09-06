@@ -1,5 +1,13 @@
 # PAST & PERIL — working notes for Claude
 
+> ## ▶ IF THIS IS YOUR FIRST MESSAGE IN THIS PROJECT, STOP AND READ `design/22-START-HERE.md` NOW.
+>
+> It is the handoff: an ordered list of what to do, what is already verified so
+> you do not pay to rediscover it, and what is flagged as the teacher’s decision
+> rather than yours. There is a specific task waiting and a spec for it.
+>
+> The teacher is near their usage limit. Being economical is part of the job.
+
 Read this before changing anything. It is short on purpose; the long version
 lives in `design/`, which is **not in this repository** (see *Where the thinking
 lives*, below).
