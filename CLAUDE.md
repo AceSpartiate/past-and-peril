@@ -180,8 +180,11 @@ picking this up on a new machine and those directories are absent, ask before
 inferring intent from the code alone; a great deal of the reasoning is in
 `design/`, especially:
 
-- `design/20-the-wow-plan.md` — the current plan
+- **`design/22-START-HERE.md` — read this first.** Handoff, the ordered list of
+  what to do next, and what is already diagnosed and waiting.
+- `design/23-slice0-spec.md` — the exact work currently in front of you
 - `design/21-decisions.md` — settled decisions, with what they killed
+- `design/20-the-wow-plan.md` — the plan the game is being built toward
 - `design/00-constraints.md` — the original constraints
 
 ---
