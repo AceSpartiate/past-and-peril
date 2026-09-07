@@ -496,3 +496,42 @@ body.console {
 
 /* A rehearsed period in the class picker. Same oxide as the board banner. */
 .cl-test { color: var(--d-oxide); font-weight: 700; letter-spacing: .1em; }
+
+/* ================================================ THE UNIFIED CONSOLE
+ * The console was two pages that replaced each other. These are the parts
+ * that let it be one: a setup panel that folds itself away when the period
+ * starts, and a screens column narrow enough to live beside the desk. */
+
+.mast-l { min-width: 0; }
+.mast-sub { display: flex; align-items: center; gap: 9px; margin-top: 4px; }
+.mast-sub .tag {
+  font-size: 11px; letter-spacing: .16em; font-weight: 600; color: var(--d-teal);
+  border: 1px solid var(--d-rule-strong); border-radius: 3px; padding: 1px 7px;
+}
+
+/* SETUP. <details> rather than a scripted panel: a disclosure triangle is
+ * something every teacher has already used, and it still opens if the script
+ * throws on the way past. */
+.setup { border: 1px solid var(--d-rule); background: var(--d-field); border-radius: 4px; }
+.setup > summary {
+  cursor: pointer; padding: 13px 16px; display: flex; align-items: baseline; gap: 12px;
+  list-style: none; user-select: none;
+}
+.setup > summary::-webkit-details-marker { display: none; }
+.setup > summary::before {
+  content: '\25B8'; color: var(--d-faint); font-size: 11px; transition: transform .15s;
+}
+.setup[open] > summary::before { transform: rotate(90deg); }
+.setup > summary:hover { background: #1A2227; }
+.setup .sum-t { font-size: 14px; color: var(--d-ink); }
+.setup-in { padding: 4px 16px 18px; border-top: 1px solid var(--d-rule); }
+.setup-in .classes { margin-top: 16px; }
+
+/* A session waiting on a confirming second press. */
+.cl-row.arm { border-left-color: var(--d-oxide); background: #FFF3EF; }
+
+/* The screens list lives in the 320px side column now, so it stacks. */
+.sc-row.stack { grid-template-columns: 1fr; }
+.screens { margin: 0; }
+.screens-box { margin-bottom: 20px; }
+.screens-box .screens { border: 0; background: transparent; padding: 0 14px 14px; }

@@ -3,16 +3,40 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Console — Past &amp; Peril</title>
+<title>Console &mdash; Past &amp; Peril</title>
 <link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/app.css">
 </head>
 <body class="console">
 
+<!-- =====================================================================
+     ONE SCREEN.
+
+     This used to be two pages that replaced each other: a start gate with
+     the class picker and the links on it, and a desk with the controls and
+     the room on it. Choosing a class, seeing who had joined, opening the
+     projector and watching the period were four things a teacher needed at
+     once, and the page could only ever show two of them.
+
+     Worse, the swap was silent. Everything on the gate simply vanished the
+     moment the period started, so the answer to "how do I get the projector
+     up again" was to end the lesson.
+
+     So: nothing is on the other side of anything. The setup panel folds
+     itself away when the period starts and is one click from coming back.
+     What `started` changes is which BUTTONS are live, never which page you
+     are looking at.
+     ===================================================================== -->
+
 <div class="c-mast">
-  <div>
+  <div class="mast-l">
     <div class="brand">PAST &amp; PERIL</div>
-    <div class="sess" id="m-sess">Session 1</div>
+    <div class="sess" id="m-title">Loyal Subjects of a Federal Republic</div>
+    <div class="mast-sub">
+      <span class="tag mono" id="m-class">&mdash;</span>
+      <span class="c-cap" id="m-sess">Session 1</span>
+      <span class="fl-test" id="m-test" hidden>REHEARSAL</span>
+    </div>
   </div>
   <div class="c-bell">
     <div class="c-cap">bell in</div>
@@ -22,97 +46,69 @@
 </div>
 <div class="ambient idle" id="ambient"></div>
 
-<!-- ===================== START GATE ===================== -->
-<div class="gate" id="gate">
-  <div class="gate-in">
-    <h1>Loyal Subjects of a Federal Republic</h1>
-    <p id="gate-sub">Session 1 · Gonzales, DeWitt Colony · late September 1835</p>
-
-    <!-- ================= BEFORE THE BELL =================
-         Which class is this? A teacher runs five periods a day and each is its
-         own campaign. /api/periods has always been able to answer this; until
-         now nothing asked it, the desk was hardwired to one class code, and
-         changing it meant editing the address bar. -->
-    <div class="classes" id="classes">
-      <div class="cl-head">
-        <span class="c-cap">whose period is this</span>
-        <span class="c-cap" id="cl-now"></span>
-      </div>
-      <div class="cl-list" id="cl-list"></div>
-
-      <div class="cl-new">
-        <label class="c-cap" for="cl-code">start a new class</label>
-        <div class="row" style="margin-top:7px">
-          <input class="cl-input mono" id="cl-code" maxlength="12" autocomplete="off"
-                 spellcheck="false" placeholder="7A">
-          <button class="btn" id="cl-make">Create</button>
-        </div>
-        <div class="cl-note" id="cl-note">A short code you will recognise tomorrow — a period number is plenty.</div>
-      </div>
-    </div>
-
-    <div class="pre" id="preflight"></div>
-
-    <div class="go">
-    <div class="row" style="justify-content:center">
-      <button class="btn big primary" id="b-start" style="flex-grow:1">Open the room &nbsp;&#9654;</button>
-    </div>
-
-    <!-- REHEARSAL, AND IT BELONGS HERE. The desk carries a stop button for
-         it too, but the desk is on the far side of this gate: a teacher who
-         wants to watch a period before the class arrives is standing on THIS
-         screen, having just chosen the session, and there was nothing here
-         to press. Choosing a session and pressing this is one decision. -->
-    <div class="row" style="justify-content:center">
-      <button class="btn" id="b-test-gate" style="flex-grow:1;height:52px">Test mode: play it with nobody &nbsp;&#9654;</button>
-    </div>
-    <div class="cl-note" id="test-gate-note">Seats the whole roster as bots and plays the period on the real clock, so you can watch it. It refuses if any student has joined, and the save is marked a rehearsal forever.</div>
-    </div>
-    <!-- ============== THE THREE SCREENS ==============
-         A teacher could not work out how to get from the QR screen to the
-         lesson. The desk was part of why: it never showed the student address
-         at all, and had no link to the join screen — /api/where computes all
-         of it correctly and app/join.html was its only reader, reachable only
-         by typing /join or reading the black terminal window. -->
-    <div class="screens" id="screens">
-      <div class="sc-where">
-        <span class="c-cap">students go to</span>
-        <b class="mono" id="sc-url">…</b>
-        <span class="c-cap" id="sc-alt"></span>
-      </div>
-      <div class="sc-row">
-        <a class="sc-card" id="b-join" href="join.html" target="_blank" rel="noopener">
-          <span class="sc-n mono">1</span>
-          <span class="sc-t">While they arrive</span>
-          <span class="sc-d">The address in huge type, a QR code, and who has joined</span>
-        </a>
-        <a class="sc-card" id="b-stage" href="stage.html" data-stage-link target="_blank" rel="noopener">
-          <span class="sc-n mono">2</span>
-          <span class="sc-t">During the lesson</span>
-          <span class="sc-d">The board everyone watches — swap the projector to this</span>
-        </a>
-        <button class="sc-card" id="b-stage-inline" type="button">
-          <span class="sc-n mono">·</span>
-          <span class="sc-t">Stage on this screen</span>
-          <span class="sc-d">If you only have one display</span>
-        </button>
-      </div>
-    </div>
-    <div class="note" style="margin-top:18px;text-align:left" id="gate-note"></div>
-  </div>
-</div>
-
-<!-- ===================== RUNNING ===================== -->
-<div class="c-body" id="running" hidden>
+<div class="c-body" id="running">
   <div class="c-main">
 
+    <!-- ============ SETUP ============
+         Open by default, folded once the period is running, and always one
+         click from coming back. A <details> rather than a JS panel because a
+         disclosure triangle is a thing every teacher has already used, and it
+         keeps working if the script throws. -->
+    <details class="setup" id="setup" open>
+      <summary>
+        <span class="c-cap">before the bell</span>
+        <span class="sum-t" id="setup-sum">Choose the class and the session</span>
+      </summary>
+
+      <div class="setup-in">
+        <!-- Which class? A teacher runs five periods a day and each one is
+             its own campaign with its own saved progress. -->
+        <div class="classes" id="classes">
+          <div class="cl-head">
+            <span class="c-cap">1 &middot; whose period is this</span>
+            <span class="c-cap" id="cl-now"></span>
+          </div>
+          <div class="cl-list" id="cl-list"></div>
+
+          <div class="cl-new">
+            <label class="c-cap" for="cl-code">start a new class</label>
+            <div class="row" style="margin-top:7px">
+              <input class="cl-input mono" id="cl-code" maxlength="12" autocomplete="off"
+                     spellcheck="false" placeholder="7A">
+              <button class="btn" id="cl-make">Create</button>
+            </div>
+            <div class="cl-note" id="cl-note">A short code you will recognise tomorrow &mdash; a period number is plenty.</div>
+          </div>
+        </div>
+
+        <!-- Which session? There was no way to say this from any screen. The
+             only way to reach session 2 was to finish session 1 in that room,
+             which is right for a class working through the unit and useless
+             for looking at Thursday's period on Sunday night. -->
+        <div class="classes" id="sessions">
+          <div class="cl-head">
+            <span class="c-cap">2 &middot; which session</span>
+            <span class="c-cap" id="ss-now"></span>
+          </div>
+          <div class="cl-list" id="ss-list"></div>
+          <div class="cl-note" id="ss-note">Each class works through these in order. Picking one resets today&rsquo;s period; everything the class has earned stays with them.</div>
+        </div>
+
+        <div class="cl-head" style="margin-top:20px"><span class="c-cap">3 &middot; is everything ready</span></div>
+        <div class="pre" id="preflight"></div>
+        <div class="note" style="margin-top:14px;text-align:left" id="gate-note"></div>
+        <div class="c-cap" id="gate-sub" style="margin-top:10px"></div>
+      </div>
+    </details>
+
+    <!-- ============ WHAT IS HAPPENING RIGHT NOW ============ -->
     <div class="now">
       <div class="kind">
-        <b id="n-kind">—</b>
+        <b id="n-kind">&mdash;</b>
         <span class="c-cap" id="n-pos"></span>
         <span class="c-cap" id="n-extra" style="margin-left:auto"></span>
       </div>
-      <div class="title" id="n-title">—</div>
+      <div class="title" id="n-title">&mdash;</div>
       <div class="clockline mono" id="n-clock">0:00</div>
       <div class="say" id="n-say" hidden>
         <div class="c-cap" style="color:var(--d-oxide);margin-bottom:7px" id="n-say-cap">narrator is reading</div>
@@ -120,22 +116,35 @@
       </div>
     </div>
 
-    <div class="row">
-      <button class="btn primary" id="b-pause" style="width:150px;height:52px">Pause</button>
-      <button class="btn" id="b-extend" style="height:52px">Extend +30s</button>
-      <button class="btn" id="b-back" style="height:52px">&#9664; Back</button>
-      <button class="btn" id="b-next" style="height:52px">Skip &#9654;</button>
-      <button class="btn" id="b-replay" style="height:52px">Replay beat</button>
-      <button class="btn" id="b-roll" style="height:52px">Roll 2d6</button>
-      <button class="btn" id="b-mute" style="height:52px">I&rsquo;ll read it</button>
+    <!-- ============ START IT ============
+         Shown while the period is not running. The rehearsal button sits
+         directly under the real one because "choose a session and press test
+         mode" is a single decision made at this exact moment. -->
+    <div id="start-row">
+      <div class="row">
+        <button class="btn big primary" id="b-start" style="flex-grow:1">Start the period &nbsp;&#9654;</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn" id="b-test-gate" style="flex-grow:1;height:52px">Test mode: play it with nobody &nbsp;&#9654;</button>
+      </div>
+      <div class="cl-note" id="test-gate-note">Seats the whole roster as bots and plays the period on the real clock, so you can watch it. It refuses if any student has joined, and the save is marked a rehearsal forever.</div>
     </div>
 
-    <!-- TEST MODE. Seats the whole roster as bots so a period can be
-         watched before any students arrive. Refuses if anybody real is in
-         the room, and every screen says REHEARSAL while it runs. -->
-    <div class="row">
-      <button class="btn" id="b-test" style="height:52px">Test mode: play it with nobody</button>
-      <span class="c-cap" id="test-note"></span>
+    <!-- ============ RUN IT ============ -->
+    <div id="run-row" hidden>
+      <div class="row">
+        <button class="btn primary" id="b-pause" style="width:150px;height:52px">Pause</button>
+        <button class="btn" id="b-extend" style="height:52px">Extend +30s</button>
+        <button class="btn" id="b-back" style="height:52px">&#9664; Back</button>
+        <button class="btn" id="b-next" style="height:52px">Skip &#9654;</button>
+        <button class="btn" id="b-replay" style="height:52px">Replay beat</button>
+        <button class="btn" id="b-roll" style="height:52px">Roll 2d6</button>
+        <button class="btn" id="b-mute" style="height:52px">I&rsquo;ll read it</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn" id="b-test" style="height:52px">Test mode: play it with nobody</button>
+        <span class="c-cap" id="test-note"></span>
+      </div>
     </div>
 
     <div class="tnote" id="t-note" hidden></div>
@@ -169,12 +178,54 @@
   </div>
 
   <div class="c-side">
-    <div id="tally-box" hidden style="margin-bottom:22px">
+
+    <!-- ============ THE SCREENS ============
+         At the top of the side column and never hidden. A teacher could not
+         work out how to get from the QR screen to the lesson, and once the
+         period started these links disappeared entirely, so a projector that
+         got closed mid-lesson could not be reopened without ending it. -->
+    <details class="setup screens-box" id="screens-box" open>
+      <summary>
+        <span class="c-cap">open a screen</span>
+        <span class="sum-t" id="screens-sum">The projector, the joining screen, a seat</span>
+      </summary>
+    <div class="screens" id="screens">
+      <div class="sc-where">
+        <span class="c-cap">students go to</span>
+        <b class="mono" id="sc-url">&hellip;</b>
+        <span class="c-cap" id="sc-alt"></span>
+      </div>
+      <div class="sc-row stack">
+        <a class="sc-card" id="b-join" href="join.html" target="_blank" rel="noopener">
+          <span class="sc-n mono">1</span>
+          <span class="sc-t">While they arrive</span>
+          <span class="sc-d">The address in huge type, a QR code, and who has joined</span>
+        </a>
+        <a class="sc-card" id="b-stage" href="stage.html" data-stage-link target="_blank" rel="noopener">
+          <span class="sc-n mono">2</span>
+          <span class="sc-t">During the lesson</span>
+          <span class="sc-d">The board everyone watches &mdash; swap the projector to this</span>
+        </a>
+        <button class="sc-card" id="b-stage-inline" type="button">
+          <span class="sc-n mono">&middot;</span>
+          <span class="sc-t">Stage on this screen</span>
+          <span class="sc-d">If you only have one display</span>
+        </button>
+        <a class="sc-card" id="b-seat" href="play.html" target="_blank" rel="noopener">
+          <span class="sc-n mono">&middot;</span>
+          <span class="sc-t">A student&rsquo;s screen</span>
+          <span class="sc-d">What they are looking at. Safe to open &mdash; it takes no seat until you pick a name</span>
+        </a>
+      </div>
+    </div>
+    </details>
+
+    <div id="tally-box" hidden style="margin:22px 0">
       <div class="panel-h"><span class="c-cap" style="color:var(--d-oxide)">the vote</span></div>
       <div id="tally-rows"></div>
     </div>
 
-    <div class="panel-h">
+    <div class="panel-h" style="margin-top:22px">
       <span class="c-cap">the room</span>
       <span class="mono" id="room-count" style="font-size:11px;color:var(--d-teal);margin-left:auto">0 connected</span>
     </div>

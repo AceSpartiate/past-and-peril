@@ -8,6 +8,8 @@
 (function () {
   const $ = function (id) { return document.getElementById(id); };
   let SESSION = null;
+  let wasIdle = null;      // so the setup panel folds on the TRANSITION only
+  let ssArmed = null;      // a session index awaiting a confirming second press
   let LAST = null;      // newest state from the server
 
   function mmss(sec) {
@@ -272,6 +274,53 @@
     }).join('');
   }
 
+  /* WHICH SESSION.
+   *
+   * There was no way to say this from any screen. nextSession only steps
+   * forward and only once a period has closed out, so reaching session 2
+   * meant teaching session 1 to the end first - fine for a class working
+   * through the unit, useless for looking at Thursday's period on Sunday.
+   *
+   * Rendered from the snapshot rather than a hardcoded list, so sessions
+   * three to six appear here the day their JSON lands and not before. */
+  const SS_NOTE = 'Each class works through these in order. Picking one resets today’s period; everything the class has earned stays with them.';
+  function renderSessions(s) {
+    const list = (s.meta && s.meta.sessions) || [];
+    $('ss-now').textContent = list.length > 1 ? list.length + ' written so far' : '';
+    $('ss-list').innerHTML = list.map(function (x) {
+      const on = x.index === s.sessionIndex;
+      const arm = ssArmed === x.index;
+      return '<button class="cl-row' + (on ? ' on' : '') + (arm ? ' arm' : '') +
+        '" data-session="' + x.index + '">' +
+        '<span class="cl-code mono">' + x.session + '</span>' +
+        '<span class="cl-mid">' +
+          '<span class="cl-where">' + x.title + '</span>' +
+          '<span class="cl-who c-cap">' + (arm
+            ? 'press again to switch — today restarts'
+            : (on ? 'loaded' : 'not loaded')) + '</span>' +
+        '</span>' +
+        '<span class="cl-when c-cap">' + (on ? 'showing now' : 'load') + '</span>' +
+        '</button>';
+    }).join('');
+  }
+
+  /* preflight() measures whichever session is actually loaded, so the answer
+   * to "does it fit the bell" has to follow the picker rather than the file
+   * the page happened to boot on. */
+  /* Asked once per session, not once per tick. render() runs every second,
+   * and the condition that calls this stays true until the fetch lands - so
+   * without the latch a session whose JSON is missing (3 to 6 are unwritten)
+   * would ask for it again every second for the whole period. */
+  let ssFetching = null;
+  function loadSessionJson(nSession) {
+    if (ssFetching === nSession) return;
+    ssFetching = nSession;
+    fetch('content/session-' + nSession + '.json', { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { SESSION = j; preflight(); })
+      .catch(function () {});
+  }
+
   function renderOutline(s) {
     $('outline').innerHTML = s.outline.map(function (o, i) {
       return '<button class="ol ' + o.state + '" data-goto="' + i + '">' +
@@ -297,7 +346,10 @@
   function render(s) {
     if (!s || !s.meta) return;
     LAST = s;
-    $('m-sess').textContent = 'Session ' + s.meta.session + ' · ' + s.meta.title;
+    $('m-title').textContent = s.meta.title || '';
+    $('m-sess').textContent = 'Session ' + s.meta.session;
+    $('m-class').textContent = Net.room || '';
+    $('m-test').hidden = !s.testMode;
     const bell = $('m-bell');
     bell.textContent = mmss(s.budget.toBell);
     /* Behind = there is more session left than there is period left. This is
@@ -311,18 +363,54 @@
     $('n-behind').style.color = behind > 30 ? 'var(--d-oxide)'
       : (behind < -120 ? 'var(--d-faint)' : 'var(--d-teal)');
 
-    /* A restored period is started but held. Show the gate — with the button
-     * saying Resume, not Open the room — so nothing advances until a human
-     * confirms the class is actually back in their seats. */
+    /* ONE SCREEN. What `started` changes is which BUTTONS are live, not
+     * which page a teacher is looking at. A restored period counts as idle
+     * on purpose - it is started but held, and nothing may advance until a
+     * human confirms the class is actually back in their seats. */
     const held = s.started && s.resumedFromDisk;
-    $('gate').hidden = s.started && !held;
-    $('running').hidden = !s.started || held;
-    if (held) {
-      $('b-start').textContent = 'Resume the period  ▶';
-      preflight();
+    const idle = !s.started || held;
+    $('start-row').hidden = !idle;
+    $('run-row').hidden = idle;
+    $('b-start').textContent = held ? 'Resume the period  ▶' : 'Start the period  ▶';
+    /* Only on the TRANSITION. Assigning every tick would slam the panel back
+     * open a second after a teacher folded it. */
+    if (idle !== wasIdle) {
+      wasIdle = idle;
+      $('setup').open = idle;
+      /* Same fold, for the same reason: before the bell these links are the
+       * most important thing in this column, and during the lesson THE ROOM
+       * is. Folded they cost one line and stay one click away, which is the
+       * whole difference from the version that hid them outright. */
+      $('screens-box').open = idle;
+      if (held) preflight();
     }
+    $('setup-sum').textContent = idle
+      ? 'Choose the class and the session'
+      : 'Class ' + (Net.room || '') + ' · Session ' + s.meta.session + ' · change';
     renderAmbient(s);
-    if (!s.started) return;
+    renderSessions(s);
+    if (SESSION && SESSION.session !== s.meta.session) loadSessionJson(s.meta.session);
+    renderTestMode(s);
+    renderClocks(s);
+    renderLedger(s);
+    renderRoom(s);
+    renderOutline(s);
+    renderStageNote(s);
+
+    if (idle) {
+      /* The card still has to say something true. "Not started" plus the
+       * name of what is about to happen beats a row of em dashes. */
+      $('n-kind').textContent = held ? 'HELD' : 'NOT STARTED';
+      $('n-pos').textContent = s.count + ' beats · ' + mmss(s.budget.authored);
+      $('n-extra').textContent = '';
+      $('n-title').textContent = held
+        ? 'Picked up where you left off. Press Resume when they are back.'
+        : (s.meta.subtitle || 'Press Start when they are in their seats.');
+      $('n-clock').textContent = '—';
+      $('n-say').hidden = true;
+      $('t-note').hidden = true;
+      return;
+    }
 
     const seg = s.segment || {};
     $('n-kind').textContent = (seg.label || seg.kind || '').toUpperCase();
@@ -351,17 +439,14 @@
     $('b-pause').classList.toggle('warn', !s.running);
     $('b-mute').classList.toggle('on', s.manualRead);
 
-    renderClocks(s);
-    renderLedger(s);
     renderTally(s);
-    renderOutline(s);
-    renderRoom(s);
-    renderTestMode(s);
     renderAsked(s);
     renderCoverage(s);
+  }
 
-    /* The server counts open Stage streams, so this is a fact rather than a
-     * guess — including a Stage opened on another machine entirely. */
+  /* The server counts open Stage streams, so this is a fact rather than a
+   * guess — including a Stage opened on another machine entirely. */
+  function renderStageNote(s) {
     const others = Math.max(0, (s.viewers || 0) - 1 - (Overlay.on ? 1 : 0));
     $('side-note').textContent =
       others > 0
@@ -398,6 +483,25 @@
         if (!(LAST && LAST.viewers > 0)) Overlay.open();   // never start on a blank projector
         Narrator.say({ speaker: 'NARRATOR', text: ' ' });  // a gesture unlocks speech
         Net.cmd(LAST && LAST.resumedFromDisk ? 'resume' : 'start');
+      });
+    });
+    /* Two presses to switch a session that is mid-period, and the second one
+     * is the same button - no dialog. A confirm() box is one more thing to
+     * fail to notice on a projector, and it can be suppressed by the browser. */
+    $('ss-list').addEventListener('click', function (e) {
+      const b = e.target.closest && e.target.closest('[data-session]');
+      if (!b) return;
+      const i = +b.getAttribute('data-session');
+      const force = ssArmed === i;
+      Net.cmd('setSession', { index: i, force: force }).then(function (r) {
+        if (r && r.error === 'period-in-progress') {
+          ssArmed = i;
+          $('ss-note').textContent = 'That class is part way through a period. Press it again to switch — today starts over, and everything they have earned stays with them.';
+        } else {
+          ssArmed = null;
+          $('ss-note').textContent = SS_NOTE;
+        }
+        if (LAST) renderSessions(LAST);
       });
     });
     $('b-stage-inline').addEventListener('click', function () { Overlay.open(); });
@@ -614,8 +718,8 @@
       .then(function (r) { return r.json(); })
       .then(function (json) {
         SESSION = json;
-        $('gate-sub').textContent = 'Session ' + json.session + ' · ' + json.subtitle;
-        document.querySelector('.gate-in h1').textContent = json.title;
+        $('gate-sub').textContent = json.subtitle || '';
+        $('m-title').textContent = json.title;
         $('gate-note').textContent =
           'Space pauses. Arrow keys skip and step back. E adds thirty seconds. ' +
           'Nothing needs pressing after you start — the period runs to the bell on its own.';
@@ -640,6 +744,12 @@
         document.querySelectorAll('[data-stage-link]').forEach(function (link) {
           link.href = stageUrl();
         });
+        /* Every screen link carries the room. Opening the joining screen for
+         * the wrong class is a silent failure: it shows an address and a code
+         * that work, for a period nobody is in. */
+        const rq = '?room=' + encodeURIComponent(Net.room || '');
+        if ($('b-join')) $('b-join').href = 'join.html' + rq;
+        if ($('b-seat')) $('b-seat').href = 'play.html' + rq;
         /* connect initializes the selected room and teacher key. Only then
          * can opening the desk point the students' short URL at this class. */
         if (Net.isTeacher) Net.cmd('open');

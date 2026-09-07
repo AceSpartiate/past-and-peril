@@ -959,6 +959,27 @@ class Room {
         this._emit();
         break;
       }
+      /* PICK A SESSION OUTRIGHT. nextSession only steps forward and only
+       * once a period has closed out, which is right for a class working
+       * through a unit and useless for everything else: a teacher who wants
+       * to look at session 2, rehearse it, or reteach Friday's period had no
+       * way to say so except by finishing session 1 first.
+       *
+       * loadSession is safe to call for any index - it resets THE PERIOD and
+       * takes the new session's clocks, while the ledger, standing, legacy
+       * and every student flag stay where they are. The refusal below is
+       * therefore not about corruption; it is about not throwing away a
+       * period a class is standing in the middle of. */
+      case 'setSession': {
+        const want = payload.index | 0;
+        if (want === this.sessionIndex && !payload.force) return { ok: true, session: this.data.session };
+        if (this.started && !this.closedOut && !payload.force) {
+          return { ok: false, error: 'period-in-progress', session: this.data.session };
+        }
+        if (!this.loadSession(want)) return { ok: false, error: 'no-such-session' };
+        this._emit();
+        return { ok: true, session: this.data.session };
+      }
       case 'nextSession': {
         if (!this.closedOut) return { ok: false, error: 'session-not-finished' };
         if (!this.loadSession(this.sessionIndex + 1)) {
@@ -2184,6 +2205,10 @@ class Room {
         session: this.data.session, title: this.data.title, subtitle: this.data.subtitle,
         datestamp: this.data.datestamp, teks: this.data.teks,
         periodMinutes: this.data.periodMinutes, bellSlackMin: this.data.bellSlackMin,
+        /* what there is to choose from. Six at most, and static. */
+        sessions: this.sessions.map((s, i) => ({
+          index: i, session: s.session, title: s.title,
+        })),
       },
       started: this.started,
       running: this.running,

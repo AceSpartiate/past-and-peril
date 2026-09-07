@@ -257,6 +257,32 @@ console.log('');
 }
 
 console.log('');
+/* ------------------------------------------------------------------ 9
+ * PICK A SESSION. nextSession only ever stepped forward, and only once a
+ * period had closed out, so the only way to reach session 2 was to teach
+ * session 1 to the end - and there was no button for either. */
+{
+  const { room } = build(4);
+  const snap = room.snapshot();
+  ok((snap.meta.sessions || []).length === sessions.length,
+     'the snapshot names what there is to choose from (' + (snap.meta.sessions || []).length + ')');
+
+  const mid = room.command('setSession', { index: 1 });
+  ok(!mid.ok && mid.error === 'period-in-progress',
+     'it refuses while a class is standing in the middle of a period');
+  ok(room.sessionIndex === 0, 'and leaves them in the one they were in');
+
+  const forced = room.command('setSession', { index: 1, force: true });
+  ok(forced.ok && room.sessionIndex === 1, 'told twice, it switches');
+  ok(!room.started, 'the period starts over');
+  ok(room.liveStudents().length === 4, 'and the class is still in their seats');
+
+  ok(room.command('setSession', { index: 99, force: true }).error === 'no-such-session',
+     'a session that does not exist is refused rather than clamped');
+  room.destroy();
+}
+
+console.log('');
 console.log(fails === 0 ? '  ✓ their map says GO HERE and their top card says what to press'
                         : '  ✗ ' + fails + ' failure(s)');
 console.log('');
