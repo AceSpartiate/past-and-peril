@@ -130,11 +130,34 @@ display as HELD and so on. `all` applies to unrolled actions.
 
 ## Gotchas that have already cost real time
 
-**Line endings are mixed and it matters.** `server/serve.js`, `server/room.js`,
-`app/js/play.js`, `app/play.html`, `app/index.html`, `app/stage.html` and
-`README.md` are **CRLF**. `app/js/hexmap.js`, `app/js/docs.js`, `app/join.html`,
-`app/css/play.css` and `tools/*` are **LF**. A multi-line pattern with `\n` will
-silently fail to match on the CRLF files. Check before you patch.
+**Line endings are mixed and it matters.** A multi-line pattern with `\n` will
+silently fail to match on a CRLF file, and a patch that inserts `\n` lines into
+one leaves it mixed. **Do not trust a list — measure the file you are about to
+touch:**
+
+```bash
+grep -qU $'\r' FILE && echo CRLF || echo LF
+```
+
+Measured 6 Sep 2026, correcting two entries this file had wrong that each cost
+a session real time:
+
+| CRLF | LF |
+|---|---|
+| `server/serve.js`, `server/engine.js` | **`server/room.js`** |
+| `app/js/play.js`, `app/js/stage.js` | `app/js/hexmap.js`, `app/js/docs.js` |
+| `app/play.html`, `app/index.html`, `app/stage.html` | `app/join.html` |
+| `README.md`, **`tools/sim-class.js`** | `app/css/*.css`, other `tools/*` |
+
+`tools/` is **not** uniformly LF — `sim-class.js` is CRLF, the rest are LF.
+`.gitattributes` is `* -text`, so nothing is ever normalised and whatever you
+write is what ships.
+
+**Two more that have bitten, both in generated patches.** `String.replace`
+expands `$&`, `` $` `` and `$'` in a *replacement string*, so a replacement
+containing a regex literal ending in `$` gets silently eaten — pass a function
+instead. And a backslash does not reliably survive a shell heredoc into a
+generated file; write code with no regex literals in it, or use the Write tool.
 
 **`.gitignore` does not support trailing comments.** `data/   # saved periods`
 is a pattern matching that literal string and ignores nothing. An earlier
