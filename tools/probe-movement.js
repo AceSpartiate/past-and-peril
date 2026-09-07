@@ -1,5 +1,23 @@
 /* probe-movement.js — how far can a student actually walk?
  *
+ * ⚠ THIS PROBE CLEARED A BUG THAT WAS REAL. Read before trusting it.
+ *
+ * It concluded "the budget IS enforced server-side" and sent the next
+ * session looking at the UI. Both of its measurements were wrong:
+ *
+ *   1. It never crosses a segment boundary. The hole was never inside a
+ *      window - it was that every roaming read refreshed movement in FULL,
+ *      and every turn cycle is [roam][roam][YOUR MOVE]. Three refreshes.
+ *      A Rider covered 21 hexes between two decisions; the longest walk on
+ *      the whole town map is 18.
+ *   2. "the town map has 300 standable hexes" is bexar_alamo, the first
+ *      non-indoor map in load order. The town has 195. It used room.map
+ *      instead of room.mapFor(st) - the exact trap CLAUDE.md warns about.
+ *
+ * Fixed in Room.ROAM_FLOOR / MOVE_MIN / MOVE_MAX; covered by the movement
+ * assertions in tools/test-solo.js, which DO cross the boundary. Trust
+ * those over anything below.
+ *
  *     node tools\probe-movement.js
  *
  * Written because a teacher playing the real thing reported that students

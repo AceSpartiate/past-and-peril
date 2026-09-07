@@ -20,6 +20,21 @@ const { Engine } = require('./engine.js');
 const TICK_MS = 250;
 
 class Room {
+  /* MOVEMENT, IN THREE NUMBERS.
+   *
+   * Here rather than buried in a method because these are the balance dials
+   * for the whole solo layer, and the next person to want a slower or faster
+   * town should find them without reading room.js.
+   *
+   * The floor a roaming read lifts a stranded student to - once between turn
+   * windows, and never above their own budget. */
+  static ROAM_FLOOR = 2;
+  /* The clamp on an effective budget. Measured against the town map: below 3
+   * a third of hexes have nothing in walking range, above 5 nearly half the
+   * board is, and a destination stops costing you the alternatives. */
+  static MOVE_MIN = 3;
+  static MOVE_MAX = 5;
+
   constructor(code, session, mapData, rosterData, sceneData, factsData, opts) {
     opts = opts || {};
     /* `session` may be one session or the whole campaign. A class that has
@@ -711,18 +726,35 @@ class Room {
      *
      * Slot rules are enforced here as well as at pickup, so a drop cannot
      * put a second thing in a hand that is already full. */
-    /* A ROAMING SEGMENT REFRESHES MOVEMENT TOO.
+    /* A ROAMING SEGMENT LIFTS YOU OFF THE FLOOR. IT DOES NOT HAND OUT A
+     * SECOND BUDGET, AND THAT IS THE WHOLE OF THE FIX.
      *
-     * Otherwise roam is decorative: a student who spent their last hex in
-     * the window before arrives at the narration with moveLeft 0 and the
-     * live map is live for somebody else. Roaming cannot DECLARE anything —
-     * perform() is still gated on turnOpen — so the only thing this budget
-     * buys is standing somewhere better when the next window opens, which is
-     * exactly what it is for. */
+     * This used to read `st.moveLeft = st.move` — a full refresh — and every
+     * turn cycle in the shipped timeline is [roam read][roam read][YOUR
+     * MOVE]. Three segments, three full refreshes, so a student crossed
+     * three times their budget between one decision and the next. Measured
+     * on a real Room: a Rider covered 21 hexes per cycle and the longest
+     * walk anywhere on the town map is 18. They could be anywhere, always,
+     * and so where they went cost them nothing.
+     *
+     * A teacher reported this as "students move infinitely" and the probe
+     * written to check it (tools/probe-movement.js) cleared the server,
+     * because it measured inside ONE window and never crossed a segment
+     * boundary. The enforcement was never the hole. The refresh was.
+     *
+     * What roam is FOR still holds: a student who spent their last hex in
+     * the window before must not arrive at the narration with moveLeft 0 and
+     * a live map that is live for somebody else. So they are lifted to a
+     * floor - once per cycle, never past their own budget, and never as a
+     * top-up for somebody who still has points in hand. Roaming cannot
+     * DECLARE anything (perform() is gated on turnOpen), so all this buys is
+     * standing somewhere better when the window opens. */
     if (s && s.roam && !this._isTurn(s)) {
       this._allStudents().forEach((st) => {
         st.move = this.effective(st).move;
-        st.moveLeft = st.move;
+        if (st.roamed) return;               // once between windows, not per read
+        st.roamed = true;
+        st.moveLeft = Math.min(st.move, Math.max(st.moveLeft, Room.ROAM_FLOOR));
       });
     }
 
@@ -840,6 +872,7 @@ class Room {
       this._allStudents().forEach((st) => {
         st.move = this.effective(st).move;
         st.moveLeft = st.move;
+        st.roamed = false;                   // the floor is available again
         st.actionsLeft = this.actionsPerWindow;
         st.declared = false;
         st.acted = false;
@@ -1394,7 +1427,29 @@ class Room {
       const it = this.item(id);
       if (it && it.effect && it.effect.move) move += it.effect.move;
     });
-    return { stats, move };
+    /* THE RANGE IS CLAMPED, AND THE NUMBERS ARE MEASURED RATHER THAN FELT.
+     *
+     * Of the 21 things on the town map worth walking to, one budget puts
+     * this many in reach, and leaves this share of hexes with nothing at all
+     * in range:
+     *
+     *     move 2 -> 1 of 21, 33% of hexes barren
+     *     move 3 -> 2 of 21, 16%
+     *     move 4 -> 4 of 21, 10%
+     *     move 5 -> 5 of 21,  5%
+     *     move 7 -> 9 of 21,  1%
+     *
+     * A choice only costs something when a few things are in reach and the
+     * rest are not. At 2 a third of the map offers a slow student nothing to
+     * walk to, which reads as being stuck rather than as choosing. At 7 -
+     * nearly half the board - a Rider never has to choose at all, so the
+     * fast Callings were buying an advantage nobody could feel.
+     *
+     * Three to five keeps the Rider a Rider (five things against two, and
+     * cheap roads on top) while making every one of them commit. The spread
+     * survives; it is the ends that were doing nothing. Nothing on a printed
+     * card carries a move value, so this changes no handout. */
+    return { stats, move: Math.max(Room.MOVE_MIN, Math.min(Room.MOVE_MAX, move)) };
   }
 
   /* ------------------------------------------------------------- the engine */

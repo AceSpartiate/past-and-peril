@@ -283,6 +283,76 @@ console.log('');
 }
 
 console.log('');
+/* ------------------------------------------------------------------ 10
+ * MOVEMENT IS A BUDGET, AND A TURN CYCLE ISSUES EXACTLY ONE.
+ *
+ * Every cycle in the shipped timeline is [roam read][roam read][YOUR MOVE].
+ * All three used to refresh in full, so a student crossed three times their
+ * budget between one decision and the next - a Rider covered 21 hexes and
+ * the longest walk on the town map is 18. Where they went cost nothing.
+ *
+ * The probe written when a teacher first reported this cleared the server,
+ * because it measured inside ONE window and never crossed a boundary. So
+ * this test crosses them. */
+{
+  const { room } = build(8);
+  const st = room.liveStudents()[0];
+
+  const drain = () => {
+    let spent = 0;
+    for (;;) {
+      const reach = (room.privateFor(st.sid).reach || []).filter((h) => h.cost <= st.moveLeft);
+      const step = reach.sort((a, b) => b.cost - a.cost)[0];
+      if (!step) return spent;
+      const before = st.moveLeft;
+      if (!room.move(st.sid, step.hex).ok) return spent;
+      spent += before - st.moveLeft;
+    }
+  };
+
+  const win = sessions[0].timeline.findIndex((x) => x.window);
+  ok(sessions[0].timeline[win + 1].roam && sessions[0].timeline[win + 2].roam,
+     'a turn window really is followed by two roaming reads');
+
+  room.command('goto', { index: win });
+  const inWindow = drain();
+  ok(inWindow === st.move || inWindow === room.effective(st).move,
+     'the window issues exactly one budget (' + inWindow + ')');
+
+  room.command('goto', { index: win + 1 });
+  const roamA = drain();
+  ok(roamA > 0 && roamA <= Room.ROAM_FLOOR,
+     'a roaming read lifts a stranded student off the floor, no further (' + roamA + ')');
+
+  room.command('goto', { index: win + 2 });
+  ok(drain() === 0,
+     'and the SECOND roaming read gives nothing - the floor is once per cycle');
+
+  room.command('goto', { index: win + 3 });
+  ok(drain() > 0, "the next window issues the next budget");
+  room.destroy();
+}
+
+console.log('');
+/* ------------------------------------------------------------------ 11
+ * The spread survives the clamp - a Rider is still a Rider - and nobody is
+ * left on a budget that walks to nothing. */
+{
+  const { room } = build(30);
+  const seen = {};
+  room.liveStudents().forEach((st) => {
+    const m = room.effective(st).move;
+    (seen[st.calling] = seen[st.calling] || {})[m] = true;
+    ok(m >= Room.MOVE_MIN && m <= Room.MOVE_MAX,
+       st.calling + ' walks ' + m + ', inside ' + Room.MOVE_MIN + '–' + Room.MOVE_MAX) ;
+  });
+  const fast = Object.keys(seen.RIDER || {}).map(Number).sort().pop();
+  const slow = Object.keys(seen.CLERK || {}).map(Number).sort()[0];
+  ok(fast > slow, 'a Rider still outwalks a Clerk (' + fast + ' against ' + slow + ')');
+  room.destroy();
+}
+
+console.log('');
 console.log(fails === 0 ? '  ✓ their map says GO HERE and their top card says what to press'
                         : '  ✗ ' + fails + ' failure(s)');
 console.log('');
