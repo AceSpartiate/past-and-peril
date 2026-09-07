@@ -123,11 +123,14 @@ const KenBurns = (function () {
     let raf = null;
     let shots = [];
     let idx = -1;
-    let t0 = 0;
+    let anchor = 0;
+    let elapsed = 0;
+    let length = 0;
     let shotMs = 0;
     let img = null;
     let onShot = null;
     let running = false;
+    let generation = 0;
 
     function size() {
       const r = canvas.getBoundingClientRect();
@@ -136,12 +139,33 @@ const KenBurns = (function () {
       canvas.height = Math.max(180, Math.round(r.height * dpr));
     }
 
-    function frame(now) {
-      if (!running) return;
+    /* Smooth the quarter-second server updates locally, but always seek back
+     * to its elapsed time on the next update. A pause holds this exact crop. */
+    function position(now) {
+      return Math.max(0, Math.min(length, elapsed + (running ? now - anchor : 0)));
+    }
+
+    function paint(now) {
+      if (!shots.length) return;
+      const at = position(now);
+      const next = Math.min(shots.length - 1, Math.floor(at / shotMs));
+      if (next !== idx) {
+        idx = next;
+        img = null;
+        const version = ++generation;
+        const selected = shots[idx];
+        if (onShot) onShot(selected, idx);
+        load('images/' + selected.image).then(function (loaded) {
+          /* A slow image must not replace the next shot, or resurrect a
+           * sequence that the teacher has already left. */
+          if (version !== generation) return;
+          img = loaded;
+          paint(performance.now());
+        });
+      }
       const shot = shots[idx];
-      if (!shot) return;
       const w = canvas.width, h = canvas.height;
-      const raw = Math.min(1, (now - t0) / shotMs);
+      const raw = Math.min(1, (at - idx * shotMs) / shotMs);
       const t = easeFor(shot.move)(raw);
 
       ctx.fillStyle = PAPER;
@@ -175,52 +199,66 @@ const KenBurns = (function () {
       if (tier3) drawTier3Chrome(ctx, w, h, shot);
       drawCredit(ctx, w, h, shot);
 
-      if (raw >= 1) { next(); return; }
-      raf = requestAnimationFrame(frame);
     }
 
-    function next() {
-      idx += 1;
-      const shot = shots[idx];
-      if (!shot) { running = false; return; }
+    function frame(now) {
+      raf = null;
+      paint(now);
+      schedule();
+    }
 
-      /* design/12: tier 3 may only HOLD or PULL. Never push into a myth.
-       * Enforced here so an authoring slip cannot reach the projector. */
-      if (shot.tier === 3 && shot.move === 'PUSH') shot.move = 'PULL';
+    function schedule() {
+      if (raf === null && running && shots.length && position(performance.now()) < length) {
+        raf = requestAnimationFrame(frame);
+      }
+    }
 
-      if (onShot) onShot(shot, idx);
-      img = null;
-      load('images/' + shot.image).then(function (loaded) {
-        img = loaded;
-      });
-      t0 = performance.now();
-      raf = requestAnimationFrame(frame);
+    function cancel() {
+      if (raf !== null) cancelAnimationFrame(raf);
+      raf = null;
+    }
+
+    function sync(at, totalMs, isRunning) {
+      cancel();
+      length = Math.max(1, Number(totalMs) || 1);
+      shotMs = length / Math.max(1, shots.length);
+      elapsed = Math.max(0, Math.min(length, Number(at) || 0));
+      anchor = performance.now();
+      running = !!isRunning;
+      paint(anchor);
+      schedule();
     }
 
     return {
       /* totalMs is split across the shots — narration would set this per-shot
        * once real mp3s exist (design/12). */
-      play: function (shotList, totalMs, cb) {
+      play: function (shotList, totalMs, cb, state) {
         this.stop();
         size();
         shots = (shotList || []).map(function (s) {
-          return Object.assign({ move: 'HOLD', tier: 1, from: [0.5, 0.5, 1], to: [0.5, 0.5, 1] }, s);
+          const shot = Object.assign({ move: 'HOLD', tier: 1, from: [0.5, 0.5, 1], to: [0.5, 0.5, 1] }, s);
+          // Tier 3 may only HOLD or PULL. Never push into a myth.
+          if (shot.tier === 3 && shot.move === 'PUSH') shot.move = 'PULL';
+          return shot;
         });
         if (!shots.length) return;
-        shotMs = Math.max(1200, Math.round(totalMs / shots.length));
         onShot = cb || null;
         idx = -1;
-        running = true;
-        next();
+        img = null;
+        sync(state ? state.elapsed : 0, totalMs, state ? state.running : true);
       },
+      sync: sync,
+      pause: function () { sync(position(performance.now()), length, false); },
       stop: function () {
         running = false;
-        if (raf) cancelAnimationFrame(raf);
-        raf = null;
+        cancel();
+        generation += 1;
+        shots = [];
+        img = null;
       },
       resize: function () {
         size();
-        if (running) { /* next frame repaints at the new size */ }
+        if (shots.length) paint(performance.now());
         else { ctx.fillStyle = PAPER; ctx.fillRect(0, 0, canvas.width, canvas.height); }
       },
       get shotMs() { return shotMs; },

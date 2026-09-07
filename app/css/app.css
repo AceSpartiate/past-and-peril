@@ -448,3 +448,8 @@ body.console {
 }
 .boss-rail div:nth-child(2) { opacity: .62; }
 .boss-rail div:nth-child(3) { opacity: .34; }
+
+/* The ASKED column on the teacher's desk. No button beside a name, ever. */
+.askrow { display: flex; align-items: baseline; gap: 8px; padding: 2px 0; font-size: 12px; }
+.askrow .an { flex-grow: 1; }
+.askrow .av { font-family: var(--mono); font-size: 11px; }

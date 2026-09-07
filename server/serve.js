@@ -79,8 +79,10 @@ const commonData = JSON.parse(fs.readFileSync(path.join(ROOT, 'content/actions-c
 
 /* One Room per class code. Five periods a day = five rooms, each with its own
  * campaign, exactly as design/09 wanted from a Durable Object per period. */
-const store = new Store(path.join(__dirname, '..', 'data'));
+/* An isolated data directory lets checks run without opening saved classes. */
+const store = new Store(process.env.PAST_PERIL_DATA_DIR || path.join(__dirname, '..', 'data'));
 const rooms = new Map();
+const roomStreams = new WeakMap();
 
 function getRoom(code) {
   code = (code || roster.classCode || 'GN7B').toUpperCase().slice(0, 12);
@@ -258,11 +260,16 @@ function stream(req, res, room, sid, role) {
   const close = () => {
     if (closed) return;
     closed = true;
+    connections.delete(end);
     clearInterval(beat);
     off();
     if (role === 'student' && sid) room.leave(sid);
     if (process.env.DEBUG_STREAMS) console.log('  - stream closed  ' + role + '/' + sid + '  viewers=' + room.viewers);
   };
+  let connections = roomStreams.get(room);
+  if (!connections) { connections = new Set(); roomStreams.set(room, connections); }
+  const end = () => { close(); res.end(); };
+  connections.add(end);
   res.on('close', close);
   res.on('error', close);
   if (process.env.DEBUG_STREAMS) console.log('  + stream opened  ' + role + '/' + sid + '  viewers=' + room.viewers);
@@ -304,11 +311,24 @@ const server = http.createServer(async (req, res) => {
     if (normaliseRoom(b.confirm) !== code) {
       return json(res, 400, { ok: false, error: 'confirm-mismatch' });
     }
-    /* Drop the live Room too, or the next save would write it straight back. */
-    rooms.delete(code);
+    /* Archive the latest progress, then stop every writer and old stream.
+     * A failed write or rename leaves the live class available to the teacher. */
+    const live = rooms.get(code);
+    if (live && !store.write(code, live.toJSON())) {
+      return json(res, 500, { ok: false, error: 'save-failed' });
+    }
     const r = store.archive(code);
-    if (r.ok && activeRoom === code) activeRoom = initialActiveRoom();
-    return json(res, r.ok ? 200 : 404, r);
+    if (r.ok) {
+      if (live) {
+        live.destroy();
+        rooms.delete(code);
+        const connections = roomStreams.get(live);
+        if (connections) Array.from(connections).forEach((end) => end());
+        roomStreams.delete(live);
+      }
+      if (activeRoom === code) activeRoom = initialActiveRoom();
+    }
+    return json(res, r.ok ? 200 : r.error === 'no-such-period' ? 404 : 500, r);
   }
 
   if (p === '/api/periods') {
@@ -455,6 +475,14 @@ const server = http.createServer(async (req, res) => {
     return res.end();
   }
 
+  /* A projector opened from the startup banner follows the selected class. */
+  if (p === '/stage.html' && !url.searchParams.get('room')) {
+    const q = new URLSearchParams(url.search);
+    q.set('room', currentRoom());
+    res.writeHead(302, { Location: '/stage.html?' + q.toString() });
+    return res.end();
+  }
+
   /* What to put on the projector while they arrive. */
   if (p === '/join') {
     res.writeHead(302, { Location: '/join.html' + (url.search || '') });
@@ -484,7 +512,6 @@ const server = http.createServer(async (req, res) => {
         .map((ip) => 'http://' + ip + ':' + PORT + '/p'),
       /* why each address ranked where it did, for the teacher's own screen */
       addresses: rows,
-      teacher: 'http://localhost:' + PORT + '/?key=' + TEACHER_KEY,
       stage: 'http://localhost:' + PORT + '/stage.html',
       join: 'http://localhost:' + PORT + '/join',
     });

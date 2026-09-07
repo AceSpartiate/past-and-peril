@@ -106,6 +106,7 @@ class Room {
     this.started = false;
     this.startedAt = 0;
     this.segStamp = 0;
+    this.segmentRevision = 0;
     this.manualRead = false;
     this.lastRoll = null;
 
@@ -145,6 +146,19 @@ class Room {
     /* characterId -> true, per session index. Written on join, never removed.
      * A shut lid is not an absence. */
     this.attended = {};
+    /* THE DEBT QUEUE. characterId -> how many invitations they have been
+     * offered, how many they let lapse, and when they were last asked. This
+     * is the entire selection mechanism: there is no roll anywhere in it. */
+    this.asked = {};
+    this.refunds = {};
+    this.askedAt = {};
+    this._lastPostings = null;
+    /* id -> the posting as authored, so a student's screen can say what they
+     * were asked to do and where. Without this the invitation is a flag and
+     * nothing else: a student finishes step one and sees NOTHING telling them
+     * to walk south, because step two only appears once they are standing in
+     * the orchard. */
+    this._postingDefs = {};
     this.standIns = {};        // characterId -> { hex, place }
     this.standInsOn = opts.standIns !== false;
     this.callingCapsOn = opts.callingCaps !== false;
@@ -206,7 +220,7 @@ class Room {
     }
     let i = 0;
     const taken = {};
-    Object.values(this.students).forEach((st) => {
+    this._allStudents().forEach((st) => {
       if (this.placeId(st) === want) { taken[st.hex] = true; return; }
       const back = (!staged && st.anchor && st.anchor.place === want) ? st.anchor.hex : null;
       st.place = want;
@@ -542,7 +556,17 @@ class Room {
   }
 
   /* ------------------------------------------------------------- lifecycle */
-  destroy() { if (this.timer) clearInterval(this.timer); this.subs.clear(); }
+  destroy() {
+    this.destroyed = true;
+    this.running = false;
+    if (this.timer) clearInterval(this.timer);
+    if (this._saveTimer) clearTimeout(this._saveTimer);
+    this.timer = null;
+    this._saveTimer = null;
+    this.saver = null;
+    this.subs.clear();
+    this.viewers = 0;
+  }
 
   /* the simulator drives this by hand */
   tick() { this._tick(); }
@@ -582,6 +606,10 @@ class Room {
       (this.scene.npcs || []).forEach((n) => { this.npcHex[n.id] = n.hex; });
       this._relocate();
     }
+    /* Unspent invitations lapse when the period does. */
+    this._refundLapsed();
+    this._lastPostings = null;
+
     this.sessionMustTeach = [];
     Object.values(this.scenes).forEach((sc) => {
       if (sc.session !== next.session) return;
@@ -589,7 +617,7 @@ class Room {
         if (this.sessionMustTeach.indexOf(f) === -1) this.sessionMustTeach.push(f);
       });
     });
-    Object.values(this.students).forEach((st) => {
+    this._allStudents().forEach((st) => {
       st.used = {}; st.paidLegacy = {}; st.declared = false; st.verb = null;
       st.lastOutcome = null; st.wordsSpent = 0;
       st.tierUp = 0;
@@ -614,6 +642,7 @@ class Room {
     };
   }
   _emit() {
+    if (this.destroyed) return;
     this._dirty();
     const s = this.snapshot();
     this.subs.forEach((fn) => { try { fn(s); } catch (e) { /* one bad client never stops the clock */ } });
@@ -640,6 +669,7 @@ class Room {
   }
 
   _enter(i) {
+    this.segmentRevision += 1;
     this.idx = Math.max(0, Math.min(this.segs.length - 1, i));
     this.elapsed = 0;
     this.extra = 0;
@@ -669,6 +699,8 @@ class Room {
      *
      * Slot rules are enforced here as well as at pickup, so a drop cannot
      * put a second thing in a hand that is already full. */
+    if (s && s.postings) this._seatPostings(s);
+
     if (s && (s.drop || s.drop_by_calling)) {
       this.liveStudents().forEach((st) => {
         const want = (s.drop_by_calling || {})[st.calling] || s.drop;
@@ -725,7 +757,7 @@ class Room {
       this._relocate();
       /* Once per SCENE, not once per session: a new scene is a new pool.
        * Per-scene flags reset with it. */
-      Object.values(this.students).forEach((st) => {
+      this._allStudents().forEach((st) => {
         st.used = {};
         st.paidLegacy = {};
         delete st.flags.ACTED_THIS_SCENE;
@@ -746,7 +778,7 @@ class Room {
      * from play, so the coverage grid can tell those apart. */
     if (s && s.kind === 'record') {
       const need = this.sessionMustTeach;
-      Object.values(this.students).forEach((st) => {
+      this._allStudents().forEach((st) => {
         need.forEach((f) => {
           if (!st.taught[f]) { st.taught[f] = true; st.taughtVia[f] = 'record'; this._giveDocFor(st, f); }
         });
@@ -766,7 +798,7 @@ class Room {
      * late, or was absent, gets the documents on arrival — see how catchUp
      * already treats facts. */
     if (s && s.handout) {
-      Object.values(this.students).forEach((st) => {
+      this._allStudents().forEach((st) => {
         st.docs = st.docs || [];
         if (st.docs.indexOf(s.handout) === -1) st.docs.push(s.handout);
       });
@@ -777,7 +809,7 @@ class Room {
     /* A new turn window refreshes everyone's movement and clears last turn's
      * declaration. The server decides this so thirty clients cannot disagree. */
     if (this._isTurn(s)) {
-      Object.values(this.students).forEach((st) => {
+      this._allStudents().forEach((st) => {
         st.move = this.effective(st).move;
         st.moveLeft = st.move;
         st.actionsLeft = this.actionsPerWindow;
@@ -964,16 +996,27 @@ class Room {
     }
 
     const holder = this.claimed[characterId];
+    let transferred = null;
     if (holder && holder !== sid) {
       const prev = this.students[holder];
       const quiet = !prev || (this.now() - prev.seen) > 15000;
       if (!quiet) {
         return { ok: false, error: 'taken', message: 'Somebody is already playing that person.' };
       }
+      transferred = prev;
       delete this.students[holder];      // they went quiet: this is a reconnect
     }
 
-    const existing = this.students[sid] || this.parked[characterId];
+    const device = this.students[sid];
+    const existing = (device && device.characterId === characterId ? device : null) ||
+      transferred || this.parked[characterId];
+    /* A replacement Chromebook may have played someone else before. Progress
+     * follows the requested character; keep the previous character available
+     * for their own next device instead of copying their progress across. */
+    if (device && device.characterId !== characterId) {
+      this.parked[device.characterId] = device;
+      if (this.claimed[device.characterId] === sid) delete this.claimed[device.characterId];
+    }
     const st = {
       sid,
       characterId,
@@ -1017,8 +1060,10 @@ class Room {
       legacy: existing ? existing.legacy : 0,
       declared: existing ? existing.declared : false,
       acted: existing ? !!existing.acted : false,
-      actionsLeft: existing ? existing.actionsLeft : this.actionsPerWindow,
+      actionsLeft: existing && existing.actionsLeft !== undefined
+        ? existing.actionsLeft : this.actionsPerWindow,
       used: existing ? existing.used : {},
+      paidLegacy: existing ? (existing.paidLegacy || {}) : {},
       verb: existing ? existing.verb : null,
       origin: person.origin,
       mark: person.mark,
@@ -1028,9 +1073,10 @@ class Room {
       taught: existing ? existing.taught : {},
       taughtVia: existing ? existing.taughtVia : {},
       lastActionId: existing ? existing.lastActionId : null,
-      aidBonus: 0,
-      tierUp: 0,
+      aidBonus: existing ? (existing.aidBonus || 0) : 0,
+      tierUp: existing ? (existing.tierUp || 0) : 0,
       lastOutcome: existing ? existing.lastOutcome : null,
+      caughtUp: existing ? existing.caughtUp : null,
       seen: this.now(),
     };
     delete this.parked[characterId];
@@ -1039,6 +1085,14 @@ class Room {
     const seat = (this.attended[this.sessionIndex] = this.attended[this.sessionIndex] || {});
     const firstToday = !seat[characterId];
     seat[characterId] = true;
+
+    /* A LATECOMER IS SEATED AGAINST THE POSTING THAT IS STILL LIVE.
+     *
+     * Against _lastPostings, not against the current segment — the current
+     * one is usually a beat and has no postings field, so re-sweeping it
+     * would seat nobody and the student who walked in late would be the one
+     * student the town never asked. */
+    if (firstToday && this._lastPostings) this._seatPostings(this._lastPostings);
 
     /* CAUGHT UP, AUTOMATICALLY. Nobody pressed anything to make this happen. */
     const cu = this.catchUp(characterId, firstToday);
@@ -1106,19 +1160,8 @@ class Room {
   leave(sid) {
     const st = this.students[sid];
     if (!st) return;
-    this.parked[st.characterId] = {
-      characterId: st.characterId, hex: st.hex, moveLeft: st.moveLeft,
-      words: st.words, wordsSpent: st.wordsSpent,
-      resolve: st.resolve, resolveUsed: st.resolveUsed, legacy: st.legacy,
-      declared: st.declared, acted: st.acted, verb: st.verb,
-      tint: st.tint, tintIndex: st.tintIndex,
-      docs: st.docs || [],
-      trail: st.trail || [],
-      flags: st.flags, taught: st.taught, taughtVia: st.taughtVia,
-      used: st.used, paidLegacy: st.paidLegacy, items: st.items,
-      place: st.place, anchor: st.anchor,
-      lastActionId: st.lastActionId,
-    };
+    /* The student remains here while their device is asleep. Keep one current
+     * state so later turn resets and handouts survive a device transfer too. */
     /* Keep the claim: a closed lid is not a resignation. It ages out after 15s
      * so the same student can rejoin on another device. */
     st.seen = this.now() - 14000;
@@ -1458,6 +1501,114 @@ class Room {
     if (st.docs.indexOf(id) === -1) st.docs.push(id);
   }
 
+  /* WHO GETS ASKED.
+   *
+   * The rule is ten words on the projector: THE TOWN ASKS THE PEOPLE IT HAS
+   * NOT ASKED LATELY. Hide the outcome, never the process — in a room of
+   * twelve-year-olds an unexplained selection is not read as luck, it is read
+   * as favouritism, and it is read that way about the teacher.
+   *
+   * So: no cold roll anywhere. Seats go to the least-asked, then to whoever
+   * was asked longest ago, then to a deterministic per-session jitter. The
+   * same room in the same state seats the same people every time.
+   *
+   * THE REFUND CORRECTION, which is not a detail. Six of twenty-six students
+   * sit in the simulator's disengaged profile and will never take step one.
+   * If an unused invitation is simply handed back, their asked count stays at
+   * zero forever, they are seated first for every posting of the whole unit,
+   * and they consume about half the seats while using none. Refunds are
+   * counted separately and rank alongside asks — a lapse still costs less
+   * than a taken invitation, so a slow reader is still favoured, but a
+   * student who has ignored three stops outranking a student who has had one.
+   *
+   * SEATED AGAINST WHO SAT DOWN TODAY, not against liveStudents(). The client
+   * pings every eight seconds but Chrome throttles a backgrounded tab to
+   * about once a minute, and during a read segment the turn is closed so
+   * nothing wakes it. Seating on a fifteen-second liveness window would quietly
+   * skip the student whose tab is behind the browser. */
+  _seatPostings(seg) {
+    const postings = (seg && seg.postings) || [];
+    if (!postings.length) return {};
+    this._lastPostings = seg;
+
+    /* everyone who sat down today, whatever their tab is doing now */
+    const here = this.attended[this.sessionIndex] || {};
+    const pool = Object.values(this.students).filter((st) => here[st.characterId]);
+
+    const out = {};
+    postings.forEach((post) => {
+      this._postingDefs[post.id] = post;
+      const rule = { requires: post.eligible || {} };
+      const eligible = pool.filter((st) => this.engine.meets(rule, this.ctxFor(st)));
+
+      /* decision 11: seats are cut to the room. A posting of four in a class
+       * of five is not an invitation, it is an assembly. */
+      let seats = post.seats || 0;
+      if (post.per_student) seats = Math.round(post.per_student * eligible.length);
+      seats = Math.max(post.min || 1, seats);
+      if (post.max) seats = Math.min(post.max, seats);
+      seats = Math.min(seats, eligible.length);
+
+      const ranked = eligible.slice().sort((a, b) => {
+        const sc = (st) => 99 - (this.asked[st.characterId] || 0) - (this.refunds[st.characterId] || 0);
+        if (sc(a) !== sc(b)) return sc(b) - sc(a);
+        const at = (st) => this.askedAt[st.characterId] || 0;
+        if (at(a) !== at(b)) return at(a) - at(b);          // longest ago first
+        return this._jitter(post.id, a.characterId) - this._jitter(post.id, b.characterId);
+      });
+
+      const seated = ranked.slice(0, seats);
+      seated.forEach((st) => {
+        st.flags['INV_' + post.id] = true;
+        this.asked[st.characterId] = (this.asked[st.characterId] || 0) + 1;
+        this.askedAt[st.characterId] = this.now();
+      });
+      out[post.id] = seated.map((st) => st.characterId);
+    });
+    this._emit();
+    return out;
+  }
+
+  /* Deterministic, and only a tie-breaker. Two students with an identical
+   * history need SOME order, and it must be the same order on a restore from
+   * disk — so it is a hash of the posting and the character, never a roll.
+   *
+   * IT HAS TO ACTUALLY MIX. The first version here was `h * 31 + charCode`,
+   * which is monotonic in the trailing characters: every posting produced the
+   * order p01, p02, p03 ... so on the first posting of the unit, when nobody
+   * has been asked anything and every student ties, the seats went down the
+   * roster in order and p30 was last every single time. A tie-break that is
+   * secretly alphabetical is the favouritism this whole rule exists to stop.
+   * FNV-1a with a murmur3 finaliser, checked to permute across posting ids. */
+  _jitter(postId, characterId) {
+    const key = this.sessionIndex + ':' + postId + ':' + characterId;
+    let h = 2166136261;
+    for (let i = 0; i < key.length; i++) {
+      h ^= key.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    h ^= h >>> 15; h = Math.imul(h, 2246822507);
+    h ^= h >>> 13; h = Math.imul(h, 3266489909);
+    return (h ^ (h >>> 16)) >>> 0;
+  }
+
+  /* An invitation is for the period it was given in. One still unspent when
+   * the next session loads is a lapse: the flag comes off and the lapse is
+   * counted, which is what stops a student who never acts from monopolising
+   * the queue. */
+  _refundLapsed() {
+    this._allStudents().forEach((st) => {
+      Object.keys(st.flags || {}).forEach((f) => {
+        if (f.indexOf('INV_') !== 0) return;
+        const id = f.slice(4);
+        if (!st.flags['DONE_' + id]) {
+          this.refunds[st.characterId] = (this.refunds[st.characterId] || 0) + 1;
+        }
+        delete st.flags[f];
+      });
+    });
+  }
+
   /* THE BOSS TAKES ITS TURN — segment.toll.
    *
    * The only genuinely new capability in the boss design. It borrows the
@@ -1620,6 +1771,11 @@ class Room {
     if (o.aid_self) st.aidBonus = (st.aidBonus || 0) + o.aid_self;
     /* STEADY is banked and spent later, in resolve(). */
     if (o.tier_up) st.tierUp = (st.tierUp || 0) + o.tier_up;
+
+    /* An action can pay in objects. Through giveItem like everything else,
+     * so the slot rule holds and a full hand declines rather than swaps —
+     * a quest reward is not allowed to be the one thing that ignores it. */
+    if (o.grant_item) [].concat(o.grant_item).forEach((id) => this.giveItem(st, id));
     if (o.grant_move) st.moveLeft += o.grant_move;
 
     /* AID, GUARD and MEND reach across to a neighbour — the co-op that makes
@@ -1700,6 +1856,15 @@ class Room {
    *                 who has been retired. This is what makes 4th period's
    *                 campaign different from 7th period's.
    */
+  _allStudents() {
+    /* Restored characters need not reconnect before the next autosave. A live
+     * device always supplies the current state if an older parked copy exists. */
+    const byCharacter = new Map();
+    Object.values(this.parked).forEach((st) => byCharacter.set(st.characterId, st));
+    Object.values(this.students).forEach((st) => byCharacter.set(st.characterId, st));
+    return Array.from(byCharacter.values());
+  }
+
   toJSON() {
     return {
       v: 1,
@@ -1715,7 +1880,8 @@ class Room {
         sceneId: this.sceneId,
         startedAt: this.startedAt,
         manualRead: this.manualRead,
-        finished: this.started && !this.running && this.idx >= this.segs.length - 1,
+        segmentRevision: this.segmentRevision,
+        finished: !!this.closedOut,
       },
       campaign: {
         clocks: this.clocks,
@@ -1726,16 +1892,22 @@ class Room {
         retired: this.retired,
         standIns: this.standIns,
         attended: this.attended,
+        asked: this.asked,
+        postingDefs: this._postingDefs,
+        refunds: this.refunds,
+        askedAt: this.askedAt,
         features: Object.values(this._featIx).map((e) => ({ id: e.f.id, open: e.f.open, searched: e.f.searched, takenBy: e.f.takenBy || {} })),
         spotlighted: this.spotlighted,
       },
-      students: Object.keys(this.students).map((sid) => {
-        const st = this.students[sid];
+      students: this._allStudents().map((st) => {
         return {
           characterId: st.characterId, hex: st.hex, moveLeft: st.moveLeft,
           words: st.words, wordsSpent: st.wordsSpent,
           resolve: st.resolve, resolveUsed: st.resolveUsed, legacy: st.legacy,
           declared: st.declared, acted: st.acted, verb: st.verb,
+          actionsLeft: st.actionsLeft,
+          aidBonus: st.aidBonus || 0, tierUp: st.tierUp || 0,
+          lastOutcome: st.lastOutcome || null, caughtUp: st.caughtUp || null,
           tint: st.tint, tintIndex: st.tintIndex,
           docs: st.docs || [],
           trail: st.trail || [],
@@ -1765,6 +1937,10 @@ class Room {
     this.retired = c.retired || {};
     this.standIns = c.standIns || {};
     this.attended = c.attended || {};
+    this.asked = c.asked || {};
+    this._postingDefs = c.postingDefs || {};
+    this.refunds = c.refunds || {};
+    this.askedAt = c.askedAt || {};
     (c.features || []).forEach((sf) => {
       const f = this.feature(sf.id);
       if (!f) return;
@@ -1789,6 +1965,11 @@ class Room {
     this.extra = p.extra || 0;
     this.startedAt = p.startedAt || 0;
     this.manualRead = !!p.manualRead;
+    this.segmentRevision = p.segmentRevision || 0;
+    /* Older saves marked any pause on the final segment as finished. Require
+     * its completed history entry, which also makes closeOut idempotent after
+     * restarting an actually completed period. */
+    this.closedOut = !!p.finished && this.history.some((h) => h.session === this.data.session);
 
     /* RESTORE PAUSED, ALWAYS.
      *
@@ -1807,7 +1988,10 @@ class Room {
       /* Held under the character id, not a device. Whichever Chromebook that
        * student picks up on Monday, the character it claims is the one that
        * has their Legacy and their flags. */
-      this.parked[sd.characterId] = Object.assign({}, sd);
+      this.parked[sd.characterId] = Object.assign({}, person, sd, {
+        moveBase: person.move,
+        stats: person.stats,
+      });
     });
     return true;
   }
@@ -1843,9 +2027,9 @@ class Room {
     }
   }
 
-  onChange(fn) { this.saver = fn; }
+  onChange(fn) { if (!this.destroyed) this.saver = fn; }
   _dirty() {
-    if (!this.saver) return;
+    if (this.destroyed || !this.saver) return;
     if (this._saveTimer) return;
     /* Debounced: the timeline emits four times a second and a school laptop
      * should not be writing to disk that often. */
@@ -1882,6 +2066,7 @@ class Room {
       sessionCount: this.sessions.length,
       canAdvance: !!this.closedOut && this.sessionIndex < this.sessions.length - 1,
       index: this.idx,
+      segmentRevision: this.segmentRevision,
       count: this.segs.length,
       segment: seg,
       elapsed: this.elapsed,
@@ -1910,6 +2095,27 @@ class Room {
       coverage: this.coverage(),
       caughtUp: live.filter((s) => s.caughtUp).map((s) => ({
         name: s.name, sessions: s.caughtUp.sessions, facts: s.caughtUp.facts.length })),
+      /* CONSTRAINT F, THE RUNTIME RECORD.
+       * Proving the JSON names all thirty ids proves the JSON, not the
+       * delivery: an invitation that fires on a day a student is away leaves
+       * the build green and the student unasked. This is the count of what
+       * was actually offered, so the console can show an ASKED column and the
+       * teacher can see who is overdue.
+       *
+       * FOR THE CONSOLE ONLY. stage.js must never render this. A standing
+       * list of who has been picked is a public tally that a class will be
+       * counting out loud by Tuesday, and what they will be counting is who
+       * the teacher's computer likes. room_status.idle sets the precedent:
+       * names on the wire that the projector chooses not to draw. */
+      asked: (this.rosterData.roster || []).reduce((a, p) => {
+        a[p.id] = {
+          name: p.name,
+          asked: this.asked[p.id] || 0,
+          refunds: this.refunds[p.id] || 0,
+          at: this.askedAt[p.id] || 0,
+        };
+        return a;
+      }, {}),
       room_status: {
         connected: live.length,
         acted: live.filter((s) => s.acted).length,
@@ -1977,6 +2183,23 @@ class Room {
       /* E3 · the bars, on the student's own device. privateFor sent no
        * clocks at all, so a student in a fight could only find out how it
        * was going by looking away from their own screen at the wall. */
+      /* YOUR OWN INVITATIONS, AND ONLY YOUR OWN. A student is never told who
+       * else was asked — that is the standing public tally this design exists
+       * to avoid. */
+      invites: Object.keys(st.flags || {})
+        .filter((f) => f.indexOf('INV_') === 0)
+        .map((f) => {
+          const id = f.slice(4);
+          const def = this._postingDefs[id] || {};
+          return {
+            id: id,
+            title: def.title || id,
+            line: def.line || '',
+            where: def.where || '',
+            done: !!st.flags['DONE_' + id],
+          };
+        }),
+
       /* HOW MANY DAYS. The householder's card promises "declare the true
        * number - of food, powder, or time. Everyone must act on it." So the
        * ledger is not on a student's screen until somebody declares it, and

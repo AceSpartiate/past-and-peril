@@ -133,7 +133,19 @@
         "speaker": "NARRATOR",
         "text": "Ponton has the letter in his hand. A hundred people are in the square. The cannon is thirty feet away under a tarpaulin. Ugartechea wants an answer by the time his rider gets back. What do you do right now?"
       },
-      "scene": "S1.1"
+      "scene": "S1.1",
+      "postings": [
+        {
+          "id": "SQ_ORCHARD",
+          "title": "THE ORCHARD",
+          "line": "Somebody has to get it in the ground before they come back for it.",
+          "per_student": 0.16,
+          "min": 1,
+          "max": 5,
+          "eligible": {},
+          "where": "George Davis’s peach orchard, south-east past the path."
+        }
+      ]
     },
     {
       "id": "t1_path",

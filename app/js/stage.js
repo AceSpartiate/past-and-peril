@@ -9,10 +9,36 @@
   const views = ['idle', 'read', 'beat', 'boss', 'seq', 'list', 'tally', 'record'];
   const kb = KenBurns.Player($('kb'));
 
-  let lastSegId = null;
+  let lastSegKey = null;
   let lastBlock = -1;
   let lastRollKey = null;
   let lastRailKey = null;
+  let lastElapsed = 0;
+  let latestState = null;
+  let connected = true;
+  let activeVoice = null;
+  let voiceStarted = false;
+
+  function syncNarration() {
+    if (!latestState || !latestState.started || latestState.manualRead) {
+      Narrator.stop();
+      voiceStarted = false;
+    } else if (!connected || !latestState.running) {
+      Narrator.pause();
+    } else if (activeVoice && !voiceStarted) {
+      Narrator.say(activeVoice);
+      voiceStarted = true;
+    } else {
+      Narrator.resume();
+    }
+  }
+
+  function setVoice(voice) {
+    Narrator.stop();
+    activeVoice = voice || null;
+    voiceStarted = false;
+    syncNarration();
+  }
 
   window.addEventListener('resize', function () { kb.resize(); });
 
@@ -198,6 +224,7 @@
 
   function render(s) {
     if (!s) return;
+    latestState = s;
 
     /* FIRST, and outside every conditional. The band's whole promise is that
      * it is never blank, and painting it inside `if (s.meta)` would have
@@ -217,21 +244,31 @@
       show('idle');
       $('idle-title').textContent = 'Past & Peril';
       $('idle-note').textContent = 'waiting for the room';
-      lastSegId = null;
+      lastSegKey = null;
+      lastElapsed = 0;
+      setVoice(null);
       return;
     }
 
     const seg = s.segment;
-    if (!seg) { show('idle'); return; }
-    const fresh = seg.id !== lastSegId;
-    if (fresh) { lastSegId = seg.id; lastBlock = -1; }
+    if (!seg) { show('idle'); setVoice(null); return; }
+    /* A replay is a new occurrence of the same authored segment. Pause and
+     * resume keep its revision; a new projector seeks straight to elapsed. */
+    const key = [s.sessionIndex || 0, seg.id, s.segmentRevision || 0].join(':');
+    const elapsed = Number(s.elapsed) || 0;
+    const fresh = key !== lastSegKey ||
+      (s.segmentRevision === undefined && elapsed < lastElapsed);
+    lastElapsed = elapsed;
+    if (fresh) {
+      lastSegKey = key;
+      lastBlock = -1;
+      setVoice(null);
+    }
 
     // Narration fires once per segment, and is suppressed when the teacher
     // has taken the read (design/10-voice-cast.md manual override).
     function sayOnce(voice) {
-      if (!fresh) return;
-      if (s.manualRead) { Narrator.stop(); return; }
-      Narrator.say(voice);
+      if (fresh) setVoice(voice);
     }
 
     switch (seg.kind) {
@@ -279,8 +316,10 @@
           kb.play(seg.shots, s.length * 1000, function (shot) {
             $('seq-speaker').textContent = (shot.voice && shot.voice.speaker) || '';
             $('seq-caption').textContent = (shot.voice && shot.voice.text) || '';
-            if (!s.manualRead) Narrator.say(shot.voice);
-          });
+            setVoice(shot.voice);
+          }, { elapsed: elapsed * 1000, running: s.running });
+        } else {
+          kb.sync(elapsed * 1000, s.length * 1000, s.running);
         }
         break;
       }
@@ -326,9 +365,7 @@
         if (seg.exitLine) $('rec-exit').textContent = '“' + seg.exitLine + '”';
         if (bi !== lastBlock) {
           lastBlock = bi;
-          if (!s.manualRead) {
-            Narrator.say({ speaker: (b.voice && b.voice.speaker) || 'HISTORIAN', text: b.body || '' });
-          }
+          setVoice({ speaker: (b.voice && b.voice.speaker) || 'HISTORIAN', text: b.body || '' });
         }
         break;
       }
@@ -340,15 +377,21 @@
         $('idle-note').textContent = seg.eyebrow || '';
       }
     }
+    syncNarration();
   }
 
   /* The Stage is a pure subscriber now. It opens its own stream to the server
    * and renders whatever the room says, so it can be opened on any display, in
    * any window, before or after the console, with nothing to pair. */
   let heard = false;
-  Net.on('state', function (s) { heard = true; render(s); });
+  Net.on('state', function (s) { heard = true; connected = true; render(s); });
   Net.on('online', function (up) {
-    if (!up) $('idle-note').textContent = 'reconnecting…';
+    if (!up) {
+      connected = false;
+      $('idle-note').textContent = 'reconnecting…';
+      kb.pause();
+      syncNarration();
+    }
   });
 
   Net.probe().then(function (hello) {

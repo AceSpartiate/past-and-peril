@@ -109,6 +109,23 @@ class Engine {
       if (!pool.some((o) => r.adjacent_calling.indexOf(o.calling) !== -1)) return false;
     }
 
+    /* E11 — THE UNINVITED STUDENT'S WAY IN.
+     *
+     * Asks whether a NEIGHBOUR holds a flag. Every quest's last step needs a
+     * classmate standing there, so the invited student physically cannot
+     * finish alone, and the moment they stand next to anybody this promotes a
+     * named, paid action to that classmate's list. It turns "I have a badge"
+     * into "I need three people", which is a much better thing for a
+     * twelve-year-old to be holding.
+     *
+     * neighbours() excludes the student themselves, so a quest-holder is never
+     * offered their own helper action. ctx.others is the live student objects,
+     * so their .flags are already here and this needs no plumbing. */
+    if (r.adjacent_flag) {
+      const near = this.neighbours(st, ctx);
+      if (!near.some((o) => r.adjacent_flag.some((f) => o.flags && o.flags[f]))) return false;
+    }
+
     if (r.clock) {
       for (const k in r.clock) if (!this.cmp(ctx.clocks[k], r.clock[k])) return false;
     }
@@ -403,7 +420,19 @@ class Engine {
     const bits = [];
     if (r.calling) bits.push(r.calling.join('/'));
     if (r.mark) bits.push('✦ ' + r.mark.join('/').replace(/_/g, ' '));
-    if (r.flag) bits.push('✦ ' + r.flag.join('/').replace(/_/g, ' '));
+    /* A FLAG NAME IS A DATABASE KEY, NOT A SENTENCE.
+     * INV_SQ_ORCHARD rendered as "✦ INV SQ ORCHARD" at a twelve-year-old,
+     * which is the exact failure this file's own comment predicted for
+     * flag-derived items. An action may name its own gate; an invitation
+     * says so in words by default, whatever the quest is called. */
+    if (r.flag) {
+      if (a.gate_label) bits.push('✦ ' + a.gate_label);
+      else {
+        bits.push('✦ ' + r.flag
+          .map((f) => (f.indexOf('INV_') === 0 ? 'YOU WERE ASKED' : f.replace(/_/g, ' ')))
+          .join('/'));
+      }
+    }
     if (a.cost && a.cost.word) bits.push('COSTS A WORD');
     if (a.roll) bits.push('ROLL ' + a.roll.stat.toUpperCase());
     return bits.join(' · ');

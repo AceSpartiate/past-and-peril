@@ -31,6 +31,9 @@ const Narrator = (function () {
   let current = null;        // HTMLAudioElement or SpeechSynthesisUtterance
   let muted = false;
   let onCaption = null;
+  let playback = 0;             // invalidates callbacks from an older line
+  let paused = false;
+  let currentVoice = null;
 
   /* WHO SOUNDS LIKE WHAT, and the two rules from design/10-voice-cast.md that
    * are not negotiable.
@@ -135,9 +138,32 @@ const Narrator = (function () {
   }
 
   function stop() {
+    playback += 1;
+    paused = false;
+    currentVoice = null;
     if (synth) { try { synth.cancel(); } catch (e) {} }
     if (current && current.pause) { try { current.pause(); current.currentTime = 0; } catch (e) {} }
     current = null;
+  }
+
+  function pause() {
+    if (paused) return;
+    paused = true;
+    if (current && current.pause) current.pause();
+    else if (current && synth) synth.pause();
+  }
+
+  function resume() {
+    if (!paused || muted) return;
+    paused = false;
+    if (current && current.play) {
+      const clip = current, token = playback, voice = currentVoice;
+      clip.play().then(function () {
+        if (token !== playback || current !== clip || paused) clip.pause();
+      }).catch(function () {
+        if (token === playback && current === clip && !paused) speak(voice);
+      });
+    } else if (current && synth) synth.resume();
   }
 
   return {
@@ -145,6 +171,8 @@ const Narrator = (function () {
     get muted() { return muted; },
     onCaption: function (fn) { onCaption = fn; },
     stop: stop,
+    pause: pause,
+    resume: resume,
 
     lineId: lineId,
     ready: function () { return have !== null; },
@@ -160,6 +188,8 @@ const Narrator = (function () {
       if (!voice || !voice.text) { if (onCaption) onCaption(null); return; }
       if (onCaption) onCaption({ speaker: voice.speaker || 'NARRATOR', text: voice.text });
       if (muted) return;
+      currentVoice = voice;
+      const token = playback;
 
       /* 1 · the rendered clip. Asked for by hash, so no author ever types an
        * id and no line can be recorded under the wrong name. */
@@ -167,13 +197,20 @@ const Narrator = (function () {
       if (!have || have[id]) {
         const el = new Audio('audio/' + id + '.mp3');
         let failed = false;
-        el.addEventListener('error', function () {
-          if (failed) return;
+        function fallback() {
+          if (failed || token !== playback) return;
           failed = true;
+          el.pause();
           speak(voice);          // not recorded yet: the browser reads it
-        });
-        el.play().then(function () { current = el; }).catch(function () {
-          if (!failed) { failed = true; speak(voice); }
+        }
+        el.addEventListener('error', fallback);
+        /* Own the clip before play settles, so Pause/Stop can reach a clip
+         * that is still loading. Late callbacks cannot revive an old line. */
+        current = el;
+        el.play().then(function () {
+          if (token !== playback || current !== el || paused) el.pause();
+        }).catch(function () {
+          if (!paused) fallback();
         });
         return;
       }
@@ -206,7 +243,7 @@ const Narrator = (function () {
   };
 
   function speak(voice) {
-    if (!synth || muted) return;
+    if (!synth || muted || !voice) return;
     let key = voice.speaker || 'NARRATOR';
     let cfg = SPEAKERS[key] || SPEAKERS.NARRATOR;
     let v = pickVoice(cfg.lang, cfg.prefer);
@@ -219,7 +256,11 @@ const Narrator = (function () {
     u.pitch = cfg.pitch;
     u.volume = 1;
     current = u;
-    try { synth.speak(u); } catch (e) {}
+    try {
+      if (!paused && synth.paused) synth.resume();
+      synth.speak(u);
+      if (paused) synth.pause();
+    } catch (e) {}
   }
 })();
 

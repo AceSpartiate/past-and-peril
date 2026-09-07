@@ -1061,3 +1061,25 @@ button.who:hover .nm { text-decoration: underline; text-underline-offset: 3px; }
   color: var(--ink-faint); font-weight: 500;
 }
 .ledgerbar .led i { font-style: normal; font-size: 9px; color: var(--ink-faint); }
+
+/* --------------------------------------------------------- YOU WERE ASKED
+ *
+ * The summons. It does not time out, because the quest's own steps only show
+ * up once the student is standing in the right place — this is the only thing
+ * on their screen telling them where to walk.
+ */
+.invbar {
+  flex-shrink: 0; display: flex; align-items: baseline; gap: 10px;
+  padding: 8px 16px; background: #FBF3EA;
+  border-bottom: 1px solid var(--rule); border-left: 4px solid var(--oxide);
+}
+.invbar[hidden] { display: none; }
+.iv-tag {
+  font-size: 8.5px; letter-spacing: .14em; color: var(--oxide);
+  border: 1px solid var(--oxide); padding: 3px 6px; flex: none;
+}
+.iv-mid { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex-grow: 1; }
+.iv-name { font-size: 13px; letter-spacing: .06em; color: var(--ink); }
+.iv-line { font-size: 12px; color: var(--ink); }
+.iv-where { font-size: 10.5px; color: var(--ink-faint); }
+.iv-where[hidden] { display: none; }

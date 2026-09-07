@@ -305,6 +305,20 @@
       "slot": "pocket",
       "rarity": "PLAIN",
       "blurb": "Nails, chain, broken hinges. It is what the town actually fired out of the cannon, and there is only enough here for one load."
+    },
+    {
+      "id": "ITEM_ROPE",
+      "name": "A length of good rope",
+      "slot": "belt",
+      "rarity": "SOUND",
+      "blurb": "Somebody else was holding the other end of this an hour ago. Nothing heavy moves in this town without two people and one of these."
+    },
+    {
+      "id": "ITEM_CANVAS",
+      "name": "A folded piece of canvas",
+      "slot": "pocket",
+      "rarity": "PLAIN",
+      "blurb": "Big enough to cover a thing you would rather nobody counted. It goes over, and then the dirt goes over that."
     }
   ],
   "stations": {

@@ -118,6 +118,16 @@
       <span class="rm-ico"></span><span class="rm-txt">READ TO ME</span>
     </button>
   </header>
+  <!-- YOU WERE ASKED. In the flow, not over the map: it does not time out,
+       so it must not cover the thing you need to look at to act on it. -->
+  <div class="invbar" id="inv-toast" hidden>
+    <span class="iv-tag mono">YOU WERE ASKED</span>
+    <span class="iv-mid">
+      <span class="iv-name" id="inv-title"></span>
+      <span class="iv-line" id="inv-line"></span>
+      <span class="iv-where" id="inv-where"></span>
+    </span>
+  </div>
   <div class="kitbar" id="hud-kit" hidden></div>
   <!-- HOW MANY DAYS. Empty until a householder declares the true number,
        and then it is on everybody's screen at once. -->

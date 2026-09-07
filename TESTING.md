@@ -180,13 +180,19 @@ node tools/check-maps.mjs         # are the seven maps sane
 node tools/check-content.mjs      # are the people and the actions honest about each other
 node tools/sim-class.js           # 30 bots, one period, against the engine
 node tools/sim-class.js --session 2
+node tools/test-server.js         # teacher access, class routing, and safe archiving
+node tools/test-recovery.js       # restarts, device swaps, and absent students
+node tools/test-screens.js        # projector routing, pause, replay, and narration
 node tools/render-voices.mjs --dry
 ```
 
-`check-content.mjs` currently reports **6 errors on purpose** — six characters whose Calling in the
-app contradicts a Calling their paper card marks FIXED. Those predate this build and each one is a
-decision for you, not a bug. `Jacob C. Darst` is the one to look at first: the app calls him The
-Blacksmith, and the research says that shop is only *possibly* his.
+The three regression checks use isolated state and leave saved classes alone. For a separate
+browser test server, set `PAST_PERIL_DATA_DIR` to a temporary directory, `TEACHER_KEY` to a
+temporary test key, and `PORT` to an unused port before starting `server/serve.js`.
+
+`check-content.mjs` should report **0 errors**. The earlier Calling contradictions were repaired.
+Warnings still identify the rare Healer, map scenery, and gaps in the paper-card name matcher.
+Treat any new error as a regression.
 
 ---
 

@@ -74,7 +74,7 @@
           <span class="sc-t">While they arrive</span>
           <span class="sc-d">The address in huge type, a QR code, and who has joined</span>
         </a>
-        <a class="sc-card" id="b-stage" href="stage.html" target="_blank" rel="noopener">
+        <a class="sc-card" id="b-stage" href="stage.html" data-stage-link target="_blank" rel="noopener">
           <span class="sc-n mono">2</span>
           <span class="sc-t">During the lesson</span>
           <span class="sc-d">The board everyone watches — swap the projector to this</span>
@@ -120,6 +120,19 @@
 
     <div class="tnote" id="t-note" hidden></div>
 
+    <!-- WHO HAS BEEN ASKED. There is deliberately NO WAY TO GRANT A SEAT
+         from here: a hand-granted invitation would falsify the rule the game
+         prints to students, and students find out. The teacher's judgement
+         enters through the ORDER of postings instead - put the quiet one
+         early. -->
+    <div id="ask-box" hidden>
+      <div class="panel-h">
+        <span class="c-cap" style="color:var(--d-oxide)">asked</span>
+        <span class="c-cap" id="ask-sum" style="margin-left:auto"></span>
+      </div>
+      <div id="askedlist"></div>
+    </div>
+
     <div id="cov-box" hidden>
       <div class="panel-h">
         <span class="c-cap" style="color:var(--d-oxide)">fact coverage</span>
@@ -158,7 +171,7 @@
     <div class="note" id="side-note"></div>
     <div class="row" style="margin-top:12px">
       <button class="btn" id="b-focus" style="flex-grow:1">Hide / show the Stage</button>
-      <a class="btn" href="stage.html" target="_blank" rel="noopener"
+      <a class="btn" href="stage.html" data-stage-link target="_blank" rel="noopener"
          style="display:flex;align-items:center;text-decoration:none">Second window &#8599;</a>
     </div>
   </div>

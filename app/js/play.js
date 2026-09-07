@@ -1208,6 +1208,22 @@
              '<i>' + (l.unit || '') + '</i></span>';
     }).join('');
     $('hud-ledger').hidden = !led || !led.length;
+
+    /* THE SUMMONS. Unlike the other two toasts this does NOT time out: the
+     * quest's own steps only appear once you are standing in the right
+     * place, so this is the only thing on screen telling a student where to
+     * walk. It clears when they finish, and not before. */
+    const inv = (ME.invites || []).filter(function (i) { return !i.done; })[0];
+    const box = $('inv-toast');
+    if (box) {
+      if (inv) {
+        $('inv-title').textContent = inv.title || '';
+        $('inv-line').textContent = inv.line || '';
+        $('inv-where').textContent = inv.where || '';
+        $('inv-where').hidden = !inv.where;
+      }
+      box.hidden = !inv;
+    }
   }
 
   function renderActions() {

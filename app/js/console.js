@@ -38,7 +38,7 @@
       Net.isTeacher ? 'this console holds the key printed in your terminal'
                     : 'NO KEY — open the ?key=… address from the terminal, or the buttons will be refused']);
     items.push(['✓', 'Students join at /play.html',
-      'Class ' + (SESSION.classCode || 'GN7B') + ' · they tap a name, nothing to type, nothing to install.']);
+      'Class ' + Net.room + ' · they tap a name, nothing to type, nothing to install.']);
     items.push(['⚠', 'The timers still cannot watch the room',
       'Auto-extend needs the acted-count rule from design/14 wired up. Until then: E adds thirty seconds.']);
 
@@ -62,13 +62,15 @@
    * The Stage opens its own stream to the server, so there is nothing to pair
    * and nothing to message. All this has to do is manage the on-this-screen
    * overlay for a teacher with one display. */
+  function stageUrl() { return 'stage.html?room=' + encodeURIComponent(Net.room); }
+
   const Overlay = {
     open: function () {
       let h = $('stage-inline');
       if (!h) { h = document.createElement('div'); h.id = 'stage-inline'; document.body.appendChild(h); }
       if (!h.querySelector('iframe')) {
         const f = document.createElement('iframe');
-        f.src = 'stage.html';
+        f.src = stageUrl();
         f.title = 'The Stage';
         h.appendChild(f);
       }
@@ -145,6 +147,41 @@
    * is still time to fix it. On autopilot the engine's fallback sweep fixes it
    * without being asked — this panel is how you SEE that happening, and how you
    * know which facts the room as a whole is thin on. */
+  /* THE ASKED COLUMN.
+   *
+   * Constraint F: proving the JSON names all thirty ids proves the JSON, not
+   * the delivery. An invitation that fires on a day a student is away leaves
+   * the build green and the student unasked, so this is the RUNTIME record —
+   * what was actually offered, to whom.
+   *
+   * Sorted by who is most overdue, so the top of this list is the answer to
+   * the only question the teacher has. There is no button beside a name.
+   */
+  function renderAsked(s) {
+    const box = $('ask-box');
+    if (!box) return;
+    const rec = s.asked;
+    if (!rec) { box.hidden = true; return; }
+    const rows = Object.keys(rec).map(function (id) {
+      return { id: id, name: rec[id].name, asked: rec[id].asked,
+               refunds: rec[id].refunds, at: rec[id].at };
+    });
+    if (!rows.length) { box.hidden = true; return; }
+    box.hidden = false;
+    rows.sort(function (a, b) {
+      const sc = function (r) { return r.asked + r.refunds; };
+      return sc(a) - sc(b) || a.at - b.at || (a.name < b.name ? -1 : 1);
+    });
+    const never = rows.filter(function (r) { return r.asked === 0; }).length;
+    $('ask-sum').textContent = never + ' never asked · the town asks the people it has not asked lately';
+    $('askedlist').innerHTML = rows.map(function (r) {
+      const dim = r.asked === 0 ? 'var(--d-oxide)' : 'var(--d-faint)';
+      const lapse = r.refunds ? ' <span style="color:var(--d-faint)">(' + r.refunds + ' lapsed)</span>' : '';
+      return '<div class="askrow"><span class="an">' + r.name + '</span>' +
+             '<span class="av" style="color:' + dim + '">' + r.asked + '</span>' + lapse + '</div>';
+    }).join('');
+  }
+
   function renderCoverage(s) {
     const cov = s.coverage;
     const box = $('cov-box');
@@ -309,6 +346,7 @@
     renderTally(s);
     renderOutline(s);
     renderRoom(s);
+    renderAsked(s);
     renderCoverage(s);
 
     /* The server counts open Stage streams, so this is a fact rather than a
@@ -522,14 +560,6 @@
         SESSION = json;
         $('gate-sub').textContent = 'Session ' + json.session + ' · ' + json.subtitle;
         document.querySelector('.gate-in h1').textContent = json.title;
-        preflight();
-        loadClasses();
-        showWhereStudentsGo();
-        /* Opening the desk on a class is enough to point the students' short
-         * URL at it. Without this a teacher could pick period 3, not press
-         * anything yet, and have the class walk into period 1 — which is
-         * exactly what happened before /p learned about rooms. */
-        Net.cmd('open').catch(function () {});
         $('gate-note').textContent =
           'Space pauses. Arrow keys skip and step back. E adds thirty seconds. ' +
           'Nothing needs pressing after you start — the period runs to the bell on its own.';
@@ -551,6 +581,15 @@
         });
 
         Net.connect({ role: 'view' });
+        document.querySelectorAll('[data-stage-link]').forEach(function (link) {
+          link.href = stageUrl();
+        });
+        /* connect initializes the selected room and teacher key. Only then
+         * can opening the desk point the students' short URL at this class. */
+        if (Net.isTeacher) Net.cmd('open');
+        preflight();
+        loadClasses();
+        showWhereStudentsGo();
         if (!Net.isTeacher) {
           fail('This console is missing its teacher key, so the controls will be ' +
             'refused.<br><br>Open the <strong>?key=…</strong> address printed in the terminal.');

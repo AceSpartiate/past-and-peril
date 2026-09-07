@@ -1456,6 +1456,235 @@
           "legacy": 2
         }
       }
+    },
+    {
+      "id": "SQ_ORCHARD_1",
+      "verb": "SEEK",
+      "label": "Find out where they mean to put it.",
+      "detail": "You were asked. Nobody has told you the rest yet.",
+      "requires": {
+        "flag": [
+          "INV_SQ_ORCHARD"
+        ],
+        "flag_absent": [
+          "SQ_ORCHARD_ASKED"
+        ]
+      },
+      "roll": {
+        "stat": "talk",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Down the orchard path, past the last of the peaches. They tell you the spot and they tell you who else knows it, which is fewer people than you expected.",
+          "set_flags": [
+            "SQ_ORCHARD_ASKED"
+          ],
+          "teach": [
+            "FACT_BURY_THE_CANNON"
+          ],
+          "legacy": 2
+        },
+        "partial": {
+          "narrate": "The orchard. Nobody will say exactly where in it, and you get the feeling that is on purpose.",
+          "set_flags": [
+            "SQ_ORCHARD_ASKED"
+          ],
+          "teach": [
+            "FACT_BURY_THE_CANNON"
+          ],
+          "legacy": 1
+        },
+        "weak": {
+          "narrate": "You ask three people and get three answers. The orchard is in all of them, so the orchard it is.",
+          "set_flags": [
+            "SQ_ORCHARD_ASKED"
+          ],
+          "teach": [
+            "FACT_BURY_THE_CANNON"
+          ]
+        }
+      }
+    },
+    {
+      "id": "SQ_ORCHARD_2",
+      "verb": "ACT",
+      "label": "Dig, in the orchard, where nobody will look.",
+      "detail": "It has to be long enough and it has to be deep enough.",
+      "requires": {
+        "flag": [
+          "SQ_ORCHARD_ASKED"
+        ],
+        "flag_absent": [
+          "SQ_ORCHARD_DUG"
+        ],
+        "hex_in": [
+          "L12",
+          "M12",
+          "L13",
+          "M13"
+        ]
+      },
+      "roll": {
+        "stat": "arms",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "You go down through the peach roots and keep going. When you climb out you cannot see the bottom, which is the point.",
+          "broadcast": "There is a hole in George Davis’s orchard that was not there this morning.",
+          "set_flags": [
+            "SQ_ORCHARD_DUG"
+          ],
+          "legacy": 2
+        },
+        "partial": {
+          "narrate": "Long enough. Deep enough. Not a hole anybody would be proud of, and it will do.",
+          "set_flags": [
+            "SQ_ORCHARD_DUG"
+          ],
+          "legacy": 1
+        },
+        "weak": {
+          "narrate": "You hit a root, then another root, and you finish it anyway with your hands raw.",
+          "set_flags": [
+            "SQ_ORCHARD_DUG"
+          ],
+          "resolve": 1
+        }
+      },
+      "gate_label": "YOU KNOW WHERE"
+    },
+    {
+      "id": "SQ_ORCHARD_3",
+      "verb": "ACT",
+      "label": "Get it in the ground. You cannot do this on your own.",
+      "detail": "It weighs what it weighs. Somebody has to take the other end.",
+      "requires": {
+        "flag": [
+          "SQ_ORCHARD_DUG"
+        ],
+        "flag_absent": [
+          "DONE_SQ_ORCHARD"
+        ],
+        "hex_in": [
+          "L12",
+          "M12",
+          "L13",
+          "M13"
+        ],
+        "adjacent_character": true
+      },
+      "roll": {
+        "stat": "arms",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "The two of you walk it down on the rope and it goes in straight. Canvas over, dirt over that, and by dark there is nothing to see.",
+          "broadcast": "The cannon is in the ground, and it took two people.",
+          "set_flags": [
+            "DONE_SQ_ORCHARD"
+          ],
+          "grant_item": "ITEM_CANVAS",
+          "legacy": 3
+        },
+        "partial": {
+          "narrate": "It goes in crooked and it goes in. You will both remember the noise it made.",
+          "set_flags": [
+            "DONE_SQ_ORCHARD"
+          ],
+          "grant_item": "ITEM_CANVAS",
+          "legacy": 2
+        },
+        "weak": {
+          "narrate": "You drop it the last foot. It is buried, you are filthy, and nobody outside this orchard needs to know how it went.",
+          "set_flags": [
+            "DONE_SQ_ORCHARD"
+          ],
+          "grant_item": "ITEM_CANVAS",
+          "legacy": 1,
+          "resolve": 1
+        }
+      },
+      "gate_label": "THE HOLE IS DUG"
+    },
+    {
+      "id": "SQ_ORCHARD_HELP",
+      "verb": "AID",
+      "label": "Take the other end of the rope.",
+      "detail": "You were not asked. You are here anyway, and it does not go in without you.",
+      "requires": {
+        "adjacent_flag": [
+          "SQ_ORCHARD_DUG"
+        ],
+        "flag_absent": [
+          "HELPED_SQ_ORCHARD"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "Nobody wrote your name down for this. It is a cannon, it is in a hole, and it is there because you were holding the other end.",
+          "broadcast": "Somebody who was not asked took the other end of the rope.",
+          "set_flags": [
+            "HELPED_SQ_ORCHARD"
+          ],
+          "grant_item": "ITEM_ROPE",
+          "aid_target": true,
+          "legacy": 3
+        }
+      },
+      "gate_label": "THEY ASKED FOR HELP"
+    },
+    {
+      "id": "KIT_ROPE_HAUL",
+      "verb": "ACT",
+      "label": "Get a rope on it and move it with somebody.",
+      "detail": "Nothing heavy in this town moves with one pair of hands.",
+      "requires": {
+        "item": [
+          "ITEM_ROPE"
+        ],
+        "adjacent_character": true
+      },
+      "roll": {
+        "stat": "arms",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Two of you, one rope, and the thing goes where it needs to go instead of where it was going to fall.",
+          "broadcast": "A rope, two people, and something heavy goes where it was meant to.",
+          "legacy": 2
+        },
+        "partial": {
+          "narrate": "It moves. Slowly, and with a lot of shouting about which way."
+        },
+        "weak": {
+          "narrate": "The rope slips, you both sit down hard, and you start again."
+        }
+      }
+    },
+    {
+      "id": "KIT_CANVAS_COVER",
+      "verb": "ACT",
+      "label": "Put the canvas over it and walk away.",
+      "detail": "One piece of canvas. Once.",
+      "requires": {
+        "item": [
+          "ITEM_CANVAS"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "Over, flat, weighted at the corners. Anybody walking past sees ground, and keeps walking.",
+          "world": {
+            "SOMETHING_COVERED": true
+          },
+          "legacy": 1
+        }
+      }
     }
-  ]
+  ],
+  "_orchard": "GEORGE DAVIS’S ORCHARD IS FOUR HEXES, NOT ONE: L12, M12, L13 and M13 are all orchard terrain (K12 is brush and blocks). Both burial steps name all four on purpose. Hexes are exclusive, so a single-hex gate would have queued every seated student for one square, and the last step needs a CLASSMATE adjacent - which is impossible inside a gate one hex wide."
 }
