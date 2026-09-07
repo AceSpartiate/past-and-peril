@@ -206,6 +206,156 @@
       ],
       "note": "Whoever left it was in a hurry, and did not come back for it.",
       "searchLabel": "Go through the pack left at the ford."
+    },
+    {
+      "id": "JOB_PEN",
+      "kind": "job",
+      "hex": "K9",
+      "label": "The stock pen",
+      "doLabel": "Get the animals in before dark.",
+      "note": "Nobody has counted them since Tuesday.",
+      "verb": "ACT",
+      "takenBy": {}
+    },
+    {
+      "id": "JOB_FORD",
+      "kind": "job",
+      "hex": "B7",
+      "label": "The ford",
+      "doLabel": "Wade out and find how deep it is running.",
+      "note": "It matters a great deal this week.",
+      "verb": "SEEK",
+      "takenBy": {}
+    },
+    {
+      "id": "JOB_ORCHARD",
+      "kind": "job",
+      "hex": "M12",
+      "label": "The peach trees",
+      "doLabel": "Pick what is ripe before it drops.",
+      "note": "They will not wait for the politics.",
+      "verb": "ACT",
+      "takenBy": {}
+    },
+    {
+      "id": "JOB_CORN",
+      "kind": "job",
+      "hex": "O2",
+      "label": "The corn stubble",
+      "doLabel": "Get the last of the corn in.",
+      "note": "It is late and it is still standing.",
+      "verb": "ACT",
+      "takenBy": {}
+    },
+    {
+      "id": "JOB_FIELD",
+      "kind": "job",
+      "hex": "L2",
+      "label": "The far field",
+      "doLabel": "Turn the ground over while it is soft.",
+      "note": "Somebody has to, war or no war.",
+      "verb": "ACT",
+      "takenBy": {}
+    },
+    {
+      "id": "JOB_PATH",
+      "kind": "job",
+      "hex": "G4",
+      "label": "The washed-out path",
+      "doLabel": "Fill the ruts before a cart goes over.",
+      "note": "One axle is a week of nobody moving.",
+      "verb": "ACT",
+      "takenBy": {}
+    },
+    {
+      "id": "JOB_PLAZA",
+      "kind": "job",
+      "hex": "K4",
+      "label": "The square",
+      "doLabel": "Sweep the square out.",
+      "note": "People are going to be standing here.",
+      "verb": "SEEK",
+      "takenBy": {}
+    },
+    {
+      "id": "JOB_NOTICE",
+      "kind": "job",
+      "hex": "L8",
+      "label": "The notice post",
+      "doLabel": "Read what is nailed up, out loud.",
+      "note": "Half the town cannot read it themselves.",
+      "verb": "SEEK",
+      "takenBy": {}
+    },
+    {
+      "id": "JOB_YARD",
+      "kind": "job",
+      "hex": "M5",
+      "label": "A yard full of wash",
+      "doLabel": "Get the washing in off the line.",
+      "note": "It has been out since the day before.",
+      "verb": "ACT",
+      "takenBy": {}
+    },
+    {
+      "id": "JOB_WOOD",
+      "kind": "job",
+      "hex": "M9",
+      "label": "The woodpile",
+      "doLabel": "Split enough for three days.",
+      "note": "Three days is what everybody is saying.",
+      "verb": "ACT",
+      "takenBy": {}
+    },
+    {
+      "id": "JOB_CHILD",
+      "kind": "job",
+      "hex": "K10",
+      "label": "A child on a step",
+      "doLabel": "Find out whose child this is.",
+      "note": "They have been sitting there a while.",
+      "verb": "SEEK",
+      "takenBy": {}
+    },
+    {
+      "id": "JOB_BANK",
+      "kind": "job",
+      "hex": "D6",
+      "label": "The riverbank",
+      "doLabel": "Drag the boat further up the mud.",
+      "note": "The water is doing what it likes.",
+      "verb": "ACT",
+      "takenBy": {}
+    },
+    {
+      "id": "JOB_WATCH",
+      "kind": "job",
+      "hex": "A7",
+      "label": "The far bank",
+      "doLabel": "Stand and watch the other side.",
+      "note": "Somebody should be doing this anyway.",
+      "verb": "SEEK",
+      "takenBy": {}
+    },
+    {
+      "id": "JOB_RISE",
+      "kind": "job",
+      "hex": "P12",
+      "label": "The rise",
+      "doLabel": "Go up and look at the road east.",
+      "note": "You can see a long way from here.",
+      "verb": "SEEK",
+      "takenBy": {}
+    },
+    {
+      "id": "JOB_ROAD",
+      "kind": "job",
+      "hex": "H6",
+      "label": "The road out",
+      "doLabel": "Move the fallen limb off the road.",
+      "note": "It has been there since the storm.",
+      "verb": "ACT",
+      "takenBy": {}
     }
   ],
   "items": [
@@ -332,5 +482,6 @@
     "RIFLEMAN": "P11",
     "_note": "Where each trade stands when no student is playing them. The smith is at the forge, the storekeeper beside his own door, the clerk at the well where the alcalde reads things out, the rancheros out on the Béxar road, the riders on the road east."
   },
-  "_rarity": "FOUR RARITIES, COLOUR FIRST. PLAIN bone · SOUND green · KNOWN blue · NAMED ember. A Chromebook two tables away is a classroom event with no words in it, which is the whole reason the tier is a colour before it is a label."
+  "_rarity": "FOUR RARITIES, COLOUR FIRST. PLAIN bone · SOUND green · KNOWN blue · NAMED ember. A Chromebook two tables away is a classroom event with no words in it, which is the whole reason the tier is a colour before it is a label.",
+  "_chores": "FIFTEEN CHORES, kind \"job\". Promoted by the same map-driven path that offers a chest, no roll and no cost, top of your list when you stand on or beside one. Every chore is made meaningful by a synthesised DID_<id> flag in engine.jobAction - isMeaningful() counts neither legacy nor resource, so a chore paying only those would be FILLER by the engine’s own test and would not suppress the AID/GUARD/HOLD reserve. takenBy is cleared every session in loadSession, because a chore that is once per unit is a countdown and not a manifold."
 }

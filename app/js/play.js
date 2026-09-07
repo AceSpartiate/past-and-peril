@@ -471,8 +471,14 @@
     $('docs-btn-n').textContent = n === 1 ? 'DOCUMENT' : n + ' DOCUMENTS';
   }
 
+  let lastSegId = null;
+
   function applyState(s) {
     WORLD = s;
+    /* A new segment is a new short list. Leaving it open across a window
+     * change would hand the next turn a wall of eighteen cards. */
+    const segId = s && s.segment && s.segment.id;
+    if (segId !== lastSegId) { lastSegId = segId; foldOpen = false; }
     if (!ME) return;
     if (window.Tutorial && !Tutorial.running) showTutorialOffer();
     renderTurn();
@@ -620,7 +626,7 @@
     const b = $('tut-offer');
     if (!b) return;
     /* only on the lock screen — never over an open turn */
-    b.hidden = !!(WORLD && WORLD.turnOpen);
+    b.hidden = !!(WORLD && WORLD.roamOpen);
     b.textContent = Tutorial.done ? 'Show me how to play again' : 'Show me how to play';
   }
 
@@ -1043,6 +1049,15 @@
     });
   }
 
+  /* Opening the short list is not an action and costs nothing. */
+  $('acts').addEventListener('click', function (e) {
+    const more = e.target.closest && e.target.closest('[data-more]');
+    if (!more) return;
+    e.stopPropagation();
+    foldOpen = true;
+    renderActions();
+  }, true);
+
   if ($('doc-toast')) {
     $('doc-toast').addEventListener('click', function (e) {
       const id = this.getAttribute('data-doc');
@@ -1226,6 +1241,10 @@
     }
   }
 
+  /* Stays open once a student opens it, until the turn changes — reopening
+   * it every repaint would be a fight with the server's quarter-second. */
+  let foldOpen = false;
+
   function renderActions() {
     if (!ME) return;
     const acts = (WORLD && WORLD.turnOpen && !ME.declared) ? (ME.actions || []) : [];
@@ -1233,13 +1252,28 @@
       $('acts').innerHTML = '';
       return;
     }
-    $('acts').innerHTML = acts.map(function (a) {
+    /* THE FOLD. Which cards collapse is decided by the SERVER, so the
+     * simulator sees the same list the student sees. It reserves the top
+     * chore, at least one Calling card and up to four scene-own cards before
+     * folding anything — a flat cut hides the Calling card in 79% of
+     * student-windows, measured, which deletes the one button only you have. */
+    const card = function (a) {
       return '<button class="act ' + (a.promoted ? 'promoted' : '') + '" data-act="' + a.id + '">' +
         '<span class="a-top"><span class="a-verb">' + a.verb + '</span>' +
         (a.gate ? '<span class="a-gate">' + a.gate + '</span>' : '') + '</span>' +
         '<span class="a-label">' + a.label + '</span>' +
         '<span class="a-detail">' + (a.detail || '') + '</span></button>';
-    }).join('');
+    };
+    const shown = acts.filter(function (a) { return !a.fold; });
+    const rest = acts.filter(function (a) { return a.fold; });
+    $('acts').innerHTML = shown.map(card).join('') +
+      (rest.length
+        ? '<button class="act more" data-more="1">' +
+          '<span class="a-label">' + rest.length + ' more things you could do</span>' +
+          '<span class="a-detail">Nothing here is hidden from you. This is just the short list.</span>' +
+          '</button><span class="folded"' + (foldOpen ? '' : ' hidden') + '>' +
+          rest.map(card).join('') + '</span>'
+        : '');
   }
 
   function renderTurn() {
@@ -1499,7 +1533,9 @@
     get state() {
       return ME && { hex: ME.hex, moveLeft: ME.moveLeft, declared: ME.declared, verb: ME.verb,
                      wordsSpent: ME.wordsSpent, legacy: ME.legacy,
-                     open: !!(WORLD && WORLD.turnOpen) };
+                     /* The map is live while ROAMING as well as during a
+                      * turn. You can walk; you still cannot act. */
+                     open: !!(WORLD && WORLD.roamOpen) };
     },
     options: function () { return ME ? ME.reach.slice() : []; },
     actions: function () { return ME && ME.actions ? ME.actions.slice() : []; },

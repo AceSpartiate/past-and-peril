@@ -298,6 +298,10 @@ class Engine {
          * can serve, for the few things that genuinely must be scarce. */
         if ((f.kind === 'chest' || f.kind === 'body') && this.openTo(f, st))
           promoted.push(this.lootAction(f, hx));
+        /* CHORES. The same map-driven promotion, because a chore is a fact
+         * about the world and not a fact about this scene. No roll, no cost,
+         * top of your list when you are standing on or beside it. */
+        if (f.kind === 'job' && this.openTo(f, st)) promoted.push(this.jobAction(f, hx));
         /* A portal is walked through, not "acted" on — see Room#enter. Offering
          * it as an action too would charge a student their turn for a door. */
         if (f.kind === 'door' && !f.to) promoted.push(this.doorAction(f, hx));
@@ -335,7 +339,58 @@ class Engine {
         return true;
       });
 
-    return out.map((a) => this.describe(a, ctx, promoted.indexOf(a) !== -1));
+    /* VERB VARIETY, IN THE CHORE SLICE ONLY.
+     *
+     * A chore whose verb differs from the last one you took comes first, so a
+     * student who has pressed ACT four times is shown a SEEK. The chores are
+     * sorted IN PLACE, back into the same indices they occupied: `promoted`
+     * itself must never be reordered, because the fallback sweep holds index 0
+     * by unshift and every other promotion arrives by push. That ordering is
+     * the teaching guarantee's load-bearing structure. */
+    const jobAt = [];
+    out.forEach((a, i) => { if (a.job) jobAt.push(i); });
+    if (jobAt.length > 1) {
+      const last = ctx.student.verb;
+      const picked = jobAt.map((i) => out[i]).sort((x, y) => {
+        const d = (a) => (a.verb === last ? 1 : 0);
+        return d(x) - d(y);
+      });
+      jobAt.forEach((i, k) => { out[i] = picked[k]; });
+    }
+
+    const described = out.map((a) => this.describe(a, ctx, promoted.indexOf(a) !== -1));
+    this.markFold(out, described, promoted);
+    return described;
+  }
+
+  /* THE FOLD, WITH RESERVED SLOTS.
+   *
+   * The offered list measures min 8, median 10, p90 13 — long enough to be a
+   * wall on a phone. But a flat "show the first six" is worse than the wall:
+   * rank() sorts scene-own above Calling-gated, and the scenes author eleven
+   * to fifteen of their own, so a six-item cut hides the student's Calling
+   * action in roughly 71% of student-windows — deleting "the one button only
+   * you have" from view for most of the period.
+   *
+   * So the fold reserves: everything promoted (the sweep holds index 0 and a
+   * container or chore you are standing on is why you walked there), up to
+   * four scene-own, AT LEAST ONE Calling-gated, and the top chore. Everything
+   * else is marked folded and the client collapses it behind a tap.
+   *
+   * Computed here rather than in play.js so the simulator sees the same list
+   * the student sees. A fold the harness cannot see is a fold nobody measured. */
+  markFold(actions, described, promoted) {
+    let sceneOwn = 0, calling = 0, chore = 0;
+    actions.forEach((a, i) => {
+      const d = described[i];
+      if (promoted.indexOf(a) !== -1) { d.fold = false; return; }
+      const isCalling = !!(a.requires && a.requires.calling);
+      const isScene = !!this.sceneOwn[a.id];
+      if (a.job && chore < 1) { chore++; d.fold = false; return; }
+      if (isCalling && calling < 1) { calling++; d.fold = false; return; }
+      if (isScene && sceneOwn < 4) { sceneOwn++; d.fold = false; return; }
+      d.fold = true;
+    });
   }
 
   /* Searching is an ACTION — it costs you the turn, like anything else. */
@@ -347,6 +402,33 @@ class Engine {
     if (taken[st.characterId]) return false;
     if (f.depth && Object.keys(taken).length >= f.depth) return false;
     return true;
+  }
+
+  /* A CHORE MUST CARRY set_flags, AND THAT IS NOT DECORATION.
+   *
+   * isMeaningful() above counts world, set_flags, clear_flags, aid/guard
+   * targets, clocks and an unheld teach. It does NOT count legacy and it
+   * does NOT count resource — so a chore paying "+1 Legacy, +1 stores" is
+   * FILLER by the engine's own published test: it would not count toward the
+   * idle floor and would not suppress the AID/GUARD/HOLD reserve, which is
+   * already the three most-taken actions in the game.
+   *
+   * So the flag is synthesised here rather than trusted to the author: every
+   * chore sets DID_<featureId>, whatever else it pays. There is no way to
+   * write a chore that is quietly worth nothing. */
+  jobAction(f, hx) {
+    const out = Object.assign({ legacy: 1 }, f.pays || {});
+    out.set_flags = (out.set_flags || []).concat(['DID_' + f.id]);
+    return {
+      id: 'JOB:' + f.id,
+      verb: f.verb || 'ACT',
+      dynamic: true,
+      job: f.id,
+      label: f.doLabel || f.label,
+      detail: f.note || '',
+      requires: {},
+      outcomes: { all: out },
+    };
   }
 
   lootAction(f, hx) {
@@ -443,14 +525,23 @@ class Engine {
 
   resolve(actionId, ctx, opts) {
     let a = this.actions[actionId];
-    if (!a && /^(LOOT|DOOR):/.test(actionId)) {
+    if (!a && /^(LOOT|DOOR|JOB):/.test(actionId)) {
       /* Regenerate the world action and re-check it is legitimately reachable
        * from where this student is actually standing. A client asking to open a
-       * door across town gets nothing. */
+       * door across town gets nothing.
+       *
+       * A chore is a world action like the other two, and adding one to the map
+       * without adding it HERE produces an action that is offered, tapped, and
+       * then answered with no-such-action — which looks exactly like a dead
+       * button and nothing in the build says a word about it. */
       const f = this._map(ctx).feature(actionId.split(':')[1]);
       if (f) {
         const offered = this.offer(ctx).filter((x) => x.id === actionId)[0];
-        if (offered) a = actionId.indexOf('LOOT') === 0 ? this.lootAction(f, f.hex) : this.doorAction(f, f.hex);
+        if (offered) {
+          if (actionId.indexOf('LOOT') === 0) a = this.lootAction(f, f.hex);
+          else if (actionId.indexOf('JOB') === 0) a = this.jobAction(f, f.hex);
+          else a = this.doorAction(f, f.hex);
+        }
       }
     }
     if (!a) return { ok: false, error: 'no-such-action' };

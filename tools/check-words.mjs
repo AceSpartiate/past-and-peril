@@ -62,7 +62,9 @@ function take(where, what, text) {
 const CONTENT = path.join(ROOT, 'app', 'content');
 const FIELDS = ['label', 'detail', 'blurb', 'narrate', 'statement', 'text',
                 'title', 'subtitle', 'teacherNote', 'note', 'say', 'hint',
-                'short', 'prompt', 'question', 'body', 'eyebrow'];
+                'short', 'prompt', 'question', 'body', 'eyebrow',
+                /* a chore's doLabel is what a student actually reads on the card */
+                'doLabel', 'line', 'where'];
 
 function walk(node, file, trail) {
   if (node == null) return;

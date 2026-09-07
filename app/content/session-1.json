@@ -51,7 +51,13 @@
       "voice": {
         "speaker": "NARRATOR",
         "text": "Last time you became someone. Today that person finds out what the government wants from them. Take two Words. You will spend them before the bell."
-      }
+      },
+      "orders": [
+        "Do a job nobody asked you to do.",
+        "Find out one true number about this town.",
+        "Stand next to somebody and make their turn better."
+      ],
+      "ordersTitle": "THE DAY’S WORK"
     },
     {
       "id": "cold_open",
@@ -145,7 +151,8 @@
           "eligible": {},
           "where": "George Davis’s peach orchard, south-east past the path."
         }
-      ]
+      ],
+      "roam": true
     },
     {
       "id": "t1_path",
@@ -171,7 +178,8 @@
         "speaker": "NARRATOR",
         "text": "The rider is still watering his horse at the public trough, and he has not dismounted. Whatever this town says, he will carry it back word for word."
       },
-      "scene": "S1.1"
+      "scene": "S1.1",
+      "roam": true
     },
     {
       "id": "t2_situation",
@@ -183,7 +191,8 @@
         "speaker": "NARRATOR",
         "text": "Whatever this town decides, it cannot decide it alone. Mina is forty miles. San Felipe is eighty. There are maybe eighteen men in Gonzales who can hold a rifle. The nearest help is two days away and does not know anything is happening."
       },
-      "scene": "S1.2"
+      "scene": "S1.2",
+      "roam": true
     },
     {
       "id": "t2_path",
@@ -209,7 +218,8 @@
         "speaker": "NARRATOR",
         "text": "Riders are on the road. Somewhere east of here a man you will never meet is being handed a letter about your town."
       },
-      "scene": "S1.2"
+      "scene": "S1.2",
+      "roam": true
     },
     {
       "id": "t3_situation",
@@ -221,7 +231,8 @@
         "speaker": "NARRATOR",
         "text": "A rider comes up the Béxar road at a walk. He is not a courier. He is a dragoon, and he is counting your houses."
       },
-      "scene": "S1.3"
+      "scene": "S1.3",
+      "roam": true
     },
     {
       "id": "t3_path",
@@ -247,7 +258,8 @@
         "speaker": "NARRATOR",
         "text": "The dragoon rides back the way he came, at the same walk, having counted everything he needed to count."
       },
-      "scene": "S1.3"
+      "scene": "S1.3",
+      "roam": true
     },
     {
       "id": "t4_situation",
@@ -259,7 +271,8 @@
         "speaker": "NARRATOR",
         "text": "Ponton's reply has to go tonight, and the cannon has to be somewhere. Both of those things are decided in the next ten minutes."
       },
-      "scene": "S1.4"
+      "scene": "S1.4",
+      "roam": true
     },
     {
       "id": "t4_path",
@@ -285,7 +298,8 @@
         "speaker": "NARRATOR",
         "text": "THE DEMAND is full, or one segment from it. Say what that means out loud, and then say that Andrew Ponton really did stall, and that it really did work."
       },
-      "scene": "S1.4"
+      "scene": "S1.4",
+      "roam": true
     },
     {
       "id": "t5_situation",
@@ -297,7 +311,8 @@
         "speaker": "NARRATOR",
         "text": "Everyone is in the square. Do we return the cannon?"
       },
-      "scene": "S1.5"
+      "scene": "S1.5",
+      "roam": true
     },
     {
       "id": "t5_path",
@@ -347,7 +362,8 @@
         "speaker": "NARRATOR",
         "text": "Whatever this town just voted, the cannon is still in the square and the young men of the Ranging Company have their own ideas about it. Sixteen-year-olds with a cannon do not take votes."
       },
-      "scene": "S1.5"
+      "scene": "S1.5",
+      "roam": true
     },
     {
       "id": "dispatch",

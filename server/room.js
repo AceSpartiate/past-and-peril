@@ -606,6 +606,16 @@ class Room {
       (this.scene.npcs || []).forEach((n) => { this.npcHex[n.id] = n.hex; });
       this._relocate();
     }
+    /* CHORES COME BACK EACH PERIOD.
+     *
+     * takenBy persists in the CAMPAIGN block, not the period block — which is
+     * right for a chest and wrong for a chore. Fifteen chores across six
+     * sessions is two and a half per student per period, which is not a
+     * manifold, it is a countdown. The town needs doing again on Tuesday. */
+    Object.values(this._featIx || {}).forEach((e) => {
+      if (e.f && e.f.kind === 'job') e.f.takenBy = {};
+    });
+
     /* Unspent invitations lapse when the period does. */
     this._refundLapsed();
     this._lastPostings = null;
@@ -699,6 +709,21 @@ class Room {
      *
      * Slot rules are enforced here as well as at pickup, so a drop cannot
      * put a second thing in a hand that is already full. */
+    /* A ROAMING SEGMENT REFRESHES MOVEMENT TOO.
+     *
+     * Otherwise roam is decorative: a student who spent their last hex in
+     * the window before arrives at the narration with moveLeft 0 and the
+     * live map is live for somebody else. Roaming cannot DECLARE anything —
+     * perform() is still gated on turnOpen — so the only thing this budget
+     * buys is standing somewhere better when the next window opens, which is
+     * exactly what it is for. */
+    if (s && s.roam && !this._isTurn(s)) {
+      this._allStudents().forEach((st) => {
+        st.move = this.effective(st).move;
+        st.moveLeft = st.move;
+      });
+    }
+
     if (s && s.postings) this._seatPostings(s);
 
     if (s && (s.drop || s.drop_by_calling)) {
@@ -838,6 +863,26 @@ class Room {
     return seg.label === 'DECLARE' || seg.label === 'SPEAK';   // legacy content
   }
   get turnOpen() { return this.started && this.running && this._isTurn(this._seg()); }
+
+  /* ROAM — the map stays live when the turn does not.
+   *
+   * move() and enter() both refuse unless turnOpen, and turnOpen is true only
+   * for a beat with window:true. So a read segment is a screen that does not
+   * respond to taps: a student who reaches for the map during the sixty
+   * seconds between windows finds a dead rectangle. In a game a real class
+   * already called "a textbook with a gamey exterior", that is the complaint
+   * making itself.
+   *
+   * A segment that says roam:true lets a student WALK but not ACT. Nothing is
+   * declared, nothing is spent, no action resolves — perform() still checks
+   * turnOpen and still refuses. You can cross the square while the narrator
+   * talks, which is what a twelve-year-old expects a map to let them do. */
+  get roamOpen() {
+    if (!this.started || !this.running) return false;
+    if (this.turnOpen) return true;
+    const s = this._seg();
+    return !!(s && s.roam);
+  }
 
   /* ------------------------------------------------------------- teacher */
   command(type, payload) {
@@ -1173,7 +1218,9 @@ class Room {
   move(sid, hexLabel) {
     const st = this.students[sid];
     if (!st) return { ok: false, error: 'not-joined' };
-    if (!this.turnOpen) return { ok: false, error: 'closed' };
+    /* roamOpen, not turnOpen: walking is allowed on a roaming read segment.
+     * perform() is still gated on turnOpen, so nothing can be DONE here. */
+    if (!this.roamOpen) return { ok: false, error: 'closed' };
 
     const mp = this.mapFor(st);
     const target = mp.parse(hexLabel);
@@ -1217,7 +1264,7 @@ class Room {
   enter(sid, featureId) {
     const st = this.students[sid];
     if (!st) return { ok: false, error: 'not-joined' };
-    if (!this.turnOpen) return { ok: false, error: 'closed' };
+    if (!this.roamOpen) return { ok: false, error: 'closed' };
     const f = this.feature(featureId);
     if (!f || !f.to || !this.maps[f.to.place]) return { ok: false, error: 'no-such-way' };
     if (this.featurePlace(featureId) !== this.placeId(st)) return { ok: false, error: 'not-here' };
@@ -1394,6 +1441,14 @@ class Room {
       r.gained = names;
       r.declined = declined;
     }
+    /* A chore is taken per student, like a container. */
+    if (r.action.job) {
+      const f = this.feature(r.action.job);
+      if (!this.engine.openTo(f, st)) return { ok: false, error: 'already-done' };
+      f.takenBy = f.takenBy || {};
+      f.takenBy[st.characterId] = true;
+    }
+
     if (r.action.door) {
       const f = this.feature(r.action.door);
       if (f) {
@@ -1499,6 +1554,61 @@ class Room {
     if (!id) return;
     st.docs = st.docs || [];
     if (st.docs.indexOf(id) === -1) st.docs.push(id);
+  }
+
+  /* THE BREADCRUMB — E10.
+   *
+   * hexmap.js has drawn a dashed ring and printed GO HERE over state.target
+   * since the beginning, and play.js has sent ME.target the whole time. The
+   * server has never once filled it in.
+   *
+   * WHY IT IS NOT SIMPLY "THE SCENE'S FOCUS". An earlier draft fell through to
+   * the scene's first NPC. NPC_PONTON sits on K6 in four of five Session-1
+   * scenes, K6 is also the well, and _moveOpts makes every student and
+   * townsman a hard obstacle you can neither stand on nor path through — so
+   * the breadcrumb would have sent thirty students to one hex with six
+   * neighbours and manufactured exactly the jam it exists to prevent.
+   *
+   * So: the nearest chore or container THIS student has not taken, that has at
+   * least two free neighbours to stand in. Never an NPC, never a door. Returns
+   * null rather than a crowded answer — no ring at all is better than thirty
+   * rings on one square. Different students get different rings, which is the
+   * whole point of a solo layer. */
+  targetFor(st) {
+    const mp = this.mapFor(st);
+    if (!mp || !st.hex) return null;
+    const from = mp.parse(st.hex);
+    if (!from) return null;
+
+    const occupied = {};
+    this._allStudents().forEach((o) => {
+      if (o.characterId !== st.characterId && this.placeId(o) === mp.id) occupied[o.hex] = true;
+    });
+    (this.townsfolk() || []).forEach((t) => { if (t.place === mp.id) occupied[t.hex] = true; });
+
+    const standable = (lab) => {
+      const q = mp.parse(lab);
+      if (!q) return false;
+      const terr = mp.terrain(q.c, q.r);
+      return !!(terr && terr.cost !== null && !occupied[lab]);
+    };
+
+    const reach = mp.reachable(st.hex, 99, this._moveOpts(st));
+    let best = null;
+    (mp.features || []).forEach((f) => {
+      if (f.kind !== 'job' && f.kind !== 'chest' && f.kind !== 'body') return;
+      if (!this.engine.openTo(f, st)) return;                 // already yours
+      const at = mp.parse(f.hex);
+      if (!at) return;
+      const free = mp.neighbours(at.c, at.r)
+        .map((n) => mp.label(n.c, n.r))
+        .filter(standable).length;
+      if (free < 2) return;                                   // do not send them into a jam
+      const cost = reach[at.c + ',' + at.r];
+      if (cost === undefined) return;                         // cannot get there at all
+      if (!best || cost < best.cost) best = { hex: f.hex, cost: cost };
+    });
+    return best ? best.hex : null;
   }
 
   /* WHO GETS ASKED.
@@ -2059,6 +2169,7 @@ class Room {
       },
       started: this.started,
       running: this.running,
+      roamOpen: this.roamOpen,
       manualRead: this.manualRead,
       resumedFromDisk: !!this.resumedFromDisk,
       priorSessions: (this.history || []).length,
@@ -2157,7 +2268,9 @@ class Room {
     const st = this.students[sid];
     if (!st) return null;
     const mp = this.mapFor(st);
-    const reach = this.turnOpen && st.moveLeft > 0
+    /* Reach is drawn whenever walking is allowed, which now includes a
+     * roaming read segment. */
+    const reach = this.roamOpen && st.moveLeft > 0
       ? mp.reachable(st.hex, st.moveLeft, this._moveOpts(st))
       : {};
     const portal = mp.portalAt(st.hex);
@@ -2171,6 +2284,8 @@ class Room {
       companyName: st.companyName, color: st.color,
       ability: st.ability, abilityBlurb: st.abilityBlurb,
       hex: st.hex, move: st.move, moveLeft: st.moveLeft,
+      /* the dashed ring hexmap.js has been ready to draw all along */
+      target: this.targetFor(st),
       place: mp.id, placeTitle: mp.title, indoors: !!mp.indoors,
       /* The way out of where you are, if you are standing on it. This is what
        * the GO INSIDE / GO OUT button is made of. */
@@ -2227,7 +2342,7 @@ class Room {
         /* PER VIEWER. hexmap.js, play.js and the legend all draw the
          * chest-done glyph from this field; sending the room-wide value
          * would grey out chests this student has never touched. */
-        searched: (f.kind === 'chest' || f.kind === 'body')
+        searched: (f.kind === 'chest' || f.kind === 'body' || f.kind === 'job')
           ? !this.engine.openTo(f, st) : f.searched,
         to: f.to || null })),
       townsfolk: this.townsfolk().filter((t) => t.place === mp.id),

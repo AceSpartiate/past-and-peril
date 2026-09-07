@@ -66,7 +66,13 @@
       "voice": {
         "speaker": "NARRATOR",
         "text": "Last time this town refused to hand back a cannon, and buried it in an orchard. Since then the couriers have been riding. Take two Words."
-      }
+      },
+      "orders": [
+        "Do a job nobody asked you to do.",
+        "Get something the front needs to where it is needed.",
+        "Stand next to somebody and make their turn better."
+      ],
+      "ordersTitle": "THE DAY’S WORK"
     },
     {
       "id": "cold_open",
@@ -149,7 +155,8 @@
       "voice": {
         "speaker": "NARRATOR",
         "text": "Castañeda’s dragoons are camped on the far bank. He has sent word that he wishes to speak with the alcalde. Every boat on the river is in Texian hands. It is foggy, and it is before dawn. What do you do while it is still dark?"
-      }
+      },
+      "roam": true
     },
     {
       "id": "t1_path",
@@ -175,7 +182,8 @@
       },
       "clocks": {
         "DEMAND": 1
-      }
+      },
+      "roam": true
     },
     {
       "id": "t2_situation",
@@ -187,7 +195,8 @@
       "voice": {
         "speaker": "NARRATOR",
         "text": "Dawn. The flag flies over the cannon. The dragoons are formed up across the water and Castañeda is waiting for an answer. This is it."
-      }
+      },
+      "roam": true
     },
     {
       "id": "t2_path",
@@ -210,7 +219,8 @@
       "voice": {
         "speaker": "NARRATOR",
         "text": "Castañeda withdraws. Texas has fired on Mexican troops and won. Goliad falls on the ninth. Austin is elected to command an army that does not obey him. And Cos holds Béxar with fifteen hundred men. As long as he holds it, this town is next."
-      }
+      },
+      "roam": true
     },
     {
       "id": "t3_situation",
@@ -222,7 +232,8 @@
       "voice": {
         "speaker": "NARRATOR",
         "text": "Béxar is fifteen hundred men behind a wall, and it has to fall. Every company has a job. Every roll moves the same clock, because thirty of you are fighting one battle."
-      }
+      },
+      "roam": true
     },
     {
       "id": "t3_path",
@@ -245,7 +256,8 @@
       "voice": {
         "speaker": "NARRATOR",
         "text": "The clock moves by however the rolls landed. The siege grinds on into December, and it is cold, and men are beginning to talk about their farms."
-      }
+      },
+      "roam": true
     },
     {
       "id": "t5_situation",
@@ -257,7 +269,8 @@
       "voice": {
         "speaker": "NARRATOR",
         "text": "The war looks over. Cos has surrendered and marched south. There is no Mexican army in Texas. Most of the men want to go home — it is winter, and there are farms. And there is a plan: carry the revolution into Mexico. Somebody has to garrison Béxar. Who?"
-      }
+      },
+      "roam": true
     },
     {
       "id": "t5_path",
@@ -280,7 +293,8 @@
       "voice": {
         "speaker": "NARRATOR",
         "text": "Whatever this room decided is written down now, in your own words. Nothing is rolled for it. It waits."
-      }
+      },
+      "roam": true
     },
     {
       "id": "milam",
@@ -321,7 +335,8 @@
       "voice": {
         "speaker": "NARRATOR",
         "text": "Ben Milam stood up in the plaza and asked who would go with him into San Antonio. Three hundred said yes. It is before dawn, there is fog off the river, and you are going in with them."
-      }
+      },
+      "roam": true
     },
     {
       "id": "boss_i",
@@ -478,7 +493,8 @@
       "voice": {
         "speaker": "HISTORIAN",
         "text": "Cos asked for terms and marched south under parole. For a few weeks there was no Mexican army in Texas at all and the war looked over. It was winter, and there were farms, and most of them wanted to go home."
-      }
+      },
+      "roam": true
     },
     {
       "id": "tally",

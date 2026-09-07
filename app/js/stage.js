@@ -43,6 +43,8 @@
   window.addEventListener('resize', function () { kb.resize(); });
 
   function show(name) {
+    const ob = $('list-orders');
+    if (ob && name !== 'list') ob.hidden = true;
     views.forEach(function (v) {
       const el = $('v-' + v);
       if (el) el.classList.toggle('on', v === name);
@@ -331,6 +333,20 @@
         $('list-items').innerHTML = (seg.items || []).map(function (it, i) {
           return '<li><b>' + String(i + 1).padStart(2, '0') + '</b><span>' + it + '</span></li>';
         }).join('');
+        /* THE DAY'S WORK, under the checklist. Three orders for the whole
+         * period — about twenty-six words of instruction. A student who
+         * reads none of it still has a ring on their map and a chore at the
+         * top of their list; this is for the ones who do read, and for the
+         * teacher saying them out loud. */
+        const ob = $('list-orders');
+        if (ob) {
+          const orders = seg.orders || [];
+          ob.hidden = !orders.length;
+          $('orders-title').textContent = seg.ordersTitle || '';
+          $('orders-items').innerHTML = orders.map(function (o) {
+            return '<li>' + o + '</li>';
+          }).join('');
+        }
         sayOnce(seg.voice);
         break;
       }

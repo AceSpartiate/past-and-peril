@@ -920,6 +920,26 @@ function figurine(ctx, cx, cy, size, calling, fill, rim, hollow) {
         ctx.moveTo(cx - S * 0.6, cy - S * 0.1);
         ctx.lineTo(cx + S * 0.6, cy - S * 0.1);
         ctx.stroke();
+      } else if (kind === 'job') {
+        /* A chore. Deliberately quieter than a chest — this is the town's
+         * ordinary work, and there is a lot of it on the map at once. */
+        ctx.strokeStyle = '#5F7A52';
+        ctx.fillStyle = 'rgba(95,122,82,.20)';
+        ctx.beginPath();
+        ctx.rect(cx - S * 0.5, cy - S * 0.5, S, S);
+        ctx.fill(); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(cx - S * 0.24, cy + S * 0.04);
+        ctx.lineTo(cx - S * 0.02, cy + S * 0.28);
+        ctx.lineTo(cx + S * 0.32, cy - S * 0.26);
+        ctx.stroke();
+      } else if (kind === 'job-done') {
+        ctx.strokeStyle = '#A9B2A8';
+        ctx.setLineDash([S * 0.22, S * 0.18]);
+        ctx.beginPath();
+        ctx.rect(cx - S * 0.5, cy - S * 0.5, S, S);
+        ctx.stroke();
+        ctx.setLineDash([]);
       } else if (kind === 'chest-done') {
         ctx.strokeStyle = '#A9B2A8';
         ctx.setLineDash([S * 0.25, S * 0.2]);
@@ -1416,6 +1436,7 @@ function figurine(ctx, cx, cy, size, calling, fill, rim, hollow) {
         else if (f.kind === 'body') icon(f.searched ? 'chest-done' : 'body', p[0], p[1], R * 0.38);
         else if (f.kind === 'cannon') icon('cannon', p[0], p[1], R * 0.46);
         else if (f.kind === 'well') icon('well', p[0], p[1], R * 0.34);
+        else if (f.kind === 'job') icon(f.searched ? 'job-done' : 'job', p[0], p[1], R * 0.3);
       });
 
       if (state.hover) {
@@ -1426,7 +1447,10 @@ function figurine(ctx, cx, cy, size, calling, fill, rim, hollow) {
         ctx.stroke();
       }
 
-      /* where the tutorial is asking them to walk */
+      /* WHERE TO WALK. Built for the tutorial and unused by the live game
+       * for most of this project’s life — the server never filled state.target
+       * in. Room#targetFor does now: the nearest chore or container this
+       * student has not taken, with room to stand. */
       const tgt = state.target ? map.parse(state.target) : null;
       if (tgt) {
         const p = centre(tgt.c, tgt.r);

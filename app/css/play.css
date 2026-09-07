@@ -1083,3 +1083,9 @@ button.who:hover .nm { text-decoration: underline; text-underline-offset: 3px; }
 .iv-line { font-size: 12px; color: var(--ink); }
 .iv-where { font-size: 10.5px; color: var(--ink-faint); }
 .iv-where[hidden] { display: none; }
+
+/* The fold. Nothing is hidden from a student — this is a short list with the
+ * rest one tap away, and it says so. */
+.act.more { border-style: dashed; opacity: .8; }
+.folded { display: contents; }
+.folded[hidden] { display: none; }
