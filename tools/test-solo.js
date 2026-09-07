@@ -186,6 +186,40 @@ console.log('');
 }
 
 console.log('');
+/* ------------------------------------------------------------------ 6
+ * TEST MODE. A full class of nobody, so a period can be watched before
+ * twenty-six of them arrive. It writes to a real room and a real save file,
+ * so the guards matter more than the feature does. */
+{
+  const { room } = build(0);
+  const r = room.command('testMode', { on: true });
+  ok(r.ok && r.seated === roster.roster.length,
+     'an empty room seats the whole roster (' + r.seated + ')');
+  ok(r.away >= 0 && r.away < r.seated,
+     r.away + ' of them are away today, because a rehearsal of a full house is the wrong rehearsal');
+  ok(room.snapshot().testMode === true, 'and every screen is told it is a rehearsal');
+  ok(Object.keys(room.students).every((sid) => sid.indexOf('bot:') === 0),
+     'every seat is held by a bot sid, so a real student can take one back');
+
+  const off = room.command('testMode', { on: false });
+  ok(off.ok && Object.keys(room.students).length === 0, 'stopping clears every bot');
+  ok(room.snapshot().testMode === false, 'and the room stops calling itself a rehearsal');
+  ok(room.toJSON().campaign.wasTestMode === true,
+     'but the SAVE remembers it forever - a rehearsed period must never be mistaken for a class');
+  room.destroy();
+}
+
+console.log('');
+{
+  const { room } = build(3);
+  const r = room.command('testMode', { on: true });
+  ok(!r.ok && r.error === 'real-students-present',
+     'and it refuses outright in a room with ' + r.students + ' real student(s) in it');
+  ok(Object.keys(room.students).length === 3, 'leaving them exactly as they were');
+  room.destroy();
+}
+
+console.log('');
 console.log(fails === 0 ? '  ✓ their map says GO HERE and their top card says what to press'
                         : '  ✗ ' + fails + ' failure(s)');
 console.log('');

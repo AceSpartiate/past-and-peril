@@ -20,6 +20,20 @@
       "segments": 6,
       "filled": 0,
       "note": "Neighbours who know and are coming. Players want this one full."
+    },
+    {
+      "id": "MUSTER",
+      "label": "WHO IS STANDING HERE",
+      "segments": 24,
+      "filled": 0,
+      "note": "Not who said they would come. Who is in the square when it matters."
+    },
+    {
+      "id": "PATIENCE",
+      "label": "WHAT IS LEFT OF THEIRS",
+      "segments": 8,
+      "filled": 0,
+      "note": "Ugartechea has been reasonable for three weeks. That is the part that is ending."
     }
   ],
   "ledger": [
@@ -40,7 +54,7 @@
     {
       "id": "recall",
       "kind": "checklist",
-      "seconds": 180,
+      "seconds": 120,
       "eyebrow": "BEFORE WE START",
       "title": "Everyone in.",
       "items": [
@@ -63,7 +77,7 @@
       "id": "cold_open",
       "handout": "01",
       "kind": "sequence",
-      "seconds": 240,
+      "seconds": 180,
       "eyebrow": "COLD OPEN",
       "shots": [
         {
@@ -157,7 +171,7 @@
     {
       "id": "t1_path",
       "kind": "beat",
-      "seconds": 240,
+      "seconds": 200,
       "turn": 1,
       "label": "YOUR MOVE",
       "roll": true,
@@ -197,7 +211,7 @@
     {
       "id": "t2_path",
       "kind": "beat",
-      "seconds": 240,
+      "seconds": 200,
       "turn": 2,
       "label": "YOUR MOVE",
       "roll": true,
@@ -237,7 +251,7 @@
     {
       "id": "t3_path",
       "kind": "beat",
-      "seconds": 240,
+      "seconds": 200,
       "turn": 3,
       "label": "YOUR MOVE",
       "roll": true,
@@ -277,7 +291,7 @@
     {
       "id": "t4_path",
       "kind": "beat",
-      "seconds": 240,
+      "seconds": 200,
       "turn": 4,
       "label": "YOUR MOVE",
       "roll": true,
@@ -317,7 +331,7 @@
     {
       "id": "t5_path",
       "kind": "beat",
-      "seconds": 240,
+      "seconds": 200,
       "turn": 5,
       "label": "SPEAK",
       "roll": true,
@@ -366,9 +380,179 @@
       "roam": true
     },
     {
+      "id": "b_call",
+      "kind": "read",
+      "scene": "S1.6",
+      "seconds": 45,
+      "roam": true,
+      "eyebrow": "THE TWENTY-NINTH OF SEPTEMBER",
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "A corporal and five men are on the far bank asking for the cannon back. Ugartechea is not going to keep asking. Whatever this town is going to have ready, it has until they stop being polite."
+      }
+    },
+    {
+      "id": "b_i",
+      "kind": "beat",
+      "scene": "S1.6",
+      "seconds": 80,
+      "turn": 6,
+      "window": true,
+      "label": "PHASE I · SEND FOR THEM",
+      "instruction": "Nobody is coming who has not been told. Somebody has to go and tell them.",
+      "size_clocks": {
+        "MUSTER": {
+          "per_student": 0.6,
+          "min": 2,
+          "max": 18
+        }
+      },
+      "boss": {
+        "name": "BEFORE THEY COME",
+        "date": "29 September – 1 October 1835",
+        "phase": 1,
+        "phases": 3,
+        "bars": [
+          "MUSTER",
+          "PATIENCE"
+        ]
+      },
+      "toll": {
+        "at": [
+          34,
+          68
+        ],
+        "lead": 8,
+        "warn": "Another rider is in from Béxar. Get out of the open square.",
+        "resolve": 1,
+        "clocks": {
+          "PATIENCE": 1
+        },
+        "except_flag": [
+          "GUARDED"
+        ],
+        "except_hex_in": [
+          "I5",
+          "J5",
+          "K5",
+          "L5",
+          "I6",
+          "L6"
+        ],
+        "broadcast": "Word from Béxar, and it is not good. {hit} caught in the square, {spared} out of it."
+      }
+    },
+    {
+      "id": "b_ii",
+      "kind": "beat",
+      "scene": "S1.6",
+      "seconds": 80,
+      "turn": 7,
+      "window": true,
+      "label": "PHASE II · GET IT IN THE GROUND",
+      "instruction": "The orchard is where anybody would think to look. Deeper, then.",
+      "boss": {
+        "name": "BEFORE THEY COME",
+        "date": "29 September – 1 October 1835",
+        "phase": 2,
+        "phases": 3,
+        "bars": [
+          "MUSTER",
+          "PATIENCE"
+        ]
+      },
+      "toll": {
+        "at": [
+          26,
+          52,
+          74
+        ],
+        "lead": 8,
+        "warn": "They are asking again, and less politely. Eight seconds.",
+        "resolve": 1,
+        "clocks": {
+          "PATIENCE": 1
+        },
+        "except_flag": [
+          "GUARDED"
+        ],
+        "except_hex_in": [
+          "I5",
+          "J5",
+          "K5",
+          "L5",
+          "I6",
+          "L6"
+        ],
+        "broadcast": "The demand comes again. {hit} in the open, {spared} under something."
+      }
+    },
+    {
+      "id": "b_iii",
+      "kind": "beat",
+      "scene": "S1.6",
+      "seconds": 95,
+      "turn": 8,
+      "window": true,
+      "label": "PHASE III · WHO SIGNS IT",
+      "instruction": "Eighteen men put their names to the refusal. There is no vote on a list.",
+      "boss": {
+        "name": "BEFORE THEY COME",
+        "date": "29 September – 1 October 1835",
+        "phase": 3,
+        "phases": 3,
+        "bars": [
+          "MUSTER",
+          "PATIENCE"
+        ]
+      },
+      "toll": {
+        "at": [
+          32,
+          66
+        ],
+        "lead": 8,
+        "warn": "Last chance to be somewhere else. Move.",
+        "resolve": 1,
+        "clocks": {
+          "PATIENCE": 1
+        },
+        "except_flag": [
+          "GUARDED"
+        ],
+        "except_hex_in": [
+          "I5",
+          "J5",
+          "K5",
+          "L5",
+          "I6",
+          "L6"
+        ],
+        "broadcast": "The patience runs out. {hit} still standing in it, {spared} clear."
+      }
+    },
+    {
+      "id": "b_after",
+      "kind": "read",
+      "scene": "S1.6",
+      "seconds": 45,
+      "roam": true,
+      "eyebrow": "THE FIRST OF OCTOBER",
+      "voice": {
+        "speaker": "HISTORIAN",
+        "text": "The cannon was in the ground, the men were coming in, and nobody had fired anything. That is what a week of being polite and slow bought this town. Tomorrow a hundred dragoons camp on the far bank."
+      },
+      "toll": {
+        "at": [
+          1
+        ],
+        "clear_resolve": 4
+      }
+    },
+    {
       "id": "dispatch",
       "kind": "checklist",
-      "seconds": 240,
+      "seconds": 150,
       "eyebrow": "DISPATCH",
       "title": "What you did.",
       "items": [

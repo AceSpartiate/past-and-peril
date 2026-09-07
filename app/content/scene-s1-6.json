@@ -1,0 +1,388 @@
+{
+  "id": "S1.6",
+  "session": 1,
+  "title": "Before They Come",
+  "date": "29 September – 1 October 1835",
+  "map": "gonzales_town",
+  "entry": "K6",
+  "kind": "SIEGE",
+  "time": "DUSK",
+  "weather": "CLEAR",
+  "must_teach": [],
+  "_boss": "SESSION 1 ENDS ON A BOSS, AND IT IS NOT A BATTLE. Nothing is fired here and nobody is killed - the shooting starts on 2 October, which is Session 2. This is the town getting ready in the days before: the cannon going into the ground, riders going out, and men coming in from the outlying farms while Ugartechea's patience runs out. Three beats on ONE scene, so st.used persists and a student's kit is once per FIGHT rather than once per phase.",
+  "_kind": "kind SIEGE, chosen from the FIVE KINDS PRINTED ON THE CALLING CARDS - 'held in place, under threat, waiting'. That is exactly this. A sixth kind would have left every student with a card that has no row for the situation they are in, and 'find that row on your card' is how the cards are meant to be used. It also means GEN_HOLD_FIGHT applies instead of GEN_HOLD, so doing nothing does not quietly heal you. The eight *_FIGHT_* Calling actions carry scenes ['S2.3','S2.4'] and cannot reach this scene.",
+  "_bars": "THE BOSS OWNS ITS OWN PAIR, AND THAT IS THE SECOND TIME THIS LESSON HAS BEEN PAID FOR. The obvious design was to use the session's existing bars - THE WORD SPREADS is what the room pushes, THE DEMAND is Ugartechea's patience and its own note says 'It will fill.' Measured, the room pushes DEMAND about 26 and WORD about 48 across a period, against authored sizes of 4 and 6, so BOTH are full by the third scene. A boss hung on them opens with two capped bars and a toll nobody can see. Resizing at boss entry does not rescue it either: a resize clamps `filled`, throwing away everything the session already did. So MUSTER and PATIENCE belong to the boss, and DEMAND and WORD keep doing their session-long job on the board. Same conclusion as PLAZA at Bexar.",
+  "npcs": [
+    {
+      "id": "NPC_PONTON",
+      "hex": "I5",
+      "name": "Alcalde Andrew Ponton"
+    }
+  ],
+  "actions": [
+    {
+      "id": "S16_RIDE_OUT",
+      "verb": "MOVE",
+      "label": "Ride for a farm that has not heard yet.",
+      "detail": "Somebody out there still thinks this is an ordinary week.",
+      "requires": {
+        "calling": [
+          "RIDER"
+        ]
+      },
+      "roll": {
+        "stat": "land",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Two farms and a mill before dark, and every one of them says the same thing: we will come.",
+          "broadcast": "A rider is out on the farm roads, and people are saying they will come.",
+          "clocks": {
+            "MUSTER": 2
+          },
+          "legacy": 2
+        },
+        "partial": {
+          "narrate": "One farm. They listen, they look at each other, and they do not say no.",
+          "clocks": {
+            "MUSTER": 1
+          }
+        },
+        "weak": {
+          "narrate": "You lose an hour to a gate that will not open and a dog that means it.",
+          "clocks": {
+            "MUSTER": 1
+          },
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S16_CARRY_WORD",
+      "verb": "SPEAK",
+      "label": "Tell it to somebody who will tell it to four more.",
+      "detail": "News moves at the speed of a person who wants to be first.",
+      "requires": {
+        "adjacent_character": true
+      },
+      "roll": {
+        "stat": "talk",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "You pick the right person. By supper it is in three houses you have never been inside.",
+          "broadcast": "The word is moving faster than anybody sent it.",
+          "clocks": {
+            "MUSTER": 2
+          },
+          "teach": [
+            "FACT_NO_TELEGRAPH"
+          ],
+          "legacy": 2
+        },
+        "partial": {
+          "narrate": "It gets passed on, with one detail changed, which is how it always goes.",
+          "clocks": {
+            "MUSTER": 1
+          },
+          "teach": [
+            "FACT_NO_TELEGRAPH"
+          ]
+        },
+        "weak": {
+          "narrate": "They already knew, and they tell you a version that is worse and wrong.",
+          "teach": [
+            "FACT_NO_TELEGRAPH"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S16_DIG_DEEPER",
+      "verb": "ACT",
+      "label": "Get it deeper. They will look in the obvious place.",
+      "detail": "The orchard is where anybody would think to dig.",
+      "requires": {
+        "hex_in": [
+          "L12",
+          "M12",
+          "L13",
+          "M13"
+        ]
+      },
+      "roll": {
+        "stat": "arms",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Down past the peach roots and covered over, and the ground on top looks like ground.",
+          "broadcast": "Whatever is in the orchard is further down than it was.",
+          "clocks": {
+            "MUSTER": 1
+          },
+          "world": {
+            "CANNON_DEEP": true
+          },
+          "legacy": 2
+        },
+        "partial": {
+          "narrate": "Deeper. Not invisible, but you would have to be looking.",
+          "world": {
+            "CANNON_DEEP": true
+          }
+        },
+        "weak": {
+          "narrate": "You move a great deal of dirt and leave a great deal of evidence that dirt was moved.",
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S16_STAND_THE_CROSSING",
+      "verb": "GUARD",
+      "label": "Stand at the crossing so nobody wanders over it.",
+      "detail": "Every boat is on this side. Keep it that way.",
+      "requires": {
+        "hex_in": [
+          "B7",
+          "D7",
+          "D6",
+          "D8",
+          "A7"
+        ],
+        "adjacent_character": true
+      },
+      "roll": {
+        "stat": "land",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Nothing crosses while you are on it, and everybody upstream can see that somebody is.",
+          "broadcast": "The crossing is held, and it is being held by somebody standing in the water.",
+          "guard_target": true,
+          "clocks": {
+            "MUSTER": 1
+          },
+          "legacy": 2
+        },
+        "partial": {
+          "narrate": "You hold it. It is cold and it is boring and it works.",
+          "guard_target": true
+        },
+        "weak": {
+          "narrate": "You are moved off it twice by people with better reasons than yours.",
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S16_STALL_HIM",
+      "verb": "SPEAK",
+      "label": "Be polite. Be slow. Ask him to put it in writing.",
+      "detail": "This is the alcalde's actual move, and it actually worked.",
+      "requires": {
+        "calling": [
+          "CLERK"
+        ],
+        "adjacent_npc": "NPC_PONTON"
+      },
+      "cost": {
+        "word": 1
+      },
+      "roll": {
+        "stat": "word",
+        "dc": 8
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Nothing you say is a refusal. Every sentence costs them another day, and a day is what the road east needs.",
+          "broadcast": "Somebody is being extremely polite, at length, on purpose.",
+          "teach": [
+            "FACT_PONTON_STALLED"
+          ],
+          "clocks": {
+            "MUSTER": 2,
+            "PATIENCE": -1
+          },
+          "legacy": 3
+        },
+        "partial": {
+          "narrate": "You buy an afternoon. It is not nothing — an afternoon is a farm that hears in time.",
+          "teach": [
+            "FACT_PONTON_STALLED"
+          ],
+          "clocks": {
+            "MUSTER": 1
+          }
+        },
+        "weak": {
+          "narrate": "You are asked a direct question and you answer it, and that costs the town a day.",
+          "teach": [
+            "FACT_PONTON_STALLED"
+          ],
+          "clocks": {
+            "PATIENCE": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "S16_SIGN_IT",
+      "verb": "SPEAK",
+      "label": "Put your name to the refusal.",
+      "detail": "Eighteen men did. It is a list, and lists outlive people.",
+      "requires": {
+        "flag_absent": [
+          "SIGNED_REFUSAL"
+        ],
+        "clock": {
+          "PATIENCE": ">=2"
+        }
+      },
+      "cost": {
+        "word": 1
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "Your name goes on it under somebody else's. There is no vote on this and no going back from it, and everybody who signs knows both things.",
+          "broadcast": "Another name goes on the refusal.",
+          "teach": [
+            "FACT_OLD_EIGHTEEN"
+          ],
+          "set_flags": [
+            "SIGNED_REFUSAL"
+          ],
+          "clocks": {
+            "MUSTER": 1
+          },
+          "legacy": 3
+        }
+      }
+    },
+    {
+      "id": "S16_FEED_THEM",
+      "verb": "ACT",
+      "label": "Feed whoever has just ridden in.",
+      "detail": "They came seventy miles on a rumour. Somebody has to.",
+      "requires": {
+        "calling": [
+          "HOUSEHOLDER"
+        ],
+        "clock": {
+          "MUSTER": ">=2"
+        }
+      },
+      "roll": {
+        "stat": "land",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "You get a hot thing into forty men who have not eaten since the morning, and they stay because of it.",
+          "broadcast": "Forty men who rode in are being fed, and so they are staying.",
+          "clocks": {
+            "MUSTER": 1
+          },
+          "resource": {
+            "stores": -2
+          },
+          "legacy": 2
+        },
+        "partial": {
+          "narrate": "Enough for most of them. The rest say they are fine and are not.",
+          "resource": {
+            "stores": -1
+          }
+        },
+        "weak": {
+          "narrate": "You run out halfway down the line and have to say so out loud.",
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S16_COUNT_WHO_CAME",
+      "verb": "SEEK",
+      "label": "Count who has actually turned up.",
+      "detail": "Not who said they would. Who is standing here.",
+      "requires": {
+        "flag": [
+          "ACTED_THIS_SCENE"
+        ]
+      },
+      "repeatable": true,
+      "outcomes": {
+        "all": {
+          "narrate": "You walk the line and count heads. The number is smaller than the talk and larger than yesterday.",
+          "teach": [
+            "FACT_TOWN_DIVIDED"
+          ],
+          "legacy": 1
+        }
+      }
+    },
+    {
+      "id": "S16_MEND_NERVE",
+      "verb": "AID",
+      "label": "Sit with somebody who has gone quiet.",
+      "detail": "There is no roll on this. It works because you did it.",
+      "requires": {
+        "adjacent_character": true
+      },
+      "repeatable": true,
+      "outcomes": {
+        "all": {
+          "narrate": "You do not tell them it will be fine. You sit there until they can stand up again, which is the useful thing.",
+          "clear_resolve_target": 1
+        }
+      }
+    },
+    {
+      "id": "S16_LOOK_ACROSS",
+      "verb": "SEEK",
+      "label": "Go and look at the far bank yourself.",
+      "detail": "Everyone is repeating a number nobody has checked.",
+      "requires": {
+        "hex_in": [
+          "A6",
+          "A7",
+          "A8",
+          "B7"
+        ]
+      },
+      "roll": {
+        "stat": "land",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "A corporal and five men. That is all that is over there tonight, and knowing it is worth more than a rifle.",
+          "broadcast": "Somebody went and looked. It is five or six men, not a hundred.",
+          "teach": [
+            "FACT_DRAGOON_IS_CITIZEN"
+          ],
+          "clocks": {
+            "MUSTER": 1
+          },
+          "legacy": 2
+        },
+        "partial": {
+          "narrate": "Fewer than people are saying. You cannot make the count come out at a hundred however you look at it.",
+          "teach": [
+            "FACT_DRAGOON_IS_CITIZEN"
+          ]
+        },
+        "weak": {
+          "narrate": "You see campfires and count those instead, which tells you nothing you can rely on.",
+          "teach": [
+            "FACT_DRAGOON_IS_CITIZEN"
+          ]
+        }
+      }
+    }
+  ]
+}

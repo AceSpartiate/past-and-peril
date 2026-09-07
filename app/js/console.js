@@ -157,6 +157,16 @@
    * Sorted by who is most overdue, so the top of this list is the answer to
    * the only question the teacher has. There is no button beside a name.
    */
+  /* REHEARSAL. A period played by nobody must never be mistaken for one a
+   * class actually sat through — it writes to the same save file. */
+  function renderTestMode(s) {
+    const b = $('b-test');
+    if (b) b.textContent = s.testMode ? 'Test mode: STOP and clear the bots'
+                                      : 'Test mode: play it with nobody';
+    const note = $('test-note');
+    if (note && s.testMode) note.textContent = 'REHEARSAL — nobody in this room is real.';
+  }
+
   function renderAsked(s) {
     const box = $('ask-box');
     if (!box) return;
@@ -346,6 +356,7 @@
     renderTally(s);
     renderOutline(s);
     renderRoom(s);
+    renderTestMode(s);
     renderAsked(s);
     renderCoverage(s);
 
@@ -377,6 +388,23 @@
     $('b-back').addEventListener('click', function () { Narrator.stop(); Net.cmd('back'); });
     $('b-replay').addEventListener('click', function () { Narrator.stop(); Net.cmd('replay'); });
     $('b-roll').addEventListener('click', function () { Net.cmd('roll'); });
+
+    /* TEST MODE. Choose the session first, then press this: the whole
+     * roster sits down as bots and the period plays on the real clock. */
+    $('b-test').addEventListener('click', function () {
+      const on = !(LAST && LAST.testMode);
+      Net.cmd('testMode', { on: on }).then(function (r) {
+        const note = $('test-note');
+        if (!note) return;
+        if (r && r.error === 'real-students-present') {
+          note.textContent = 'Not while ' + r.students + ' real student(s) are in the room.';
+        } else if (r && r.seated !== undefined) {
+          note.textContent = r.seated + ' seated, ' + r.away + ' away today.';
+        } else {
+          note.textContent = '';
+        }
+      });
+    });
     $('b-mute').addEventListener('click', function () {
       const on = !(LAST && LAST.manualRead);
       Narrator.setMuted(on);

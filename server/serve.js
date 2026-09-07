@@ -345,6 +345,7 @@ const server = http.createServer(async (req, res) => {
         finished: !!(d.period && d.period.finished),
         segment: d.period ? d.period.idx : 0,
         priorSessions: (d.history || []).length,
+        rehearsal: !!((d.campaign && d.campaign.wasTestMode) || (live && live.testMode)),
         characters: (d.students || []).length,
         ledger: d.campaign ? d.campaign.ledger : null,
         standing: d.campaign ? d.campaign.standing : null,

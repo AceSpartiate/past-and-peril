@@ -14,6 +14,7 @@
  * design/09 with the cloud taken out. Moving it back is a transport swap. */
 
 const HexMap = require('../app/js/hexmap.js');
+const { Bots } = require('./bots.js');
 const { Engine } = require('./engine.js');
 
 const TICK_MS = 250;
@@ -666,6 +667,7 @@ class Room {
     this._driftTownsfolk();
     this.elapsed = (this.now() - this.segStamp) / 1000;
     this._toll();
+    if (this.bots) this.bots.tick();
     if (this.elapsed >= this._len()) {
       if (this.idx >= this.segs.length - 1) {
         this.running = false;
@@ -834,6 +836,7 @@ class Room {
     /* A new turn window refreshes everyone's movement and clears last turn's
      * declaration. The server decides this so thirty clients cannot disagree. */
     if (this._isTurn(s)) {
+      if (this.bots) this.bots.reset();
       this._allStudents().forEach((st) => {
         st.move = this.effective(st).move;
         st.moveLeft = st.move;
@@ -914,6 +917,17 @@ class Room {
       case 'replay': this._enter(this.idx); break;
       case 'extend': this.extra += (payload.seconds || 30); this._emit(); break;
       case 'manualRead': this.manualRead = !!payload.on; this._emit(); break;
+      /* TEST MODE. A full class of nobody, on the real clock, so a
+       * teacher can watch a period before twenty-six of them arrive.
+       * Refuses in a room that already has real students. */
+      case 'testMode': {
+        if (!this.bots) this.bots = new Bots(this);
+        const want = payload && payload.on !== undefined ? !!payload.on : !this.bots.on;
+        const r = want ? this.bots.start() : this.bots.stop();
+        this._emit();
+        return r;
+      }
+
       case 'standIns':
         this.standInsOn = payload.on === undefined ? !this.standInsOn : !!payload.on;
         this._emit();
@@ -2002,6 +2016,9 @@ class Room {
         retired: this.retired,
         standIns: this.standIns,
         attended: this.attended,
+        /* A period that was ever rehearsed is marked forever. It shares a
+         * save file with real classes and must never be confused for one. */
+        wasTestMode: !!(this.testMode || this.wasTestMode),
         asked: this.asked,
         postingDefs: this._postingDefs,
         refunds: this.refunds,
@@ -2047,6 +2064,7 @@ class Room {
     this.retired = c.retired || {};
     this.standIns = c.standIns || {};
     this.attended = c.attended || {};
+    this.wasTestMode = !!c.wasTestMode;
     this.asked = c.asked || {};
     this._postingDefs = c.postingDefs || {};
     this.refunds = c.refunds || {};
@@ -2170,6 +2188,9 @@ class Room {
       started: this.started,
       running: this.running,
       roamOpen: this.roamOpen,
+      /* A period that was REHEARSED must never be mistaken for one that
+       * happened. Every screen gets this. */
+      testMode: !!this.testMode,
       manualRead: this.manualRead,
       resumedFromDisk: !!this.resumedFromDisk,
       priorSessions: (this.history || []).length,

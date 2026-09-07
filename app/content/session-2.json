@@ -524,7 +524,7 @@
     {
       "id": "dispatch",
       "kind": "checklist",
-      "seconds": 240,
+      "seconds": 150,
       "eyebrow": "DISPATCH",
       "title": "What you did.",
       "items": [
