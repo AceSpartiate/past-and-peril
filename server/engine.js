@@ -408,8 +408,14 @@ class Engine {
       bonus = (st.stats[a.roll.stat] || 0) + (opts && opts.aidBonus ? opts.aidBonus : 0);
       total = d1 + d2 + bonus;
       /* design/02: 10+ HELD · 7–9 HELD AT A COST · 6- GAVE GROUND
-       * — and on every tier you still learn something true. */
-      tier = total >= 10 ? 'strong' : (total >= 7 ? 'partial' : 'weak');
+       * — and on every tier you still learn something true.
+       *
+       * E1 · roll.dc is authored 66 times, every value 7, and until now was
+       * read by nothing. dc 7 reproduces the thresholds above exactly, so
+       * every shipped action rolls bit-identically; a boss can now ask for a
+       * harder number without a second resolution path. */
+      const dc = a.roll.dc || 7;
+      tier = total >= dc + 3 ? 'strong' : (total >= dc ? 'partial' : 'weak');
     }
 
     const outs = a.outcomes || {};

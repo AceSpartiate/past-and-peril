@@ -607,6 +607,7 @@ class Room {
     if (!this.running) return;
     this._driftTownsfolk();
     this.elapsed = (this.now() - this.segStamp) / 1000;
+    this._toll();
     if (this.elapsed >= this._len()) {
       if (this.idx >= this.segs.length - 1) {
         this.running = false;
@@ -632,6 +633,13 @@ class Room {
         if (c) c.filled = Math.min(c.segments, c.filled + s.clocks[k]);
       });
     }
+    /* Each beat gets its own toll schedule. A boss's three phases are three
+     * segments on ONE scene, so st.used persists across them and this does
+     * not — the fight remembers what you spent, the boss forgets what it
+     * already threw at you. */
+    this._tollHit = {};
+    this._tollWarned = {};
+
     if (s && s.roll) this.lastRoll = { a: this._d6(), b: this._d6() };
 
     if (s && s.scene && s.scene !== this.sceneId && this.engines[s.scene]) {
@@ -1313,6 +1321,105 @@ class Room {
     if (st.docs.indexOf(id) === -1) st.docs.push(id);
   }
 
+  /* THE BOSS TAKES ITS TURN — segment.toll.
+   *
+   * The only genuinely new capability in the boss design. It borrows the
+   * outcome vocabulary exactly — clocks, resource, world (applied once, to
+   * the room) and resolve, clear_resolve, set_flags (applied to each
+   * student who did not get out of the way).
+   *
+   * WHY IT FIRES FROM _tick AND NOT FROM _enter. A toll that goes off only
+   * at a segment boundary is a slide transition. The tell has to arrive
+   * BEFORE the damage, several times inside one beat, or there is nothing
+   * to react to. toll.at is an array of second-offsets into the segment and
+   * toll.warn broadcasts toll.lead seconds ahead of each one. Three phases
+   * times two tolls is six moments where the room can see it coming.
+   *
+   * TWO EXEMPTIONS, AND THEY ARE THE TACTICAL LAYER.
+   *   except_flag    — GUARDED. Thirteen shipped GUARD actions write that
+   *                    flag at applyOutcome and nothing in this repository
+   *                    has ever read it. This is the first read.
+   *   except_hex_in  — a named cover set, so the answer to the tell is
+   *                    positional and not only social. In the ring you push
+   *                    the bar; in cover you take no toll.
+   *
+   * Nothing here requires a second student to exist. With a class of one,
+   * the flag exemption is simply unavailable and the cover hexes are not —
+   * which is the point of having both. */
+  _toll() {
+    const s = this._seg();
+    if (!s || !s.toll) return;
+    const t = s.toll;
+    if (!this._tollHit) { this._tollHit = {}; this._tollWarned = {}; }
+    const lead = t.lead === undefined ? 10 : t.lead;
+
+    (t.at || []).forEach((sec, i) => {
+      if (t.warn && !this._tollWarned[i] &&
+          this.elapsed >= sec - lead && this.elapsed < sec) {
+        this._tollWarned[i] = true;
+        this.note(t.warn, 'warn');
+        this.broadcasts.unshift({ t: this.now(), text: t.warn });
+        this.broadcasts = this.broadcasts.slice(0, 6);
+        this._emit();
+      }
+      if (!this._tollHit[i] && this.elapsed >= sec) {
+        this._tollHit[i] = true;
+        this._applyToll(t);
+        this._emit();
+      }
+    });
+  }
+
+  _applyToll(t) {
+    /* Once, to the room. */
+    if (t.world) Object.assign(this.world, t.world);
+    if (t.clocks) {
+      Object.keys(t.clocks).forEach((k) => {
+        const c = this.clocks[k];
+        if (c) c.filled = Math.max(0, Math.min(c.segments, c.filled + t.clocks[k]));
+      });
+    }
+    if (t.resource) {
+      Object.keys(t.resource).forEach((k) => {
+        const l = this.ledger[k];
+        if (l) l.value = Math.max(0, l.value + t.resource[k]);
+      });
+    }
+
+    /* Once each, to everybody it actually reaches. */
+    const cover = t.except_hex_in || [];
+    const flags = t.except_flag || [];
+    let hit = 0, spared = 0;
+    const savedByFlag = [];
+    this.liveStudents().forEach((st) => {
+      const safeByFlag = flags.some((f) => st.flags[f]);
+      const safeByHex = cover.indexOf(st.hex) !== -1;
+      if (safeByFlag || safeByHex) {
+        spared++;
+        if (safeByFlag) savedByFlag.push(st);
+        return;
+      }
+      hit++;
+      if (t.resolve) st.resolveUsed = Math.min(st.resolve, st.resolveUsed + t.resolve);
+      if (t.clear_resolve) st.resolveUsed = Math.max(0, st.resolveUsed - t.clear_resolve);
+      (t.set_flags || []).forEach((f) => { st.flags[f] = true; });
+    });
+
+    /* GUARDED is spent when it saves you, and only then. A student who stood
+     * in front of somebody bought them ONE toll, not the whole phase — but a
+     * student who was in cover anyway keeps the shield for the next one. */
+    savedByFlag.forEach((st) => { delete st.flags.GUARDED; });
+
+    if (t.broadcast) {
+      const text = String(t.broadcast)
+        .split('{hit}').join(String(hit))
+        .split('{spared}').join(String(spared));
+      this.note(text, 'weak');
+      this.broadcasts.unshift({ t: this.now(), text });
+      this.broadcasts = this.broadcasts.slice(0, 6);
+    }
+  }
+
   applyOutcome(st, o, ctx) {
     if (!o) return;
     (o.teach || []).forEach((f) => {
@@ -1654,6 +1761,9 @@ class Room {
       students: live.map((s) => ({
         characterId: s.characterId, name: s.name, company: s.company, color: s.color,
         hex: s.hex, moveLeft: s.moveLeft, declared: s.declared, acted: !!s.acted,
+        /* E4 · the boss deals resolve, so the room has to be able to see who
+         * is carrying it. Rendered nowhere before this. */
+        resolve: s.resolve, resolveUsed: s.resolveUsed,
         tint: s.tint || s.color,
         verb: s.verb, calling: s.calling, companyName: s.companyName,
         place: this.placeId(s), anchor: s.anchor || null,
@@ -1707,6 +1817,13 @@ class Room {
         out: !!(this.maps[portal.to.place] && !this.maps[portal.to.place].indoors),
       } : null,
       light: this.light(),
+      /* E3 · the bars, on the student's own device. privateFor sent no
+       * clocks at all, so a student in a fight could only find out how it
+       * was going by looking away from their own screen at the wall. */
+      clocks: Object.keys(this.clocks).map((k) => ({
+        id: k, label: this.clocks[k].label,
+        filled: this.clocks[k].filled, segments: this.clocks[k].segments,
+      })),
       words: st.words, wordsSpent: st.wordsSpent,
       resolve: st.resolve, resolveUsed: st.resolveUsed,
       legacy: st.legacy, declared: st.declared, acted: !!st.acted, verb: st.verb,
