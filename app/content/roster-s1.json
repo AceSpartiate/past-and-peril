@@ -62,12 +62,12 @@
       "company": "C1",
       "companyName": "DeWitt Households",
       "color": "#9E3729",
-      "calling": "SMITH",
-      "role": "The Blacksmith",
+      "calling": "HOUSEHOLDER",
+      "role": "The Indian Scout",
       "startHex": "L4",
-      "move": 3,
-      "ability": "Made, Not Bought",
-      "abilityBlurb": "Turn a broken thing into a working one. Name the material.",
+      "move": 2,
+      "ability": "How Many Days",
+      "abilityBlurb": "Declare the true number. Everyone must act on it.",
       "words": 2,
       "resolve": 4,
       "resolveUsed": 0,
@@ -76,9 +76,9 @@
       "mark": "TEMPER",
       "markLabel": "A Temper",
       "stats": {
-        "arms": 3,
+        "arms": 2,
         "talk": 0,
-        "land": 0,
+        "land": 1,
         "word": 0
       },
       "strength": "arms"
@@ -89,12 +89,12 @@
       "company": "C1",
       "companyName": "DeWitt Households",
       "color": "#9E3729",
-      "calling": "RANCHERO",
+      "calling": "TRADER",
       "role": "The Eldest Son",
       "startHex": "J5",
-      "move": 4,
-      "ability": "Older Than Your Deed",
-      "abilityBlurb": "Assert a claim of long standing. Only a document beats it.",
+      "move": 3,
+      "ability": "The Ledger",
+      "abilityBlurb": "Name someone who owes you. They must help you now.",
       "words": 2,
       "resolve": 4,
       "resolveUsed": 0,
@@ -104,11 +104,11 @@
       "markLabel": "In Debt to the Store",
       "stats": {
         "arms": 1,
-        "talk": 0,
-        "land": 2,
+        "talk": 1,
+        "land": 1,
         "word": 0
       },
-      "strength": "land"
+      "strength": "talk"
     },
     {
       "id": "p05",
@@ -116,12 +116,12 @@
       "company": "C1",
       "companyName": "DeWitt Households",
       "color": "#9E3729",
-      "calling": "RANCHERO",
+      "calling": "RIFLEMAN",
       "role": "The Grantee",
       "startHex": "L5",
-      "move": 4,
-      "ability": "Older Than Your Deed",
-      "abilityBlurb": "Assert a claim of long standing. Only a document beats it.",
+      "move": 3,
+      "ability": "Steady",
+      "abilityBlurb": "Take a 7–9 on an Arms Muster as a 10+. Say what your hands do.",
       "words": 2,
       "resolve": 4,
       "resolveUsed": 0,
@@ -130,12 +130,12 @@
       "mark": "HORSES",
       "markLabel": "Known Hand with Horses",
       "stats": {
-        "arms": 0,
+        "arms": 1,
         "talk": 0,
-        "land": 2,
+        "land": 1,
         "word": 1
       },
-      "strength": "land"
+      "strength": "arms"
     },
     {
       "id": "p06",
@@ -170,12 +170,12 @@
       "company": "C2",
       "companyName": "Ranchos of the Guadalupe",
       "color": "#39646B",
-      "calling": "TRADER",
-      "role": "The Empresario",
+      "calling": "CLERK",
+      "role": "The Postmaster",
       "startHex": "L6",
-      "move": 3,
-      "ability": "The Ledger",
-      "abilityBlurb": "Name someone who owes you. They must help you now.",
+      "move": 2,
+      "ability": "Chapter and Verse",
+      "abilityBlurb": "Cite a real document to force the room to reconsider. +1 Legacy.",
       "words": 2,
       "resolve": 4,
       "resolveUsed": 0,
@@ -185,11 +185,11 @@
       "markLabel": "Lettered",
       "stats": {
         "arms": 0,
-        "talk": 1,
+        "talk": 0,
         "land": 1,
-        "word": 1
+        "word": 2
       },
-      "strength": "talk"
+      "strength": "word"
     },
     {
       "id": "p08",
@@ -224,12 +224,12 @@
       "company": "C2",
       "companyName": "Ranchos of the Guadalupe",
       "color": "#39646B",
-      "calling": "TRADER",
+      "calling": "RIDER",
       "role": "From Béxar",
       "startHex": "K8",
-      "move": 3,
-      "ability": "The Ledger",
-      "abilityBlurb": "Name someone who owes you. They must help you now.",
+      "move": 5,
+      "ability": "Ahead of the News",
+      "abilityBlurb": "Declare you are somewhere else. You already left.",
       "words": 2,
       "resolve": 4,
       "resolveUsed": 0,
@@ -239,11 +239,11 @@
       "markLabel": "Kin Across the Line",
       "stats": {
         "arms": 0,
-        "talk": 2,
-        "land": 1,
+        "talk": 1,
+        "land": 2,
         "word": 0
       },
-      "strength": "talk"
+      "strength": "land"
     },
     {
       "id": "p10",
@@ -278,12 +278,12 @@
       "company": "C3",
       "companyName": "Gonzales Ranging Company",
       "color": "#8A6534",
-      "calling": "RANCHERO",
+      "calling": "CLERK",
       "role": "The Captain",
       "startHex": "M4",
-      "move": 4,
-      "ability": "Older Than Your Deed",
-      "abilityBlurb": "Assert a claim of long standing. Only a document beats it.",
+      "move": 2,
+      "ability": "Chapter and Verse",
+      "abilityBlurb": "Cite a real document to force the room to reconsider. +1 Legacy.",
       "words": 2,
       "resolve": 4,
       "resolveUsed": 0,
@@ -294,10 +294,10 @@
       "stats": {
         "arms": 1,
         "talk": 0,
-        "land": 2,
-        "word": 0
+        "land": 1,
+        "word": 1
       },
-      "strength": "land"
+      "strength": "word"
     },
     {
       "id": "p12",
@@ -386,12 +386,12 @@
       "company": "C3",
       "companyName": "Gonzales Ranging Company",
       "color": "#8A6534",
-      "calling": "RIDER",
-      "role": "The Farrier",
+      "calling": "HOUSEHOLDER",
+      "role": "The Sergeant",
       "startHex": "N8",
-      "move": 5,
-      "ability": "Ahead of the News",
-      "abilityBlurb": "Declare you are somewhere else. You already left.",
+      "move": 2,
+      "ability": "How Many Days",
+      "abilityBlurb": "Declare the true number. Everyone must act on it.",
       "words": 2,
       "resolve": 4,
       "resolveUsed": 0,
@@ -467,12 +467,12 @@
       "company": "C4",
       "companyName": "Merchants & Freighters",
       "color": "#55666E",
-      "calling": "TRADER",
-      "role": "The Freighter",
+      "calling": "CLERK",
+      "role": "The First Alcalde",
       "startHex": "K10",
-      "move": 3,
-      "ability": "The Ledger",
-      "abilityBlurb": "Name someone who owes you. They must help you now.",
+      "move": 2,
+      "ability": "Chapter and Verse",
+      "abilityBlurb": "Cite a real document to force the room to reconsider. +1 Legacy.",
       "words": 2,
       "resolve": 4,
       "resolveUsed": 0,
@@ -482,11 +482,11 @@
       "markLabel": "In Debt to the Store",
       "stats": {
         "arms": 1,
-        "talk": 1,
+        "talk": 0,
         "land": 1,
-        "word": 0
+        "word": 1
       },
-      "strength": "talk"
+      "strength": "word"
     },
     {
       "id": "p19",
@@ -494,12 +494,12 @@
       "company": "C4",
       "companyName": "Merchants & Freighters",
       "color": "#55666E",
-      "calling": "TRADER",
-      "role": "The Powder Agent",
+      "calling": "SMITH",
+      "role": "The Blacksmith",
       "startHex": "L10",
       "move": 3,
-      "ability": "The Ledger",
-      "abilityBlurb": "Name someone who owes you. They must help you now.",
+      "ability": "Made, Not Bought",
+      "abilityBlurb": "Turn a broken thing into a working one. Name the material.",
       "words": 2,
       "resolve": 4,
       "resolveUsed": 0,
@@ -508,8 +508,8 @@
       "mark": "LETTERED",
       "markLabel": "Lettered",
       "stats": {
-        "arms": 0,
-        "talk": 1,
+        "arms": 1,
+        "talk": 0,
         "land": 0,
         "word": 2
       },
@@ -602,12 +602,12 @@
       "company": "C5",
       "companyName": "Women of Gonzales",
       "color": "#7A5C7E",
-      "calling": "HEALER",
-      "role": "Six Children",
+      "calling": "HOUSEHOLDER",
+      "role": "Seven Children",
       "startHex": "I7",
       "move": 2,
-      "ability": "Hands",
-      "abilityBlurb": "Clear one Resolve box from your company.",
+      "ability": "How Many Days",
+      "abilityBlurb": "Declare the true number. Everyone must act on it.",
       "words": 2,
       "resolve": 4,
       "resolveUsed": 0,
@@ -617,11 +617,11 @@
       "markLabel": "In Debt to the Store",
       "stats": {
         "arms": 1,
-        "talk": 1,
-        "land": 1,
+        "talk": 0,
+        "land": 2,
         "word": 0
       },
-      "strength": "talk"
+      "strength": "land"
     },
     {
       "id": "p24",
@@ -792,12 +792,12 @@
       "company": "C6",
       "companyName": "The Delegation",
       "color": "#4E5F2C",
-      "calling": "CLERK",
+      "calling": "HOUSEHOLDER",
       "role": "The Letter-writer",
       "startHex": "F7",
       "move": 2,
-      "ability": "Chapter and Verse",
-      "abilityBlurb": "Cite a real document to force the room to reconsider. +1 Legacy.",
+      "ability": "How Many Days",
+      "abilityBlurb": "Declare the true number. Everyone must act on it.",
       "words": 2,
       "resolve": 4,
       "resolveUsed": 0,
@@ -808,13 +808,13 @@
       "stats": {
         "arms": 0,
         "talk": 0,
-        "land": 0,
-        "word": 3
+        "land": 1,
+        "word": 2
       },
       "strength": "word"
     }
   ],
   "_placement": "Everyone opens in or around the square, because scene S1.1 is a hundred people in the square. K5 (the cannon) and K6 (the well) are left clear on purpose so their icons read.",
-  "_people": "EVERY NAME ON THIS ROSTER IS A REAL PERSON who was in or around Gonzales in 1835. A CALLING is an assigned game role and not always a documented occupation — Byrd Lockhart really was the surveyor, but his Calling here is RANCHERO because that is how he plays. Where a person's trade is not recorded, the Calling is our choice and a student should be told so.",
-  "_no_double_dipping": "A PERSON IS EITHER PLAYABLE OR AN NPC, NEVER BOTH. Andrew Ponton is the alcalde the class petitions, so he is an NPC only and does not appear here. Adam Zumwalt, Byrd Lockhart and Jacob Darst are playable, so the NPCs that used to shadow them are gone and the actions that needed them now ask you to find the STUDENT playing that person, or that person's trade. tools/check-content.mjs enforces this."
+  "_people": "EVERY NAME ON THIS ROSTER IS A REAL PERSON who was in or around Gonzales in 1835. A CALLING is an assigned game role and not always a documented occupation — William Dearduff appears in the Gonzales store ledger as a customer buying on credit, not as a merchant, so his TRADER is our choice and not the record's. Where a person's trade is not recorded, the Calling is our choice and a student should be told so.",
+  "_no_double_dipping": "A PERSON IS EITHER PLAYABLE OR AN NPC, NEVER BOTH. Andrew Ponton is the alcalde the class petitions, so he is an NPC only and does not appear here. Adam Zumwalt, Byrd Lockhart and Jacob Darst are playable, so the NPCs that used to shadow them are gone and the actions that needed them now ask you to find the STUDENT playing that person, or that person's trade. tools/check-content.mjs enforces this. SLICE 0 CAVEAT: that last clause no longer holds for two of them. S1.2 S2_TALK_TO_LOCKHART still gates on adjacent_calling RANCHERO and S1.4 S4_HELP_DARST on SMITH, but Lockhart is now a CLERK and Darst a HOUSEHOLDER. Both actions still find somebody — RANCHERO and SMITH each hold at 2 — but neither finds the man it is named for. Repoint or rename them."
 }
