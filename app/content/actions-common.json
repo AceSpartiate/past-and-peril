@@ -749,7 +749,11 @@
             "powder": -2
           }
         }
-      }
+      },
+      "scenes": [
+        "S2.3",
+        "S2.4"
+      ]
     },
     {
       "id": "SMITH_FIGHT_LOAD",
@@ -799,7 +803,11 @@
           },
           "resolve": 1
         }
-      }
+      },
+      "scenes": [
+        "S2.3",
+        "S2.4"
+      ]
     },
     {
       "id": "RIDER_FIGHT_SCOUT",
@@ -848,7 +856,11 @@
             "BEXAR": 1
           }
         }
-      }
+      },
+      "scenes": [
+        "S2.3",
+        "S2.4"
+      ]
     },
     {
       "id": "TRADER_FIGHT_POWDER",
@@ -903,7 +915,11 @@
             "powder": -1
           }
         }
-      }
+      },
+      "scenes": [
+        "S2.3",
+        "S2.4"
+      ]
     },
     {
       "id": "RANCHERO_FIGHT_GUIDE",
@@ -959,7 +975,11 @@
             "ranchos": -1
           }
         }
-      }
+      },
+      "scenes": [
+        "S2.3",
+        "S2.4"
+      ]
     },
     {
       "id": "HEALER_FIGHT_WOUNDED",
@@ -986,7 +1006,11 @@
           },
           "legacy": 2
         }
-      }
+      },
+      "scenes": [
+        "S2.3",
+        "S2.4"
+      ]
     },
     {
       "id": "CLERK_FIGHT_RECORD",
@@ -1037,7 +1061,11 @@
             "BEXAR": 1
           }
         }
-      }
+      },
+      "scenes": [
+        "S2.3",
+        "S2.4"
+      ]
     },
     {
       "id": "HOUSEHOLDER_FIGHT_HOLD",
@@ -1088,7 +1116,11 @@
           },
           "resolve": 1
         }
-      }
+      },
+      "scenes": [
+        "S2.3",
+        "S2.4"
+      ]
     }
   ]
 }

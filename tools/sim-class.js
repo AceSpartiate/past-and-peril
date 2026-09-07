@@ -149,6 +149,12 @@ function run(seed) {
   const HARD_STOP = t + 60 * 60 * 1000;
 
   let lastSegId = null;
+  /* THE CLOCKS. A bar nobody can see is a bar nobody can debug — every
+   * segment boundary records where each clock stood and which scene was up,
+   * so a clock advanced by the wrong scene shows up as a line and not a hunch. */
+  const clockTrail = [];
+  const readClocks = () => Object.keys(room.clocks)
+    .reduce((a, k) => { a[k] = room.clocks[k].filled; return a; }, {});
   let winStats = null;
 
   while (t < HARD_STOP) {
@@ -163,6 +169,7 @@ function run(seed) {
 
     if (seg.id !== lastSegId) {
       if (winStats) windows.push(winStats);
+      clockTrail.push({ seg: seg.id, scene: room.sceneId, clocks: readClocks() });
       lastSegId = seg.id;
       bots.forEach((b) => { b.nextAt = undefined; });
       winStats = room.turnOpen
@@ -260,6 +267,7 @@ function run(seed) {
   }
   if (winStats) windows.push(winStats);
 
+  clockTrail.push({ seg: '(end)', scene: room.sceneId, clocks: readClocks() });
   const snap = room.snapshot();
   const cov = room.coverage();
   const live = room.liveStudents();
@@ -273,7 +281,7 @@ function run(seed) {
 
   return {
     seed,
-    bots, windows, offered, chosen, dead,
+    bots, windows, offered, chosen, dead, clockTrail,
     coverage: cov,
     sessionCoverage: room.sessionCoverage(),
     via: room.liveStudents().map((st) => ({
@@ -407,6 +415,51 @@ console.log('     design/08 budgeted ~7 authored actions per scene, sized for th
 console.log('     paper model. On this measurement a scene needs ~' +
             Math.ceil(perStudentPerWindow * 1.6) + ' reachable actions');
 console.log('     to keep a window in authored content.');
+console.log('');
+
+/* --- 4b. THE CLOCKS: what each scene actually pushed */
+console.log('4b · THE CLOCKS — which scene moved which bar');
+{
+  /* Per scene, the total advance each clock took while that scene was up,
+   * averaged over the runs. A bar that moves during a scene seventy miles and
+   * two months away from it is the thing this table exists to catch. */
+  const ids = Object.keys(runs[0].clockTrail[0].clocks);
+  const perScene = {};   // scene -> clock -> total advance
+  const order = [];
+  runs.forEach((r) => {
+    for (let i = 1; i < r.clockTrail.length; i++) {
+      const prev = r.clockTrail[i - 1];
+      const scene = prev.scene || '(none)';
+      if (!perScene[scene]) { perScene[scene] = {}; order.push(scene); }
+      ids.forEach((k) => {
+        const d = (r.clockTrail[i].clocks[k] || 0) - (prev.clocks[k] || 0);
+        if (d > 0) perScene[scene][k] = (perScene[scene][k] || 0) + d;
+      });
+    }
+  });
+  const seen = {};
+  const scenes2 = order.filter((x) => (seen[x] ? false : (seen[x] = true)));
+  console.log('   scene        ' + ids.map((k) => (k + '        ').slice(0, 9)).join(' '));
+  console.log('   ' + '-'.repeat(13 + ids.length * 10));
+  scenes2.forEach((sc) => {
+    const row = ids.map((k) => {
+      const v = (perScene[sc][k] || 0) / runs.length;
+      return ((v ? v.toFixed(1) : '·') + '         ').slice(0, 9);
+    });
+    console.log('   ' + (sc + '            ').slice(0, 13) + row.join(' '));
+  });
+  console.log('');
+  const fin = runs.map((r) => r.clockTrail[r.clockTrail.length - 1].clocks);
+  ids.forEach((k) => {
+    const vals = fin.map((c) => c[k] || 0);
+    const cap = (session.clocks || []).filter((c) => c.id === k)[0];
+    const full = vals.filter((v) => cap && v >= cap.segments).length;
+    console.log('   ' + (k + '            ').slice(0, 13) + 'final ' +
+                Math.min.apply(null, vals) + '–' + Math.max.apply(null, vals) +
+                ' of ' + (cap ? cap.segments : '?') +
+                '   filled in ' + full + ' of ' + runs.length + ' runs');
+  });
+}
 console.log('');
 
 /* --- 5. the spotlight guarantee */

@@ -1197,9 +1197,11 @@ class Room {
       const f = this.feature(r.action.loot);
       if (!f || f.searched) return { ok: false, error: 'already-searched' };
       f.searched = true;
-      st.items = (st.items || []).concat(f.contents || []);
+      st.items = Array.from(new Set((st.items || []).concat(f.contents || [])));
       const names = (f.contents || []).map((i) => (this.item(i) || {}).name).filter(Boolean);
+      const moveWas = st.move;
       st.move = this.effective(st).move;
+      st.moveLeft += (st.move - moveWas);
       r.outcome = Object.assign({}, r.outcome, {
         narrate: names.length
           ? 'You go through it. ' + names.join(', and ') + '.'
@@ -1357,9 +1359,14 @@ class Room {
     if (o.clear_resolve) st.resolveUsed = Math.max(0, st.resolveUsed - o.clear_resolve);
     if (o.grant_move) st.moveLeft += o.grant_move;
 
-    /* AID and GUARD reach across to a neighbour — the co-op that makes the
-     * reserve ladder's first rung worth being on. */
-    if (o.aid_target || o.guard_target) {
+    /* AID, GUARD and MEND reach across to a neighbour — the co-op that makes
+     * the reserve ladder's first rung worth being on.
+     *
+     * clear_resolve_target used to sit INSIDE this gate, so an action that
+     * carried only clear_resolve_target fired, narrated, cost the student
+     * their turn and changed nothing. Both shipped uses ride along with an
+     * aid, which is why it worked. The boss's MEND does not. */
+    if (o.aid_target || o.guard_target || o.clear_resolve_target) {
       const near = this.engine.neighbours(st, ctx);
       if (near.length) {
         const t = this.students[near[0].sid] ||
