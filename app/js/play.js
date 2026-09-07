@@ -1197,6 +1197,17 @@
     }).join('');
     $('hud-kit').hidden = !items.length;
     announceKit(items);
+
+    /* HOW MANY DAYS, the householder's ability. privateFor sends the ledger
+     * as null until one of them declares the true number, and then to
+     * everyone — so this bar appearing IS the ability firing, on twenty-nine
+     * other screens at the same moment. */
+    const led = ME.ledger;
+    $('hud-ledger').innerHTML = (led || []).map(function (l) {
+      return '<span class="led"><b>' + l.label + '</b>' + l.value +
+             '<i>' + (l.unit || '') + '</i></span>';
+    }).join('');
+    $('hud-ledger').hidden = !led || !led.length;
   }
 
   function renderActions() {

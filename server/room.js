@@ -592,7 +592,12 @@ class Room {
     Object.values(this.students).forEach((st) => {
       st.used = {}; st.paidLegacy = {}; st.declared = false; st.verb = null;
       st.lastOutcome = null; st.wordsSpent = 0;
+      st.tierUp = 0;
       delete st.flags.ACTED_THIS_SCENE;
+      /* Every Calling Card says ONCE PER SESSION. st.used resets on a scene
+       * change and flags deliberately do not reset at all, so the ability
+       * gate is a flag that this line — and only this line — clears. */
+      delete st.flags.ABILITY_SPENT;
     });
     this._emit();
     return true;
@@ -1024,6 +1029,7 @@ class Room {
       taughtVia: existing ? existing.taughtVia : {},
       lastActionId: existing ? existing.lastActionId : null,
       aidBonus: 0,
+      tierUp: 0,
       lastOutcome: existing ? existing.lastOutcome : null,
       seen: this.now(),
     };
@@ -1312,7 +1318,7 @@ class Room {
     if (st.declared) return { ok: false, error: 'already-declared' };
 
     const ctx = this.ctxFor(st);
-    const r = this.engine.resolve(actionId, ctx, { aidBonus: st.aidBonus });
+    const r = this.engine.resolve(actionId, ctx, { aidBonus: st.aidBonus, tierUp: st.tierUp });
     if (!r.ok) return r;
     /* World actions: searching a container, working a door. */
     if (r.action.loot) {
@@ -1401,7 +1407,11 @@ class Room {
     }
     st.verb = r.action.verb || 'ACT';
     st.lastActionId = actionId;
-    st.aidBonus = 0;
+    /* An aid a NEIGHBOUR gave you is consumed by the roll you just made.
+     * An aid THIS action gave you — the trader calling in a debt — has not
+     * been used yet and must survive the reset that follows it. */
+    st.aidBonus = (r.outcome && r.outcome.aid_self) || 0;
+    if (r.steadied) st.tierUp = 0;   // spent only when it changed the tier
     st.lastOutcome = {
       label: this.engine.fillIn(r.action.label, ctx),
       verb: st.verb,
@@ -1591,6 +1601,25 @@ class Room {
     }
     if (o.resolve) st.resolveUsed = Math.min(st.resolve, st.resolveUsed + o.resolve);
     if (o.clear_resolve) st.resolveUsed = Math.max(0, st.resolveUsed - o.clear_resolve);
+
+    /* THE ABILITY KEYS. Each exists because a Calling Card in a student's
+     * hand already promises exactly this and the app has to agree with the
+     * paper — that is the whole lesson of the Calling repair.
+     *
+     * HANDS says "clear one Resolve box from your company", which is not a
+     * neighbour and not yourself. It reaches your company wherever they are
+     * standing, and with a class of one that is a company of one. */
+    if (o.clear_resolve_company) {
+      this.liveStudents()
+        .filter((x) => x.company === st.company)
+        .forEach((x) => { x.resolveUsed = Math.max(0, x.resolveUsed - o.clear_resolve_company); });
+    }
+    /* THE LEDGER says "they must help you, now" — the aid runs toward the
+     * student who spent the ability, which is the opposite direction from
+     * aid_target and the reason it needs its own key. */
+    if (o.aid_self) st.aidBonus = (st.aidBonus || 0) + o.aid_self;
+    /* STEADY is banked and spent later, in resolve(). */
+    if (o.tier_up) st.tierUp = (st.tierUp || 0) + o.tier_up;
     if (o.grant_move) st.moveLeft += o.grant_move;
 
     /* AID, GUARD and MEND reach across to a neighbour — the co-op that makes
@@ -1948,6 +1977,17 @@ class Room {
       /* E3 · the bars, on the student's own device. privateFor sent no
        * clocks at all, so a student in a fight could only find out how it
        * was going by looking away from their own screen at the wall. */
+      /* HOW MANY DAYS. The householder's card promises "declare the true
+       * number - of food, powder, or time. Everyone must act on it." So the
+       * ledger is not on a student's screen until somebody declares it, and
+       * then it is on ALL of them. One student, eight of thirty can do it,
+       * and it changes what twenty-nine other people are looking at. */
+      ledger: this.world.TRUE_NUMBER_DECLARED
+        ? Object.keys(this.ledger).map((k) => ({
+          id: k, label: this.ledger[k].label,
+          value: this.ledger[k].value, unit: this.ledger[k].unit,
+        }))
+        : null,
       clocks: Object.keys(this.clocks).map((k) => ({
         id: k, label: this.clocks[k].label,
         filled: this.clocks[k].filled, segments: this.clocks[k].segments,

@@ -430,6 +430,7 @@ class Engine {
     const st = ctx.student;
     let tier = 'all';
     let d1 = null, d2 = null, total = null, bonus = 0;
+    let steadied = false;
 
     if (a.roll) {
       /* Both dice, not the sum — pre-teens need to SEE the dice, so the client
@@ -446,6 +447,16 @@ class Engine {
        * harder number without a second resolution path. */
       const dc = a.roll.dc || 7;
       tier = total >= dc + 3 ? 'strong' : (total >= dc ? 'partial' : 'weak');
+
+      /* STEADY, the RIFLEMAN's once-a-session ability, printed on the card as
+       * "take a 7-9 on an Arms Muster as a 10+". Banked on the student the
+       * way an aid bonus is, spent on the next ARMS roll that actually needs
+       * it — a strong result does not consume it and neither does a weak one,
+       * because the card promises a 7-9 and nothing else. */
+      if (tier === 'partial' && a.roll.stat === 'arms' && opts && opts.tierUp) {
+        tier = 'strong';
+        steadied = true;
+      }
     }
 
     const outs = a.outcomes || {};
@@ -455,6 +466,7 @@ class Engine {
       ok: true,
       action: a,
       tier: a.roll ? tier : null,
+      steadied,
       d1, d2, bonus, total,
       stat: a.roll ? a.roll.stat : null,
       outcome: out,

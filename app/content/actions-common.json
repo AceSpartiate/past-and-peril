@@ -1236,6 +1236,226 @@
           "narrate": "You make it worse, then slightly less worse, and give the tools back."
         }
       }
+    },
+    {
+      "id": "ABIL_STEADY",
+      "verb": "ACT",
+      "label": "Steady. Say exactly what your hands do.",
+      "detail": "Your next Arms roll of 7–9 counts as a 10 or better.",
+      "requires": {
+        "calling": [
+          "RIFLEMAN"
+        ],
+        "flag_absent": [
+          "ABILITY_SPENT"
+        ]
+      },
+      "_ability": "STEADY — once per session, printed on the RIFLEMAN Calling Card.",
+      "outcomes": {
+        "all": {
+          "set_flags": [
+            "ABILITY_SPENT"
+          ],
+          "narrate": "You set your feet, and you say out loud what your hands are doing. The next one that matters goes the way you meant it to.",
+          "broadcast": "Somebody has gone steady, and is not going to miss the one that counts.",
+          "tier_up": 1,
+          "legacy": 1
+        }
+      }
+    },
+    {
+      "id": "ABIL_AHEAD",
+      "verb": "ACT",
+      "label": "Declare you are somewhere else. You already left.",
+      "detail": "You are there. Your movement comes back, all of it.",
+      "requires": {
+        "calling": [
+          "RIDER"
+        ],
+        "flag_absent": [
+          "ABILITY_SPENT"
+        ]
+      },
+      "_ability": "AHEAD OF THE NEWS — once per session, printed on the RIDER Calling Card.",
+      "outcomes": {
+        "all": {
+          "set_flags": [
+            "ABILITY_SPENT"
+          ],
+          "narrate": "You are not where anybody thought you were. You left before the argument started, which is the entire point of being the one on the horse.",
+          "broadcast": "Somebody is already gone, and is somewhere else by now.",
+          "grant_move": 6,
+          "legacy": 1
+        }
+      }
+    },
+    {
+      "id": "ABIL_MADE",
+      "verb": "ACT",
+      "label": "Turn a broken thing into a working one. Name the material.",
+      "detail": "Not bought, not found. Made, here, out of what there is.",
+      "requires": {
+        "calling": [
+          "SMITH"
+        ],
+        "flag_absent": [
+          "ABILITY_SPENT"
+        ]
+      },
+      "_ability": "MADE, NOT BOUGHT — once per session, printed on the SMITH Calling Card.",
+      "outcomes": {
+        "all": {
+          "set_flags": [
+            "ABILITY_SPENT"
+          ],
+          "narrate": "You name the material out loud and then you make the thing out of it. It is not pretty and it is not going to fail today.",
+          "broadcast": "Something broken is working again, and it was made and not bought.",
+          "world": {
+            "SOMETHING_MADE": true
+          },
+          "legacy": 2
+        }
+      }
+    },
+    {
+      "id": "ABIL_LEDGER",
+      "verb": "ACT",
+      "label": "Name a person who owes you. They must help you, now.",
+      "detail": "Not a favour. A debt, and you are calling it in.",
+      "requires": {
+        "calling": [
+          "TRADER"
+        ],
+        "flag_absent": [
+          "ABILITY_SPENT"
+        ],
+        "adjacent_character": true
+      },
+      "_ability": "THE LEDGER — once per session, printed on the TRADER Calling Card.",
+      "outcomes": {
+        "all": {
+          "set_flags": [
+            "ABILITY_SPENT"
+          ],
+          "narrate": "You say the amount, and the month, and what it was for. They do not enjoy it and they help you anyway.",
+          "broadcast": "A debt gets called in, out loud, in front of everybody.",
+          "aid_self": 1,
+          "legacy": 1
+        }
+      }
+    },
+    {
+      "id": "ABIL_CHAPTER",
+      "verb": "ACT",
+      "label": "Name a real document to make the room reconsider.",
+      "detail": "Chapter and verse. +1 Legacy.",
+      "requires": {
+        "calling": [
+          "CLERK"
+        ],
+        "flag_absent": [
+          "ABILITY_SPENT"
+        ]
+      },
+      "_ability": "CHAPTER AND VERSE — once per session, printed on the CLERK Calling Card.",
+      "outcomes": {
+        "all": {
+          "set_flags": [
+            "ABILITY_SPENT"
+          ],
+          "narrate": "You name the document, the date on it, and the clause. The room does not have to agree with you. The room does have to deal with it.",
+          "broadcast": "Somebody has cited chapter and verse, and the room is reconsidering.",
+          "world": {
+            "DOCUMENT_CITED": true
+          },
+          "legacy": 1
+        }
+      }
+    },
+    {
+      "id": "ABIL_HANDS",
+      "verb": "ACT",
+      "label": "Clear one Resolve box from your company.",
+      "detail": "Everyone in your company, wherever they are standing.",
+      "requires": {
+        "calling": [
+          "HEALER"
+        ],
+        "flag_absent": [
+          "ABILITY_SPENT"
+        ]
+      },
+      "_ability": "HANDS — once per session, printed on the HEALER Calling Card.",
+      "outcomes": {
+        "all": {
+          "set_flags": [
+            "ABILITY_SPENT"
+          ],
+          "narrate": "You go round your own company one at a time and put them back together. Nobody rolls for this. It works because you did it.",
+          "broadcast": "A whole company is back on its feet.",
+          "clear_resolve_company": 1,
+          "legacy": 2
+        }
+      }
+    },
+    {
+      "id": "ABIL_OLDER",
+      "verb": "ACT",
+      "label": "Assert a claim of long standing.",
+      "detail": "No one out-argues it without producing a document.",
+      "requires": {
+        "calling": [
+          "RANCHERO"
+        ],
+        "flag_absent": [
+          "ABILITY_SPENT"
+        ]
+      },
+      "_ability": "OLDER THAN YOUR DEED — once per session, printed on the RANCHERO Calling Card.",
+      "outcomes": {
+        "all": {
+          "set_flags": [
+            "ABILITY_SPENT"
+          ],
+          "narrate": "Your family was running stock on this ground before the paperwork existed. Anybody who wants to argue can go and find the paper first.",
+          "broadcast": "A claim older than the deed just got asserted, and nobody has the document.",
+          "world": {
+            "OLD_CLAIM_STANDS": true
+          },
+          "standing": {
+            "CLAIM": 1
+          },
+          "legacy": 1
+        }
+      }
+    },
+    {
+      "id": "ABIL_HOWMANY",
+      "verb": "ACT",
+      "label": "Declare the true number. Food, powder, or time.",
+      "detail": "Everyone must act on it. Everyone can see it after this.",
+      "requires": {
+        "calling": [
+          "HOUSEHOLDER"
+        ],
+        "flag_absent": [
+          "ABILITY_SPENT"
+        ]
+      },
+      "_ability": "HOW MANY DAYS — once per session, printed on the HOUSEHOLDER Calling Card.",
+      "outcomes": {
+        "all": {
+          "set_flags": [
+            "ABILITY_SPENT"
+          ],
+          "narrate": "You say the real number out loud, and it is smaller than the one people had been using. Now everybody is working from the same figure.",
+          "broadcast": "The true number is on the table, and it is not the one anybody wanted.",
+          "world": {
+            "TRUE_NUMBER_DECLARED": true
+          },
+          "legacy": 2
+        }
+      }
     }
   ]
 }

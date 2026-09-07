@@ -1043,3 +1043,21 @@ button.who:hover .nm { text-decoration: underline; text-underline-offset: 3px; }
 .kt-mid { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .kt-lead { font-size: 10px; letter-spacing: .06em; color: var(--ink-faint); text-transform: uppercase; }
 .kt-name { font-size: 14px; color: var(--ink); }
+
+/* ------------------------------------------------- HOW MANY DAYS
+ *
+ * The householder's ability puts the town's real numbers on every screen in
+ * the room at once. Until somebody declares them, this bar does not exist —
+ * which is what makes one student saying it out loud an event.
+ */
+.ledgerbar {
+  flex-shrink: 0; display: flex; gap: 14px; align-items: baseline; flex-wrap: wrap;
+  padding: 6px 16px; background: #F4F1E8; border-bottom: 1px solid var(--rule);
+}
+.ledgerbar[hidden] { display: none; }
+.ledgerbar .led { display: flex; align-items: baseline; gap: 4px; font-size: 13px; color: var(--ink); }
+.ledgerbar .led b {
+  font-size: 8.5px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink-faint); font-weight: 500;
+}
+.ledgerbar .led i { font-style: normal; font-size: 9px; color: var(--ink-faint); }
