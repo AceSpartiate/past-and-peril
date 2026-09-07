@@ -898,7 +898,31 @@ class Room {
     if (seg.window !== undefined) return !!seg.window;
     return seg.label === 'DECLARE' || seg.label === 'SPEAK';   // legacy content
   }
-  get turnOpen() { return this.started && this.running && this._isTurn(this._seg()); }
+  /* THE SCRIM COMES OFF.
+   *
+   * turnOpen used to mean "is this a scored window", and 17 of session 1's
+   * 25 segments are not one. Measured from a student seat that is 22:00 of a
+   * 42:55 period in which the device answers nothing, with a 7:15 stretch at
+   * the end - and the read segment that poses the turn's question ("What do
+   * you do right now?") is itself one of them. The game asked and then told
+   * you to be quiet, forty-five seconds at a time.
+   *
+   * So it now means "may a student act", which is everything except the two
+   * moments that genuinely need the room looking up. _isTurn is untouched and
+   * still governs SCORING - the movement and action refresh, the declaration
+   * reset - so a budget is still issued once per turn cycle and is now spent
+   * across the narration as well as the window. Same economy, no cage.
+   *
+   * REVERSIBLE: put EYES_UP back to every non-window kind and this is the old
+   * behaviour exactly. It is an experiment, and the question it answers is
+   * whether the frozen half was holding the lesson together or holding it
+   * back. */
+  static EYES_UP = ['sequence', 'tally'];
+  get turnOpen() {
+    if (!this.started || !this.running) return false;
+    const s = this._seg();
+    return !!s && Room.EYES_UP.indexOf(s.kind) === -1;
+  }
 
   /* ROAM — the map stays live when the turn does not.
    *

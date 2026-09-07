@@ -1285,7 +1285,13 @@
     if (WORLD.turnOpen) {
       $('scrim').hidden = true;
       $('turnbar').hidden = false;
-      $('tb-label').textContent = seg.label;
+      /* A turn is no longer only a beat. Reads, checklists and the record
+       * are all playable now, and none of them carries a label - only an
+       * eyebrow. Without this the bar rendered the string "undefined" for
+       * fifteen of session 1's twenty-three playable segments. The eyebrow is
+       * the better line anyway: "TURN 1 - THE LETTER ON THE TABLE - COUNCIL"
+       * is exactly the context a student needs while the narrator talks. */
+      $('tb-label').textContent = seg.label || seg.eyebrow || seg.title || '';
       const c = $('tb-count');
       c.textContent = mmss(WORLD.remaining);
       c.classList.toggle('low', WORLD.remaining <= 10);

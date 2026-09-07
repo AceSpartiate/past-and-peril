@@ -132,8 +132,9 @@ console.log('');
 
 console.log('');
 /* ------------------------------------------------------------------ 4
- * ROAM. move() refuses unless turnOpen, so a read segment is sixty seconds of
- * a screen that does not answer. Walking is allowed; acting still is not. */
+ * THE SCRIM IS OFF. A read segment used to be forty-five seconds of a screen
+ * that answered nothing - while the read itself posed the turn's question.
+ * Every segment is playable now except the two that call the room to order. */
 {
   const { room } = build(12);
   const st = room.liveStudents()[0];
@@ -148,27 +149,28 @@ console.log('');
   const readIdx = sessions[0].timeline.findIndex((x) => x.kind === 'read' && x.scene);
   ok(readIdx > -1, 'session 1 has a read segment with a map behind it');
 
-  delete room.segs[readIdx].roam;
   room.command('goto', { index: readIdx });
   ok(room._seg().kind === 'read', 'and we are standing on it, not on a checklist');
-  ok(!room.turnOpen, 'a read segment closes the turn');
-  ok(!room.roamOpen, 'and without roam it closes the map with it');
-  ok(room.move(st.sid, step.hex).ok === false, 'so walking is refused');
-
-  /* the same segment, roaming */
-  room.segs[readIdx].roam = true;
-  room.command('goto', { index: readIdx });
-  ok(!room.turnOpen, 'a roaming read still closes the TURN');
-  ok(room.roamOpen, 'but opens the map');
+  ok(room.turnOpen, 'a read segment is PLAYABLE now - this is the scrim coming off');
+  ok(room.roamOpen, 'the map is live with it');
   const st2 = room.liveStudents().filter((x) => x.sid === st.sid)[0];
-  ok(st2.moveLeft > 0, 'and gives them movement to use (' + st2.moveLeft + ')');
+  ok(st2.moveLeft > 0, 'they have movement to use (' + st2.moveLeft + ')');
   const dest = room.privateFor(st.sid).reach.filter((r) => r.cost <= 1)[0];
-  ok(room.move(st.sid, dest.hex).ok === true, 'so they can walk while the narrator talks');
-  const acts = room.offerFor(st.sid);
-  ok(acts.length === 0, 'and they still cannot act - nothing is offered');
-  const anyAction = common.actions[0].id;
-  ok(room.perform(st.sid, anyAction).ok === false, 'perform is still refused outright');
+  ok(room.move(st.sid, dest.hex).ok === true, 'they can walk while the narrator talks');
+  ok(room.offerFor(st.sid).length > 0, 'and they are offered something to DO while he talks');
   ok(room.privateFor(st.sid).reach.length > 0, 'the reach is drawn for them');
+
+  /* AND THE ROOM CAN STILL BE CALLED TO ORDER. This is the half of the
+   * bargain that matters to a teacher: one adult, thirty twelve-year-olds,
+   * and two moments in the period that need every head up. If EYES_UP ever
+   * stops closing the turn, the trade this change made is off. */
+  const eyes = sessions[0].timeline.findIndex((x) => Room.EYES_UP.indexOf(x.kind) > -1);
+  ok(eyes > -1, 'session 1 has an eyes-up segment');
+  room.command('goto', { index: eyes });
+  ok(!room.turnOpen, 'an eyes-up segment still closes the turn (' + room._seg().kind + ')');
+  ok(!room.roamOpen, 'and takes the map with it');
+  ok(room.move(st.sid, dest.hex).ok === false, 'walking is refused');
+  ok(room.offerFor(st.sid).length === 0, 'and nothing at all is offered');
   room.destroy();
 }
 

@@ -130,6 +130,22 @@
           sub: n ? gone + ' of ' + n + ' have gone' : '',
         };
       }
+      /* NARRATION IS NO LONGER A LOCKED SCREEN. A read segment is playable
+       * now, so the board must not tell thirty students to do the one thing
+       * their device is no longer stopping them from doing. It says both,
+       * because both are true and the whole point is that they are. */
+      if (seg.kind === 'read' || seg.kind === 'sequence') {
+        return {
+          now: 'Listen — and keep moving.',
+          sub: n ? gone + ' of ' + n + ' have gone' : '',
+        };
+      }
+      if (seg.kind === 'record' || seg.kind === 'checklist') {
+        return {
+          now: 'Read the board. You can still walk.',
+          sub: n ? gone + ' of ' + n + ' have gone' : '',
+        };
+      }
       return {
         now: 'Move, then choose what you do.',
         sub: n ? gone + ' of ' + n + ' have gone' : '',
@@ -140,7 +156,7 @@
       case 'sequence':
         return { now: 'Watch. You are standing in the town.', sub: '' };
       case 'read':
-        return { now: 'Listen. Your screen is locked.', sub: '' };
+        return { now: 'Listen.', sub: '' };
       case 'tally':
         return { now: 'Hands up when your company is called.', sub: '' };
       case 'checklist':
