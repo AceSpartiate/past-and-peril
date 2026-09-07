@@ -6,12 +6,13 @@
 
 (function () {
   const $ = function (id) { return document.getElementById(id); };
-  const views = ['idle', 'read', 'beat', 'seq', 'list', 'tally', 'record'];
+  const views = ['idle', 'read', 'beat', 'boss', 'seq', 'list', 'tally', 'record'];
   const kb = KenBurns.Player($('kb'));
 
   let lastSegId = null;
   let lastBlock = -1;
   let lastRollKey = null;
+  let lastRailKey = null;
 
   window.addEventListener('resize', function () { kb.resize(); });
 
@@ -93,6 +94,14 @@
     if (s.turnOpen) {
       const n = rs.connected || 0;
       const gone = rs.acted || 0;
+      /* In the fight the useful instruction is not "choose" — it is where
+       * to stand. Five hexes at the battery, and cover is one step out. */
+      if (seg.boss) {
+        return {
+          now: 'Get to the plaza, or get behind something.',
+          sub: n ? gone + ' of ' + n + ' have gone' : '',
+        };
+      }
       return {
         now: 'Move, then choose what you do.',
         sub: n ? gone + ' of ' + n + ' have gone' : '',
@@ -125,6 +134,61 @@
       whereLine = best.replace(/^https?:\/\//, '');
     })
     .catch(function () {});
+
+  /* ============================================================ THE BOSS
+   *
+   * A beat carrying seg.boss draws this instead of the plain beat view. A
+   * beat WITHOUT it falls through untouched, so a Stage on older content
+   * never reaches any of this and nothing has to be versioned.
+   *
+   * decision 8, in the teacher's words: "say it, and name the event." The
+   * name of the mechanic and the real date, together, at the top.
+   */
+  function renderBoss(s, seg, fresh) {
+    const b = seg.boss || {};
+    show('boss');
+    $('boss-name').textContent = b.name || seg.label || '';
+    $('boss-date').textContent = b.date || '';
+
+    /* Both bars at roughly three times the board's size. The one filling
+     * against the room is inked differently from the one they are filling. */
+    const want = b.bars || Object.keys(s.clocks);
+    $('boss-bars').innerHTML = want.map(function (id) {
+      const c = s.clocks[id];
+      if (!c) return '';
+      let segs = '';
+      for (let i = 0; i < c.segments; i++) segs += '<i class="' + (i < c.filled ? 'on' : '') + '"></i>';
+      const against = id === 'TOLL' ? ' against' : '';
+      return '<div class="boss-bar' + against + '"><div class="bl">' + c.label +
+             '</div><div class="boss-segs">' + segs + '</div></div>';
+    }).join('');
+
+    let pips = '';
+    for (let i = 1; i <= (b.phases || 0); i++) pips += '<i class="' + (i <= (b.phase || 0) ? 'on' : '') + '"></i>';
+    $('boss-phase').innerHTML = (seg.label || '') + pips;
+
+    const c = $('boss-count');
+    c.textContent = mmss(s.remaining);
+    c.classList.toggle('low', s.remaining <= 10);
+    $('boss-instruction').textContent = seg.instruction || '';
+
+    /* THE BROADCAST RAIL. spotlight() has computed a fair, per-student
+     * guaranteed kill-feed since the beginning and sent it to a client that
+     * threw it away — `broadcast` appeared zero times in app/js. This is the
+     * first time any of it reaches a wall. */
+    const rail = $('boss-rail');
+    const feed = (s.broadcasts || []).slice(0, 3);
+    const key = feed.map(function (x) { return x.t; }).join(',');
+    if (key !== lastRailKey) {
+      lastRailKey = key;
+      rail.innerHTML = feed.map(function (x) {
+        const d = document.createElement('div');
+        d.textContent = x.text;
+        return d.outerHTML;
+      }).join('');
+    }
+    if (fresh) Narrator.stop();
+  }
 
   function paintNow(s) {
     const w = whatToDo(s);
@@ -182,6 +246,8 @@
       }
 
       case 'beat': {
+        /* A boss beat draws the boss. Anything else is the beat it always was. */
+        if (seg.boss) { renderBoss(s, seg, fresh); break; }
         show('beat');
         $('beat-label').textContent = seg.label || '';
         const c = $('beat-count');

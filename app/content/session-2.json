@@ -20,7 +20,21 @@
       "label": "THE WALLS OF BÉXAR",
       "segments": 8,
       "filled": 0,
-      "note": "Every company’s roll ticks it. When it fills, Béxar falls — the question is what it cost."
+      "note": "The assault pushes it. When it fills, Béxar falls — the question is what it cost."
+    },
+    {
+      "id": "PLAZA",
+      "label": "MAIN PLAZA",
+      "segments": 30,
+      "filled": 0,
+      "note": "Cos's whole position hangs on holding it. You push this one; nobody else will."
+    },
+    {
+      "id": "TOLL",
+      "label": "WHAT IT IS COSTING",
+      "segments": 8,
+      "filled": 0,
+      "note": "Their guns, and the clock. Seven shots across the three phases fill most of it whatever you do — it is time, not the size of the class."
     }
   ],
   "ledger": [
@@ -234,71 +248,6 @@
       }
     },
     {
-      "id": "t4_situation",
-      "kind": "read",
-      "seconds": 45,
-      "turn": 4,
-      "scene": "S2.4",
-      "eyebrow": "TURN 4 · BEN MILAM · SIEGE",
-      "voice": {
-        "speaker": "NARRATOR",
-        "text": "The siege grinds on. Whatever your company’s job was, it is still your job. It is the fourth of December."
-      }
-    },
-    {
-      "id": "t4_path",
-      "kind": "beat",
-      "seconds": 220,
-      "turn": 4,
-      "scene": "S2.4",
-      "window": true,
-      "label": "YOUR MOVE",
-      "roll": true,
-      "instruction": "Same job as last week. That is what a siege is."
-    },
-    {
-      "id": "t4_consequence",
-      "kind": "read",
-      "seconds": 45,
-      "turn": 4,
-      "scene": "S2.4",
-      "eyebrow": "CONSEQUENCE",
-      "voice": {
-        "speaker": "NARRATOR",
-        "text": "Béxar has fallen. Cos surrenders and marches south under parole. For the first time since October there is no Mexican army in Texas, and every man in this army believes the war is finished."
-      }
-    },
-    {
-      "id": "milam",
-      "kind": "record",
-      "seconds": 150,
-      "eyebrow": "STOP. DO NOT ROLL.",
-      "blocks": [
-        {
-          "head": "Who will go with old Ben Milam into San Antonio?",
-          "body": "He stood up in the plaza on the fourth of December and asked exactly that. Three hundred men followed him in, house to house, through walls knocked open with crowbars.",
-          "voice": {
-            "speaker": "HISTORIAN"
-          }
-        },
-        {
-          "head": "On the seventh of December",
-          "body": "A sniper in a cypress tree shot him in the head. He died in the yard of the Veramendi house. Two days later, Cos surrendered. Ben Milam never knew he had won.",
-          "voice": {
-            "speaker": "HISTORIAN"
-          }
-        },
-        {
-          "head": "I did not roll for that",
-          "body": "I am never going to roll for that. In this game the dice decide what things cost you. They do not decide who lives.",
-          "voice": {
-            "speaker": "HISTORIAN"
-          }
-        }
-      ],
-      "exitLine": "Remember that this is how death works here. You will need it."
-    },
-    {
       "id": "t5_situation",
       "kind": "read",
       "seconds": 45,
@@ -331,6 +280,204 @@
       "voice": {
         "speaker": "NARRATOR",
         "text": "Whatever this room decided is written down now, in your own words. Nothing is rolled for it. It waits."
+      }
+    },
+    {
+      "id": "milam",
+      "kind": "record",
+      "seconds": 120,
+      "eyebrow": "STOP. DO NOT ROLL.",
+      "blocks": [
+        {
+          "head": "Who will go with old Ben Milam into San Antonio?",
+          "body": "He stood up in the plaza on the fourth of December and asked exactly that. Three hundred men followed him in, house to house, through walls knocked open with crowbars.",
+          "voice": {
+            "speaker": "HISTORIAN"
+          }
+        },
+        {
+          "head": "On the seventh of December",
+          "body": "A sniper in a cypress tree shot him in the head. He died in the yard of the Veramendi house. Two days later, Cos surrendered. Ben Milam never knew he had won.",
+          "voice": {
+            "speaker": "HISTORIAN"
+          }
+        },
+        {
+          "head": "I did not roll for that",
+          "body": "I am never going to roll for that. In this game the dice decide what things cost you. They do not decide who lives.",
+          "voice": {
+            "speaker": "HISTORIAN"
+          }
+        }
+      ],
+      "exitLine": "Remember that this is how death works here. You will need it."
+    },
+    {
+      "id": "boss_call",
+      "kind": "read",
+      "scene": "S2.6",
+      "seconds": 45,
+      "eyebrow": "THE FIFTH OF DECEMBER · BÉXAR",
+      "voice": {
+        "speaker": "NARRATOR",
+        "text": "Ben Milam stood up in the plaza and asked who would go with him into San Antonio. Three hundred said yes. It is before dawn, there is fog off the river, and you are going in with them."
+      }
+    },
+    {
+      "id": "boss_i",
+      "kind": "beat",
+      "scene": "S2.6",
+      "seconds": 80,
+      "turn": 4,
+      "window": true,
+      "label": "PHASE I · INTO THE STREETS",
+      "instruction": "Five people fit at the battery. Everybody else has a job that is not the battery.",
+      "size_clocks": {
+        "PLAZA": {
+          "per_student": 0.7,
+          "min": 4,
+          "max": 12
+        }
+      },
+      "toll": {
+        "at": [
+          34,
+          68
+        ],
+        "lead": 8,
+        "warn": "The guns are traversing. Get off the open ground.",
+        "resolve": 1,
+        "clocks": {
+          "TOLL": 1
+        },
+        "except_flag": [
+          "GUARDED"
+        ],
+        "except_hex_in": [
+          "E9",
+          "H7",
+          "D8",
+          "F5",
+          "G5",
+          "D6"
+        ],
+        "broadcast": "Grape across the plaza. {hit} caught in the open, {spared} behind something."
+      },
+      "boss": {
+        "name": "THE STORMING OF BÉXAR",
+        "date": "5–9 December 1835",
+        "phase": 1,
+        "phases": 3,
+        "bars": [
+          "PLAZA",
+          "TOLL"
+        ]
+      }
+    },
+    {
+      "id": "boss_ii",
+      "kind": "beat",
+      "scene": "S2.6",
+      "seconds": 80,
+      "turn": 5,
+      "window": true,
+      "label": "PHASE II · THEY FIND THE RANGE",
+      "instruction": "They have the range now. Standing still in the plaza is a decision.",
+      "toll": {
+        "at": [
+          26,
+          52,
+          74
+        ],
+        "lead": 8,
+        "warn": "They have the range. Eight seconds.",
+        "resolve": 1,
+        "clocks": {
+          "TOLL": 1
+        },
+        "except_flag": [
+          "GUARDED"
+        ],
+        "except_hex_in": [
+          "E9",
+          "H7",
+          "D8",
+          "F5",
+          "G5",
+          "D6"
+        ],
+        "broadcast": "The range is found. {hit} in the open, {spared} under cover."
+      },
+      "boss": {
+        "name": "THE STORMING OF BÉXAR",
+        "date": "5–9 December 1835",
+        "phase": 2,
+        "phases": 3,
+        "bars": [
+          "PLAZA",
+          "TOLL"
+        ]
+      }
+    },
+    {
+      "id": "boss_iii",
+      "kind": "beat",
+      "scene": "S2.6",
+      "seconds": 95,
+      "turn": 6,
+      "window": true,
+      "label": "PHASE III · THE TERMS",
+      "instruction": "Cos is asking for terms. Somebody has to write down what he signs.",
+      "toll": {
+        "at": [
+          32,
+          66
+        ],
+        "lead": 8,
+        "warn": "One more from across the river before they stop. Move.",
+        "resolve": 1,
+        "clocks": {
+          "TOLL": 1
+        },
+        "except_flag": [
+          "GUARDED"
+        ],
+        "except_hex_in": [
+          "E9",
+          "H7",
+          "D8",
+          "F5",
+          "G5",
+          "D6"
+        ],
+        "broadcast": "The last of it, from the ramp. {hit} caught, {spared} clear."
+      },
+      "boss": {
+        "name": "THE STORMING OF BÉXAR",
+        "date": "5–9 December 1835",
+        "phase": 3,
+        "phases": 3,
+        "bars": [
+          "PLAZA",
+          "TOLL"
+        ]
+      }
+    },
+    {
+      "id": "boss_after",
+      "kind": "read",
+      "scene": "S2.6",
+      "seconds": 45,
+      "toll": {
+        "at": [
+          1
+        ],
+        "clear_resolve": 4
+      },
+      "eyebrow": "THE NINTH OF DECEMBER",
+      "voice": {
+        "speaker": "HISTORIAN",
+        "text": "Cos asked for terms and marched south under parole. For a few weeks there was no Mexican army in Texas at all and the war looked over. It was winter, and there were farms, and most of them wanted to go home."
       }
     },
     {

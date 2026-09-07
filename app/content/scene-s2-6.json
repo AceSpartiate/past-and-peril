@@ -1,0 +1,259 @@
+{
+  "id": "S2.6",
+  "session": 2,
+  "title": "The Storming of Béxar",
+  "date": "5–9 December 1835",
+  "map": "bexar_alamo",
+  "entry": "F5",
+  "kind": "BATTLE",
+  "time": "DAWN",
+  "weather": "FOG",
+  "must_teach": ["FACT_COS_SURRENDERED", "FACT_WINTER_FARMS"],
+
+  "_boss": "THE BOSS SCENE. Three timeline beats name this one scene, which is deliberate: room.js resets st.used only on a scene CHANGE, so a student's kit is once per FIGHT and not once per phase. Spend the big one in phase I and it is gone in phase III. Movement refreshes every phase, so you reposition three times and swing once.",
+
+  "_geometry": "THE RING IS THE SCARCITY, NOT THE CALLING. NPC_COS sits on Main Plaza at F7. Its six neighbours are G7, E6, E7, E8, F8 and F6 — and F6 is adobe, which blocks — so FIVE students can stand at the battery at a time, whatever the class size. That is why PRESS is open to anybody rather than gated on a trade: the geography contests it, so it scales from a class of five to a class of thirty-two without a number in it.",
+
+  "_cover": "COVER IS ONE HEX OUTSIDE THE RING, ON PURPOSE. The toll's except_hex_in names E9, H7, D8, F5, G5 and D6 — rubble, courtyards and yards, never plaza. The map's own note says the plazas are bare packed earth swept by artillery and that the advance went building to building, so cover here is the buildings. You cannot press and hide in the same turn, and that rotation is what the fight is made of.",
+
+  "npcs": [
+    { "id": "NPC_COS", "hex": "F7", "name": "Cos's fortifications" }
+  ],
+
+  "actions": [
+    {
+      "id": "S26_PRESS_THE_GUNS",
+      "verb": "ACT",
+      "label": "Rush the battery while it is still reloading.",
+      "detail": "Five people can stand here. No more. Somebody has to go now.",
+      "requires": { "adjacent_npc": "NPC_COS", "resource": { "powder": 1 } },
+      "roll": { "stat": "arms", "dc": 8 },
+      "outcomes": {
+        "strong": {
+          "narrate": "You are over the sandbags before the crew finishes the swab. That gun does not fire again this hour.",
+          "broadcast": "A rush on the plaza battery, and the gun goes quiet.",
+          "clocks": { "PLAZA": 3 },
+          "resource": { "powder": -1 },
+          "legacy": 2
+        },
+        "partial": {
+          "narrate": "You get close enough to make them serve it badly. That is worth something, and it costs you.",
+          "clocks": { "PLAZA": 2 },
+          "resource": { "powder": -1 },
+          "resolve": 1
+        },
+        "weak": {
+          "narrate": "Grape across open ground. You go flat behind a dead mule and stay there a long time.",
+          "clocks": { "PLAZA": 1 },
+          "resource": { "powder": -1 },
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S26_PRESS_THE_WALL",
+      "verb": "ACT",
+      "label": "Go through the wall instead of across the plaza.",
+      "detail": "Room to room. Nobody crosses that ground twice.",
+      "requires": { "adjacent_npc": "NPC_COS", "resource": { "powder": 1 } },
+      "roll": { "stat": "land", "dc": 8 },
+      "outcomes": {
+        "strong": {
+          "narrate": "You come out in a room nobody was watching, on the wrong side of their line. This is how the town is actually being taken.",
+          "broadcast": "Another wall goes through, and the line moves a house closer.",
+          "clocks": { "PLAZA": 3 },
+          "resource": { "powder": -1 },
+          "legacy": 2
+        },
+        "partial": {
+          "narrate": "Two walls, an hour, and a great deal of dust. You are further in than you were.",
+          "clocks": { "PLAZA": 2 },
+          "resource": { "powder": -1 }
+        },
+        "weak": {
+          "narrate": "The wall is thicker than it looked, and the noise brought company. You give the room back.",
+          "clocks": { "PLAZA": 1 },
+          "resource": { "powder": -1 },
+          "resolve": 1
+        }
+      }
+    },
+
+    {
+      "id": "S26_CARRY_POWDER",
+      "verb": "SEEK",
+      "label": "Get powder up to the people at the plaza.",
+      "detail": "Nobody at the battery can fire what is not there.",
+      "requires": { "calling": ["TRADER"] },
+      "roll": { "stat": "talk", "dc": 7 },
+      "outcomes": {
+        "strong": {
+          "narrate": "You find it, you argue for it, and you get it carried. The front can keep working.",
+          "broadcast": "Powder reaches the plaza. The front can keep working.",
+          "resource": { "powder": 3 },
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "Some of it. Enough for a while.",
+          "resource": { "powder": 2 }
+        },
+        "weak": {
+          "narrate": "Two kegs, and an argument you will have to finish later.",
+          "resource": { "powder": 1 }
+        }
+      }
+    },
+    {
+      "id": "S26_RIDE_THE_POWDER",
+      "verb": "MOVE",
+      "label": "Bring the powder round the long way.",
+      "detail": "The short way is the plaza, and the plaza is swept.",
+      "requires": { "calling": ["RIDER"] },
+      "roll": { "stat": "land", "dc": 7 },
+      "outcomes": {
+        "strong": {
+          "narrate": "Round the bend, through the yards, in behind them. You are back before anybody asks where you went.",
+          "broadcast": "A rider brings powder in the long way round.",
+          "resource": { "powder": 3 },
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "Long, slow, and it arrives.",
+          "resource": { "powder": 2 }
+        },
+        "weak": {
+          "narrate": "You lose a keg to the acequia and most of an hour.",
+          "resource": { "powder": 1 }
+        }
+      }
+    },
+
+    {
+      "id": "S26_HOLD_THE_CORNER",
+      "verb": "GUARD",
+      "label": "Stand on the corner so somebody else can work.",
+      "detail": "You will not push anything. That is not what this is.",
+      "requires": { "calling": ["HOUSEHOLDER"], "adjacent_character": true },
+      "roll": { "stat": "land", "dc": 7 },
+      "outcomes": {
+        "strong": {
+          "narrate": "You take the corner and you keep it. The next thing down that street goes through you first.",
+          "broadcast": "A corner held, so somebody else could work.",
+          "guard_target": true,
+          "legacy": 2
+        },
+        "partial": {
+          "narrate": "You hold it. It is not comfortable, and it works.",
+          "guard_target": true
+        },
+        "weak": {
+          "narrate": "You are pushed off it, and back onto it, and off it again.",
+          "resolve": 1
+        }
+      }
+    },
+    {
+      "id": "S26_TAKE_COVER",
+      "verb": "HOLD",
+      "label": "Get out of the open, and pull somebody in with you.",
+      "detail": "Rubble, a yard, a courtyard. Anywhere that is not plaza.",
+      "requires": {
+        "hex_in": ["E9", "H7", "D8", "F5", "G5", "D6"],
+        "adjacent_character": true
+      },
+      "repeatable": true,
+      "outcomes": {
+        "all": {
+          "narrate": "You get behind something solid, and you take somebody with you who was not going to move on their own.",
+          "guard_target": true
+        }
+      }
+    },
+
+    {
+      "id": "S26_MEND_HANDS",
+      "verb": "AID",
+      "label": "Work on somebody who cannot keep going.",
+      "detail": "There is no roll on this one. It works because you did it.",
+      "requires": { "calling": ["HEALER"], "adjacent_character": true },
+      "repeatable": true,
+      "outcomes": {
+        "all": {
+          "narrate": "You get them sitting up and breathing properly, and they go back in. That was you.",
+          "broadcast": "Somebody who could not keep going is back on their feet.",
+          "clear_resolve_target": 2,
+          "legacy": 1
+        }
+      }
+    },
+    {
+      "id": "S26_GEN_MEND",
+      "verb": "AID",
+      "label": "Get somebody back on their feet.",
+      "detail": "You do not need a trade for this one. You do only get one.",
+      "requires": { "adjacent_character": true },
+      "_not_repeatable": "Deliberate. Free, no roll and repeatable made this the most-taken action in the fight by a distance — 133 times across six runs — which is the GEN_HOLD problem the plan warned about, reinvented. Once per fight it is a real choice; repeatable it is a way of not playing.",
+      "outcomes": {
+        "all": {
+          "narrate": "Water, a hand up, and thirty seconds of somebody paying attention to them.",
+          "clear_resolve_target": 1
+        }
+      }
+    },
+
+    {
+      "id": "S26_CALL_THE_TERMS",
+      "verb": "SPEAK",
+      "label": "Say it out loud: they are asking for terms.",
+      "detail": "Somebody has to write down what he signs.",
+      "requires": { "calling": ["CLERK"], "clock": { "TOLL": ">=3" } },
+      "cost": { "word": 1 },
+      "roll": { "stat": "word", "dc": 7 },
+      "outcomes": {
+        "strong": {
+          "narrate": "You get it on paper while the shooting is still going on, and both sides can read it afterwards.",
+          "broadcast": "The terms are being written down while the guns are still firing.",
+          "teach": ["FACT_COS_SURRENDERED"],
+          "clocks": { "PLAZA": 2, "TOLL": -2 },
+          "legacy": 2
+        },
+        "partial": {
+          "narrate": "You get most of it down. The parts you miss will be argued about for a century.",
+          "teach": ["FACT_COS_SURRENDERED"],
+          "clocks": { "PLAZA": 1, "TOLL": -1 }
+        },
+        "weak": {
+          "narrate": "Nobody stops to listen to you, and the shooting goes on longer than it had to.",
+          "teach": ["FACT_COS_SURRENDERED"]
+        }
+      }
+    },
+    {
+      "id": "S26_CALL_THE_COST",
+      "verb": "SPEAK",
+      "label": "Ask, in front of everybody, what this has cost.",
+      "detail": "It is winter and there are farms. Somebody should say so.",
+      "requires": { "calling": ["CLERK"], "clock": { "TOLL": ">=3" } },
+      "cost": { "word": 1 },
+      "roll": { "stat": "word", "dc": 7 },
+      "outcomes": {
+        "strong": {
+          "narrate": "You count it out where the whole street can hear. People start thinking about going home, and most of them will.",
+          "broadcast": "Somebody counts the cost out loud, and the street listens.",
+          "teach": ["FACT_WINTER_FARMS"],
+          "clocks": { "TOLL": -2 },
+          "legacy": 2
+        },
+        "partial": {
+          "narrate": "You say it. Some of them hear it. It is winter and there are farms.",
+          "teach": ["FACT_WINTER_FARMS"],
+          "clocks": { "TOLL": -1 }
+        },
+        "weak": {
+          "narrate": "You are told this is not the moment. It is exactly the moment, and you are still told.",
+          "teach": ["FACT_WINTER_FARMS"]
+        }
+      }
+    }
+  ]
+}

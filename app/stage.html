@@ -55,6 +55,22 @@
       <div class="beat-bar"><i id="beat-bar"></i></div>
     </div>
 
+    <!-- THE BOSS. Falls back to v-beat whenever a beat has no seg.boss, so a
+         Stage running older content never sees this. -->
+    <div class="view v-boss" id="v-boss">
+      <div class="boss-head">
+        <div class="boss-name" id="boss-name"></div>
+        <div class="boss-date" id="boss-date"></div>
+      </div>
+      <div class="boss-bars" id="boss-bars"></div>
+      <div class="boss-mid">
+        <div class="boss-phase" id="boss-phase"></div>
+        <div class="boss-count mono" id="boss-count">1:30</div>
+      </div>
+      <div class="boss-instruction" id="boss-instruction"></div>
+      <div class="boss-rail" id="boss-rail"></div>
+    </div>
+
     <div class="view v-seq" id="v-seq">
       <div class="seq-wrap">
         <canvas id="kb"></canvas>

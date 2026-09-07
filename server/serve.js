@@ -61,8 +61,17 @@ const mapData = MAP_FILES.map((f) =>
   HexMapMod.hydrate(JSON.parse(fs.readFileSync(path.join(ROOT, 'content', f), 'utf8')), terrainData));
 console.log('  · ' + mapData.length + ' places: ' + mapData.map((m) => m.id).join(', '));
 const roster = JSON.parse(fs.readFileSync(path.join(ROOT, 'content/roster-s1.json'), 'utf8'));
-const SCENE_FILES = ['scene-s1-1', 'scene-s1-2', 'scene-s1-3', 'scene-s1-4', 'scene-s1-5',
-                     'scene-s2-1', 'scene-s2-2', 'scene-s2-3', 'scene-s2-4', 'scene-s2-5'];
+/* Every scene on disk, in session then scene order. This was a hand-kept
+ * list of ten, so a new scene file was loaded by nothing and failed
+ * silently. Sorted numerically, so scene 10 never lands before scene 2. */
+const SCENE_FILES = fs.readdirSync(path.join(ROOT, 'content'))
+  .filter((f) => f.indexOf('scene-s') === 0 && f.slice(-5) === '.json')
+  .map((f) => f.slice(0, -5))
+  .sort((a, b) => {
+    const pa = a.split('-'), pb = b.split('-');
+    return (Number(pa[1].slice(1)) - Number(pb[1].slice(1))) ||
+           (Number(pa[2]) - Number(pb[2]));
+  });
 const sceneData = SCENE_FILES.map((f) =>
   JSON.parse(fs.readFileSync(path.join(ROOT, 'content', f + '.json'), 'utf8')));
 const factsData = JSON.parse(fs.readFileSync(path.join(ROOT, 'content/facts-s1.json'), 'utf8'));

@@ -687,12 +687,37 @@
       "repeatable": true,
       "label": "Do nothing, and keep your Word for later.",
       "detail": "Sometimes this is the right answer. It is not a wasted turn.",
-      "requires": {},
+      "requires": {
+        "scene_kind": [
+          "COUNCIL",
+          "MARCH"
+        ]
+      },
       "outcomes": {
         "all": {
           "narrate": "You keep your mouth shut and your powder dry, and the day goes on without your help.",
           "legacy": 1,
           "clear_resolve": 1
+        }
+      },
+      "_why_gated": "HOLD keeps its Resolve clause everywhere EXCEPT a fight. In a BATTLE or SIEGE the fight-time variant below is offered instead, without the clear_resolve — in a fight you get your feet back from somebody else (MEND), not from standing still. Removing the clause outright would have punished the four quiet scenes where holding really is the right answer."
+    },
+    {
+      "id": "GEN_HOLD_FIGHT",
+      "verb": "HOLD",
+      "repeatable": true,
+      "label": "Keep your head down and wait it out.",
+      "detail": "Sometimes this is the right answer. It will not get your feet back.",
+      "requires": {
+        "scene_kind": [
+          "BATTLE",
+          "SIEGE"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "You stay where you are and let it go over you. Nothing about you is better for it, and you are still here.",
+          "legacy": 1
         }
       }
     },

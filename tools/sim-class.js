@@ -44,12 +44,27 @@ const mapData = fs.readdirSync(path.join(__dirname, '..', 'app', 'content'))
   .filter((f) => /^map-.*\.json$/.test(f)).sort()
   .map((f) => HexMapMod.hydrate(load(f), terrainData));
 const roster  = load('roster-s1.json');
-const SCENES  = [1, 2, 3, 4, 5].map((n) => 'scene-s' + WHICH + '-' + n);
+/* Every scene this session has on disk, numerically. Hardcoding 1..5 made
+ * a sixth scene file invisible to the one harness that would catch it. */
+const SCENES  = fs.readdirSync(path.join(__dirname, '..', 'app', 'content'))
+  .filter((f) => f.indexOf('scene-s' + WHICH + '-') === 0 && f.slice(-5) === '.json')
+  .map((f) => f.slice(0, -5))
+  .sort((a, b) => Number(a.split('-').pop()) - Number(b.split('-').pop()));
 const scenes  = SCENES.map((f) => load(f + '.json'));
 const scene   = scenes[0];
 const common  = load('actions-common.json');
 const facts   = load('facts-s1.json');
 const APW = argv('actions', 0);          // override actionsPerWindow to compare
+
+/* HOW MANY STUDENTS ARE ACTUALLY IN THE ROOM.
+ *
+ * This was hardcoded to the full roster of 30 in four places, so the one
+ * decision that reaches every system — scale off the LIVE roster, floor of
+ * one — could not be tested at all. --students 6 plays the same period with
+ * the first six characters; --students 1 is the floor the design promises. */
+const CLASS = argv('students', roster.roster.length);
+const ROSTER = roster.roster.slice(0, Math.max(1, Math.min(CLASS, roster.roster.length)));
+const HEADS = ROSTER.length;
 
 /* Hexes this scene has something to say about: anywhere an action names in
  * hex_in, and wherever an NPC behind an adjacency gate is standing. Cached per
@@ -107,7 +122,7 @@ const PROFILES = [
 function assignProfiles(rand) {
   const pool = [];
   PROFILES.forEach((p) => { for (let i = 0; i < p.weight; i++) pool.push(p); });
-  return roster.roster.map(() => pool[Math.floor(rand() * pool.length)]);
+  return ROSTER.map(() => pool[Math.floor(rand() * pool.length)]);
 }
 
 /* ------------------------------------------------------------------ one run */
@@ -119,7 +134,7 @@ function run(seed) {
                           actionsPerWindow: APW || undefined });
 
   const profiles = assignProfiles(rand);
-  const bots = roster.roster.map((p, i) => ({
+  const bots = ROSTER.map((p, i) => ({
     sid: 'bot' + i,
     characterId: p.id,
     name: p.name,
@@ -155,6 +170,8 @@ function run(seed) {
   const clockTrail = [];
   const readClocks = () => Object.keys(room.clocks)
     .reduce((a, k) => { a[k] = room.clocks[k].filled; return a; }, {});
+  const readCaps = () => Object.keys(room.clocks)
+    .reduce((a, k) => { a[k] = room.clocks[k].segments; return a; }, {});
   let winStats = null;
 
   while (t < HARD_STOP) {
@@ -267,7 +284,7 @@ function run(seed) {
   }
   if (winStats) windows.push(winStats);
 
-  clockTrail.push({ seg: '(end)', scene: room.sceneId, clocks: readClocks() });
+  clockTrail.push({ seg: '(end)', scene: room.sceneId, clocks: readClocks(), caps: readCaps() });
   const snap = room.snapshot();
   const cov = room.coverage();
   const live = room.liveStudents();
@@ -371,14 +388,14 @@ const lat = [];
 runs.forEach((r) => r.bots.forEach((b) => b.decidedAt.forEach((d) => lat.push(d))));
 const L = stat(lat);
 const undeclared = runs.reduce((a, r) =>
-  a + r.windows.reduce((x, w) => x + Math.max(0, (30 - r.absent) - w.declared), 0), 0);
+  a + r.windows.reduce((x, w) => x + Math.max(0, (HEADS - r.absent) - w.declared), 0), 0);
 const windowsTotal = runs.reduce((a, r) => a + r.windows.length, 0);
 console.log('3 · WHEN DO THEY DECIDE?  (the DECLARE window is ' +
             (r0.windows[0] ? r0.windows[0].len + 's' : '—') + ')');
 console.log('   fastest ' + L.min.toFixed(0) + 's   mean ' + L.mean.toFixed(0) +
             's   p90 ' + L.p90.toFixed(0) + 's   slowest ' + L.max.toFixed(0) + 's');
 console.log('   declarations missed across all windows: ' + undeclared +
-            '  (' + pct(undeclared, windowsTotal * 30) + ' of chances)');
+            '  (' + pct(undeclared, windowsTotal * HEADS) + ' of chances)');
 console.log('');
 
 /* --- 4. is the pool being used, or are three actions doing all the work? */
@@ -452,8 +469,11 @@ console.log('4b · THE CLOCKS — which scene moved which bar');
   const fin = runs.map((r) => r.clockTrail[r.clockTrail.length - 1].clocks);
   ids.forEach((k) => {
     const vals = fin.map((c) => c[k] || 0);
-    const cap = (session.clocks || []).filter((c) => c.id === k)[0];
-    const full = vals.filter((v) => cap && v >= cap.segments).length;
+    /* the LIVE cap: size_clocks cuts a bar to the room at runtime, so the
+     * authored number is not what anybody played against. */
+    const caps = fin.map((c, i) => (runs[i].clockTrail[runs[i].clockTrail.length - 1].caps || {})[k]);
+    const cap = { segments: Math.max.apply(null, caps.filter((x) => x !== undefined).concat([0])) };
+    const full = vals.filter((v, i) => caps[i] !== undefined && v >= caps[i]).length;
     console.log('   ' + (k + '            ').slice(0, 13) + 'final ' +
                 Math.min.apply(null, vals) + '–' + Math.max.apply(null, vals) +
                 ' of ' + (cap ? cap.segments : '?') +
@@ -465,7 +485,7 @@ console.log('');
 /* --- 5. the spotlight guarantee */
 const spots = runs.map((r) => r.spotlighted);
 console.log('5 · THE SPOTLIGHT (design/14: every name reaches the Stage once a session)');
-const conn = runs.map((r) => 30 - r.absent);
+const conn = runs.map((r) => HEADS - r.absent);
 console.log('   students named: ' + stat(spots).min + '–' + stat(spots).max +
             ' of ' + stat(conn).min + '–' + stat(conn).max + ' who were present');
 console.log('   ' + (stat(spots).min >= stat(conn).min ? '✓ everybody present was named'

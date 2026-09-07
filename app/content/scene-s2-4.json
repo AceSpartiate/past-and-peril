@@ -1,6 +1,7 @@
 {
   "id": "S2.4",
   "session": 2,
+  "_retired": "RETIRED FROM THE TIMELINE IN SLICE 1, AND KEPT ON PURPOSE. The boss scene S2.6 replaced this scene's beat, so S24_FOLLOW_MILAM, S24_HOUSE_TO_HOUSE and S24_PRESS are authored and offered to nobody — sim-class reports them as dead and that is expected, not a regression. DO NOT DELETE THIS FILE: room.js builds sessionMustTeach from every scene carrying this session number, not from the timeline, so removing it would quietly drop FACT_BEN_MILAM, FACT_COS_SURRENDERED and FACT_WINTER_FARMS from what the record block owes every student. FACT_BEN_MILAM is taught by the `milam` record segment; the other two are taught by S2.6. If a later slice wants this content back, give it a beat and the three actions wake up unchanged.",
   "title": "Ben Milam",
   "date": "1835-12-04",
   "map": "bexar_alamo",

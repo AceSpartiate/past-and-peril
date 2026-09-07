@@ -173,8 +173,22 @@ class Room {
      * the first standable ground, so a class arrives spread along the road
      * instead of stacked on one square. Deterministic: same order every time,
      * which matters when a period is restored from disk. */
+    /* A SCENE MAY STAGE ITS OWN OPENING POSITION.
+     *
+     * The map's entry hex is where a class first walks onto that map, and
+     * for Béxar that is the Old Mill north of town, which is where the
+     * assault really did form up. But a student who has been on this map
+     * before goes back to their anchor, so a class returning for the storm
+     * of the plaza reassembles wherever they happened to stop last time —
+     * scattered along the north edge, eight hexes from the fight, with an
+     * effective move of three.
+     *
+     * A scene that declares its own `entry` overrides both: everybody is
+     * staged from that hex, anchors included. It is the difference between
+     * a boss the room is standing in and a boss the room is walking to. */
     const spread = [];
-    const seed = dest.parse(dest.data.entry || '');
+    const staged = this.scene && this.scene.entry;
+    const seed = dest.parse(staged || dest.data.entry || '');
     if (seed) {
       const seen = { [seed.c + ',' + seed.r]: true };
       const q = [seed];
@@ -194,7 +208,7 @@ class Room {
     const taken = {};
     Object.values(this.students).forEach((st) => {
       if (this.placeId(st) === want) { taken[st.hex] = true; return; }
-      const back = st.anchor && st.anchor.place === want ? st.anchor.hex : null;
+      const back = (!staged && st.anchor && st.anchor.place === want) ? st.anchor.hex : null;
       st.place = want;
       st.anchor = null;
       if (back && !taken[back]) { st.hex = back; taken[back] = true; return; }
@@ -633,6 +647,36 @@ class Room {
         if (c) c.filled = Math.min(c.segments, c.filled + s.clocks[k]);
       });
     }
+    /* THE BAR IS SIZED AGAINST THE ROOM THAT IS ACTUALLY IN IT.
+     *
+     * decision 11: class sizes vary a lot between this teacher's own
+     * periods, so any segment count baked in at authoring time is wrong
+     * for somebody every single day. A boss bar sized for thirty is an
+     * unwinnable wall for a class of six and a formality for a class of
+     * thirty-two.
+     *
+     * A segment declares what a bar costs PER STUDENT and a floor, and the
+     * bar is cut to the live roster at the moment that segment opens — so
+     * it counts the students who actually turned up, after the absences.
+     * The floor is what makes a class of one a hard fight rather than an
+     * impossible one. */
+    if (s && s.size_clocks) {
+      const heads = Math.max(1, this.liveStudents().length);
+      Object.keys(s.size_clocks).forEach((k) => {
+        const c = this.clocks[k];
+        const spec = s.size_clocks[k];
+        if (!c || !spec) return;
+        /* A ceiling as well as a floor. The boss's ring holds five people
+         * whatever the class size, so demand measurably plateaus above
+         * about eighteen students — scaling straight past that makes a big
+         * class an unwinnable wall for a reason that is arithmetic rather
+         * than design. */
+        const want = Math.round((spec.per_student || 0) * heads);
+        c.segments = Math.min(spec.max || Infinity, Math.max(spec.min || 1, want));
+        c.filled = Math.min(c.filled, c.segments);
+      });
+    }
+
     /* Each beat gets its own toll schedule. A boss's three phases are three
      * segments on ONE scene, so st.used persists across them and this does
      * not — the fight remembers what you spent, the boss forgets what it

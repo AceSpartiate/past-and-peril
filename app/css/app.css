@@ -394,3 +394,57 @@ body.console {
 }
 /* the views must not run underneath it */
 .stage-body .view { padding-bottom: 92px; }
+
+/* ================================================================= THE BOSS
+ *
+ * One period, one fight, and the back row has to be able to read all of it.
+ * Two bars at roughly 3x the board's clocks, the phase, the countdown, and the
+ * broadcast rail — spotlight() has been computing that feed for the whole life
+ * of this codebase and sending it to a client that threw it away.
+ */
+.v-boss { padding: 3vh 4vw; justify-content: flex-start; }
+
+.boss-head { display: flex; align-items: baseline; gap: 2vw; }
+.boss-name {
+  font-family: var(--display, inherit);
+  font-size: clamp(28px, 5.2vh, 64px);
+  letter-spacing: .04em; text-transform: uppercase; color: var(--ink);
+}
+.boss-date { font-size: clamp(13px, 2.1vh, 24px); color: var(--ink-soft, #6b6257); letter-spacing: .08em; }
+
+.boss-bars { margin-top: 2.4vh; display: flex; flex-direction: column; gap: 1.6vh; }
+.boss-bar .bl {
+  font-size: clamp(12px, 1.9vh, 20px); letter-spacing: .12em;
+  text-transform: uppercase; color: var(--ink-soft, #6b6257); margin-bottom: .5vh;
+}
+.boss-segs { display: flex; gap: 5px; }
+.boss-segs i {
+  flex-grow: 1; height: clamp(22px, 4.4vh, 52px);
+  background: var(--paper); border: 2px solid var(--rule-strong);
+}
+.boss-segs i.on { background: var(--oxide); border-color: var(--oxide); }
+/* The bar filling AGAINST you reads differently from the one you are filling. */
+.boss-bar.against .boss-segs i.on { background: var(--ink); border-color: var(--ink); }
+
+.boss-mid { margin-top: 2.6vh; display: flex; align-items: baseline; justify-content: space-between; }
+.boss-phase {
+  font-size: clamp(15px, 2.6vh, 30px); letter-spacing: .1em;
+  text-transform: uppercase; color: var(--ink);
+}
+.boss-phase i {
+  display: inline-block; width: .8em; height: .8em; margin-left: .35em;
+  border: 2px solid var(--rule-strong); vertical-align: baseline;
+}
+.boss-phase i.on { background: var(--oxide); border-color: var(--oxide); }
+.boss-count { font-size: clamp(30px, 6vh, 76px); }
+.boss-count.low { color: var(--oxide); }
+
+.boss-instruction { margin-top: 1.4vh; font-size: clamp(15px, 2.7vh, 32px); color: var(--ink); }
+
+.boss-rail { margin-top: auto; padding-top: 2vh; display: flex; flex-direction: column; gap: .7vh; }
+.boss-rail div {
+  font-size: clamp(13px, 2.2vh, 26px); color: var(--ink);
+  border-left: 4px solid var(--oxide); padding-left: .8em;
+}
+.boss-rail div:nth-child(2) { opacity: .62; }
+.boss-rail div:nth-child(3) { opacity: .34; }
