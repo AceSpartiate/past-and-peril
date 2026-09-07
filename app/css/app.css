@@ -33,6 +33,19 @@
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 body { margin: 0; font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+
+/* hidden MEANS hidden. Any rule that sets display (.c-body is display:flex)
+ * outranks the browser default for [hidden], and the desk had been drawing
+ * underneath the gate the whole time because of it - a half-console with no
+ * button on it, which is what a teacher saw when they went looking for one.
+ * app.css already carried two one-off patches for the same collision. */
+[hidden] { display: none !important; }
+
+/* REHEARSAL. Oxide, because a period nobody sat through must not be
+ * mistakeable for one that happened - not from the back of the room and
+ * not in a photograph of the board. */
+.fl-test { color: var(--d-oxide); letter-spacing: .18em; font-weight: 700;
+  border: 1px solid var(--d-oxide); padding: 1px 9px; border-radius: 3px; }
 button { font-family: inherit; cursor: pointer; }
 .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 
@@ -283,8 +296,22 @@ body.console {
 .warnbox { background: #1B1618; border: 1px solid #8E3A2C; padding: 12px 15px; font-size: 12px; line-height: 1.5; color: var(--d-ink); }
 
 /* start screen */
-.gate { flex-grow: 1; display: flex; align-items: center; justify-content: center; }
-.gate-in { width: 560px; max-width: 92vw; text-align: center; }
+/* THE ONLY THING YOU CAN PRESS MUST BE ON SCREEN. This centred its child,
+ * which is right for a short gate and wrong the moment the class picker
+ * has a term of periods in it: a centred flex item taller than the window
+ * clips at BOTH ends, so "Open the room" walked off the bottom and there
+ * was nothing visible to press. It gets worse every week, because the
+ * picker grows a row per saved class.
+ *
+ * margin:auto rather than align-items:center - auto margins centre a flex
+ * item without ever pushing its top past the scroll container's start
+ * edge, which align-items:center does, putting the title out of reach too. */
+.gate { flex-grow: 1; display: flex; justify-content: center; overflow-y: auto; }
+.gate-in { width: 560px; max-width: 92vw; text-align: center; margin: auto; }
+
+/* The action rides along the bottom of the window however long the gate is. */
+.gate-in .go { position: sticky; bottom: 0; z-index: 5; padding: 10px 0 12px;
+  background: linear-gradient(to bottom, transparent, var(--desk) 22%); }
 .gate-in h1 { font-family: var(--serif); font-size: 42px; line-height: 1.05; font-weight: 400; margin: 0 0 10px; }
 .gate-in p { font-size: 14px; color: var(--d-soft); line-height: 1.6; margin: 0 0 26px; }
 .gate-in .pre { text-align: left; margin: 0 0 24px; display: flex; flex-direction: column; gap: 8px; }
@@ -466,3 +493,6 @@ body.console {
   font-size: clamp(13px, 2.2vh, 26px); color: var(--ink);
   border-left: 3px solid var(--rule-strong); padding-left: .7em; flex: 1 1 26%;
 }
+
+/* A rehearsed period in the class picker. Same oxide as the board banner. */
+.cl-test { color: var(--d-oxide); font-weight: 700; letter-spacing: .1em; }

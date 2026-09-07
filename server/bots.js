@@ -62,7 +62,19 @@ class Bots {
   /* Seat everybody who is not already a person. */
   start() {
     const room = this.room;
-    const real = Object.keys(room.students).filter((sid) => sid.indexOf('bot:') !== 0);
+    /* PRESENT, not ever-joined. The first version of this counted every seat
+     * in room.students, which meant a room that a class had already sat in
+     * could never be rehearsed again - and those are precisely the rooms a
+     * teacher has. A seat nobody has pinged in a minute is a Chromebook that
+     * went home. join() then treats it as a reconnect and hands it over,
+     * which is the same path a student uses on a machine that slept.
+     *
+     * A minute rather than the 15s of liveStudents(): a student whose screen
+     * dozed off mid-lesson must still block this, and seenCatchUp() parks a
+     * real student at now-14s, just inside the live window. */
+    const now = room.now();
+    const real = Object.keys(room.students).filter((sid) =>
+      sid.indexOf('bot:') !== 0 && (now - room.students[sid].seen) < 60000);
     if (real.length) return { ok: false, error: 'real-students-present', students: real.length };
 
     const pool = [];

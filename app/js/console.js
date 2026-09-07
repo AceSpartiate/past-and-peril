@@ -379,6 +379,27 @@
       Narrator.say({ speaker: 'NARRATOR', text: ' ' });  // a gesture unlocks speech
       Net.cmd(LAST && LAST.resumedFromDisk ? 'resume' : 'start');
     });
+    /* REHEARSAL FROM THE GATE. Seat the bots FIRST and open the room second.
+     * The other order gives you a period that starts empty and fills up over
+     * the next thirty seconds, which is not the period a class plays: the
+     * opening read is the one moment the whole room is guaranteed present. */
+    $('b-test-gate').addEventListener('click', function () {
+      const note = $('test-gate-note');
+      note.textContent = 'Seating the roster…';
+      Net.cmd('testMode', { on: true }).then(function (r) {
+        if (!r || r.error) {
+          note.textContent = r && r.error === 'real-students-present'
+            ? 'Not while ' + r.students + ' real student(s) are in the room. Test mode is for an empty room.'
+            : 'The server refused test mode.';
+          return;
+        }
+        note.textContent = 'REHEARSAL — ' + r.seated + ' seated, ' + r.away +
+          ' away today. Nobody in this room is real.';
+        if (!(LAST && LAST.viewers > 0)) Overlay.open();   // never start on a blank projector
+        Narrator.say({ speaker: 'NARRATOR', text: ' ' });  // a gesture unlocks speech
+        Net.cmd(LAST && LAST.resumedFromDisk ? 'resume' : 'start');
+      });
+    });
     $('b-stage-inline').addEventListener('click', function () { Overlay.open(); });
     $('b-focus').addEventListener('click', function () { Overlay.toggle(); });
 
@@ -512,11 +533,17 @@
       const who = p.characters
         ? p.characters + (p.characters === 1 ? ' character' : ' characters')
         : 'nobody has joined';
+      /* The save carries wasTestMode forever and /api/periods has always
+       * served it, but nothing showed it. A permanent mark nobody can see is
+       * not a mark: this is the one screen where a teacher decides which
+       * period to reopen, and a rehearsed one must not look like a taught one. */
+      const mark = p.rehearsal
+        ? '<span class="cl-test">rehearsal</span> · ' : '';
       return '<button class="cl-row' + (on ? ' on' : '') + '" data-room="' + p.code + '">' +
         '<span class="cl-code mono">' + p.code + '</span>' +
         '<span class="cl-mid">' +
           '<span class="cl-where">' + where + '</span>' +
-          '<span class="cl-who c-cap">' + who +
+          '<span class="cl-who c-cap">' + mark + who +
             (p.priorSessions ? ' · ' + p.priorSessions + ' session(s) behind them' : '') +
           '</span>' +
         '</span>' +
@@ -573,6 +600,7 @@
   function fail(html) {
     $('preflight').innerHTML = '<div class="warnbox">' + html + '</div>';
     $('b-start').disabled = true;
+    $('b-test-gate').disabled = true;
   }
 
   Net.probe().then(function (hello) {

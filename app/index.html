@@ -53,8 +53,20 @@
 
     <div class="pre" id="preflight"></div>
 
+    <div class="go">
     <div class="row" style="justify-content:center">
       <button class="btn big primary" id="b-start" style="flex-grow:1">Open the room &nbsp;&#9654;</button>
+    </div>
+
+    <!-- REHEARSAL, AND IT BELONGS HERE. The desk carries a stop button for
+         it too, but the desk is on the far side of this gate: a teacher who
+         wants to watch a period before the class arrives is standing on THIS
+         screen, having just chosen the session, and there was nothing here
+         to press. Choosing a session and pressing this is one decision. -->
+    <div class="row" style="justify-content:center">
+      <button class="btn" id="b-test-gate" style="flex-grow:1;height:52px">Test mode: play it with nobody &nbsp;&#9654;</button>
+    </div>
+    <div class="cl-note" id="test-gate-note">Seats the whole roster as bots and plays the period on the real clock, so you can watch it. It refuses if any student has joined, and the save is marked a rehearsal forever.</div>
     </div>
     <!-- ============== THE THREE SCREENS ==============
          A teacher could not work out how to get from the QR screen to the

@@ -237,6 +237,10 @@
     if (s.meta) {
       $('fl-date').textContent = s.meta.datestamp || '';
       $('fl-right').textContent = 'SESSION ' + s.meta.session;
+      /* A rehearsal must be legible from the back of the room. The console
+       * saying so is not enough - the projector is the screen a person who
+       * walks in is looking at, and it is the one that gets photographed. */
+      $('fl-test').hidden = !s.testMode;
       $('idle-sub').textContent = s.meta.title || '';
     }
     renderBoard(s);

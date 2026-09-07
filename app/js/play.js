@@ -475,6 +475,9 @@
 
   function applyState(s) {
     WORLD = s;
+    /* A rehearsal has to be legible on the screen a person is actually
+     * holding, not only on the teacher's desk. */
+    if ($('hud-test')) $('hud-test').hidden = !s.testMode;
     /* A new segment is a new short list. Leaving it open across a window
      * change would hand the next turn a wall of eighteen cards. */
     const segId = s && s.segment && s.segment.id;

@@ -220,6 +220,43 @@ console.log('');
 }
 
 console.log('');
+/* ------------------------------------------------------------------ 7
+ * PRESENT, not ever-joined. The refusal counted every seat in the room,
+ * which made the feature useless on the only rooms a teacher actually has:
+ * the ones a class already sat in. A seat nobody has pinged in a minute is
+ * a Chromebook that went home. */
+{
+  const { room, wait } = build(3);
+  wait(120);
+  ok(room.liveStudents().length === 0, 'two minutes on, nobody is in the room');
+  const r = room.command('testMode', { on: true });
+  ok(r.ok && r.seated === roster.roster.length,
+     'so a room three students walked out of can still be rehearsed (' + r.seated + ' seated)');
+  ok(Object.keys(room.students).every((sid) => sid.indexOf('bot:') === 0),
+     'and their abandoned seats are held by bots, not by their ghosts');
+  room.destroy();
+}
+
+console.log('');
+/* ------------------------------------------------------------------ 8
+ * And it seats them BEFORE the room opens, because that is the order the
+ * gate button uses: a period that starts empty and fills up over the next
+ * thirty seconds is not the period a class plays. */
+{
+  let t = 1000000;
+  const room = new Room('S', sessions, mapData, roster, scenes, facts,
+                        { clock: () => t, manual: true, common: common });
+  ok(!room.started, 'the room has not been opened');
+  const r = room.command('testMode', { on: true });
+  ok(r.ok && r.seated === roster.roster.length,
+     'the whole roster sits down anyway (' + r.seated + ')');
+  room.command('start');
+  ok(room.liveStudents().length === roster.roster.length,
+     'and every one of them is still there when it opens');
+  room.destroy();
+}
+
+console.log('');
 console.log(fails === 0 ? '  ✓ their map says GO HERE and their top card says what to press'
                         : '  ✗ ' + fails + ' failure(s)');
 console.log('');
