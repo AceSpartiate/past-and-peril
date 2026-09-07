@@ -1146,6 +1146,96 @@
         "S2.3",
         "S2.4"
       ]
+    },
+    {
+      "id": "KIT_RIFLE_MARK",
+      "verb": "SEEK",
+      "label": "Put the long rifle on something a long way off.",
+      "detail": "Two hundred yards. You do not have to be near it.",
+      "requires": {
+        "item": [
+          "ITEM_LONG_RIFLE"
+        ]
+      },
+      "roll": {
+        "stat": "arms",
+        "dc": 7
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "You lie down, take your time, and read the ground at two hundred yards better than anybody who walked out to look at it.",
+          "broadcast": "Somebody is reading the far ground through a rifle sight.",
+          "world": {
+            "FAR_GROUND_READ": true
+          },
+          "legacy": 2
+        },
+        "partial": {
+          "narrate": "You get a long look before the barrel fouls. It is enough to say what is out there, and not how much of it.",
+          "world": {
+            "FAR_GROUND_READ": true
+          }
+        },
+        "weak": {
+          "narrate": "A full minute to load, and by the time you are ready the thing you were watching has moved."
+        }
+      }
+    },
+    {
+      "id": "KIT_BESS_AGAIN",
+      "verb": "ACT",
+      "label": "Load the Bess again. And again.",
+      "detail": "Paper cartridge, no patching. You are not fast at anything else.",
+      "requires": {
+        "item": [
+          "ITEM_BROWN_BESS"
+        ]
+      },
+      "repeatable": true,
+      "roll": {
+        "stat": "arms",
+        "dc": 8
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "Three in a minute. None of them accurate, all of them arriving, which at fifty yards is the whole argument.",
+          "legacy": 1
+        },
+        "partial": {
+          "narrate": "Two, and the second one goes wide. You are still reloading before anybody else has started."
+        },
+        "weak": {
+          "narrate": "You spill a cartridge in the dirt and have to start it over."
+        }
+      }
+    },
+    {
+      "id": "KIT_TOOLS_MEND",
+      "verb": "ACT",
+      "label": "Fix it yourself. You are carrying the tools.",
+      "detail": "You are not a smith. You have a smith’s tools and one go at it.",
+      "requires": {
+        "item": [
+          "ITEM_GOOD_TOOLS"
+        ]
+      },
+      "roll": {
+        "stat": "arms",
+        "dc": 8
+      },
+      "outcomes": {
+        "strong": {
+          "narrate": "It is not a good repair and it is a repair. Whatever it was for, it will do that again today.",
+          "broadcast": "Somebody who is not a smith fixes it anyway.",
+          "legacy": 2
+        },
+        "partial": {
+          "narrate": "You get it holding. Do not lean on it."
+        },
+        "weak": {
+          "narrate": "You make it worse, then slightly less worse, and give the tools back."
+        }
+      }
     }
   ]
 }

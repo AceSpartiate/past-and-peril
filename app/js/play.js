@@ -427,6 +427,30 @@
     docToastT = setTimeout(function () { box.hidden = true; }, 12000);
   }
 
+  /* WHAT YOU JUST PICKED UP.
+   *
+   * Cloned from the document toast. A drop that arrives with no announcement
+   * is a row in a list nobody reads — and segment.drop hands items to every
+   * student at once, so without this the whole room gets something and
+   * nobody notices. Fires on what is NEW, never on a repaint. */
+  let kitSeen = null;
+  let kitToastT = 0;
+  function announceKit(items) {
+    const ids = items.map(function (i) { return i.id; });
+    if (kitSeen === null) { kitSeen = ids.slice(); return; }   // first paint is not a drop
+    const fresh = items.filter(function (i) { return kitSeen.indexOf(i.id) === -1; });
+    kitSeen = ids.slice();
+    if (!fresh.length) return;
+    const box = $('kit-toast');
+    if (!box) return;
+    $('kit-toast-t').textContent = fresh.map(function (i) { return i.name; }).join(', and ');
+    $('kit-toast-s').textContent = (fresh[0].slot || 'carried').toUpperCase();
+    box.setAttribute('data-rarity', fresh[0].rarity || 'PLAIN');
+    box.hidden = false;
+    clearTimeout(kitToastT);
+    kitToastT = setTimeout(function () { box.hidden = true; }, 9000);
+  }
+
   /* The button appears the moment there is anything in it, and says how much. */
   function renderDayBtn() {
     const b = $('day-btn');
@@ -1160,11 +1184,19 @@
     $('hud-stats').innerHTML = ['arms', 'talk', 'land', 'word'].map(function (k) {
       return '<span class="stat"><b>' + k.toUpperCase().slice(0, 1) + '</b>' + (st[k] || 0) + '</span>';
     }).join('');
+    /* THE KIT. Slot and rarity are on the chip, because the two questions a
+     * student actually has are "why did it not let me take the second one"
+     * and "is mine the good one". Colour first: a Chromebook two tables
+     * away is a classroom event with no words in it. */
     const items = ME.items || [];
-    $('hud-kit').innerHTML = items.length
-      ? items.map(function (i) { return '<span class="kit" title="' + i.blurb + '">' + i.name + '</span>'; }).join('')
-      : '';
+    $('hud-kit').innerHTML = items.map(function (i) {
+      const slot = i.slot || 'carried';
+      return '<span class="kit" data-rarity="' + (i.rarity || 'PLAIN') + '"' +
+             ' title="' + (i.blurb || '').replace(/"/g, '&quot;') + '">' +
+             '<b>' + slot + '</b>' + i.name + '</span>';
+    }).join('');
     $('hud-kit').hidden = !items.length;
+    announceKit(items);
   }
 
   function renderActions() {

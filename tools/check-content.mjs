@@ -194,6 +194,52 @@ if (fs.existsSync(deckPath)) {
   }
 }
 
+/* ---- 4b. LOOT: the rules that have to be code, not a promise -------- */
+{
+  /* HORIZONTAL PROGRESSION ONLY. effect.stat is the one thing that reached
+   * the dice, and it is the reason this check exists at all rather than a
+   * sentence in a design document. */
+  /* read the raw JSON, not the hydrated HexMap — items live on the document */
+  const items = [];
+  fs.readdirSync(CONTENT).filter((f) => /^map-.*.json$/.test(f)).forEach((f) => {
+    (read(f).items || []).forEach((it) => items.push({ map: f, it }));
+  });
+  const withStat = items.filter(({ it }) => it.effect && it.effect.stat);
+  if (withStat.length) {
+    err(withStat.length + ' item(s) declare effect.stat, which reaches 2d6 and collapses the ' +
+        'three tiers by session five: ' + withStat.map(({ it }) => it.id).join(', '));
+  }
+  const bigMove = items.filter(({ it }) => it.effect && (it.effect.move || 0) > 2);
+  if (bigMove.length) err('effect.move is capped at +2: ' + bigMove.map(({ it }) => it.id).join(', '));
+  const movers = items.filter(({ it }) => it.effect && it.effect.move);
+  if (movers.length > 2) {
+    warn(movers.length + ' items carry effect.move; the design allows two: ' +
+         movers.map(({ it }) => it.id).join(', '));
+  }
+
+  /* AN ITEM-GATED ACTION THAT ONLY AUTHORS `strong` SILENTLY DOES NOTHING on
+   * the other two tiers — resolve() returns outs[tier] || outs.all || {} — and
+   * the student has burned their once-per-scene use. A drop that fails 58% of
+   * the time teaches a twelve-year-old that the loot is fake. */
+  const known = {};
+  items.forEach(({ it }) => { known[it.id] = true; });
+  let gated = 0;
+  allActions.forEach(({ where, list }) => list.forEach((a) => {
+    const need = (a.requires || {}).item;
+    if (!need) return;
+    gated++;
+    need.forEach((id) => { if (!known[id]) err(where + ' ' + a.id + ' requires unknown item ' + id); });
+    const o = a.outcomes || {};
+    const ok = o.all || (o.strong && o.partial && o.weak);
+    if (!ok) {
+      err(where + ' ' + a.id + ' is item-gated but authors neither outcomes.all nor all ' +
+          'three tiers, so it does nothing on the tiers it skipped and the student ' +
+          'has spent their use');
+    }
+  }));
+  console.log('  ' + items.length + ' items, ' + gated + ' item-gated action(s); no item touches a die roll');
+}
+
 /* ---- 5. the Callings that Calling-gated actions assume -------------- */
 const gatedCallings = {};
 allActions.forEach(({ list }) => list.forEach((a) => {

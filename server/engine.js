@@ -71,6 +71,20 @@ class Engine {
       for (const k in r.stat) if ((st.stats[k] || 0) < r.stat[k]) return false;
     }
 
+    /* AN ITEM'S ONLY POWER IS THIS LINE.
+     *
+     * Items used to add to a stat, which meant they added to 2d6, which by
+     * session five made almost everything a strong result — there is no level
+     * scaling here to absorb it and there are only six periods. So loot grants
+     * ACCESS and never magnitude: an item is a key to an authored action, and
+     * an item-gated action may do nothing that is unreachable elsewhere in the
+     * game. Exemptions and loans, never a bigger number.
+     *
+     * Deliberately NOT done by deriving flags from the pack in effective():
+     * that puts set-derivation on a hot path, splits reads from writes, and
+     * makes gateLabel() print KIT LONG RIFLE at a twelve-year-old. */
+    if (r.item) { for (const i of r.item) if ((st.items || []).indexOf(i) === -1) return false; }
+
     if (r.flag) { for (const f of r.flag) if (!st.flags[f]) return false; }
     if (r.flag_absent) { for (const f of r.flag_absent) if (st.flags[f]) return false; }
     if (r.world_flag) { for (const f of r.world_flag) if (!ctx.world[f]) return false; }
@@ -260,7 +274,13 @@ class Engine {
       (at ? mp.neighbours(at.c, at.r) : []).map((n) => mp.label(n.c, n.r)));
     here.forEach((hx) => {
       mp.featuresAt(hx).forEach((f) => {
-        if ((f.kind === 'chest' || f.kind === 'body') && !f.searched) promoted.push(this.lootAction(f, hx));
+        /* PERSONAL CONTAINERS. f.searched was one room-wide boolean, so a
+         * class that emptied Gonzales in period one walked into period two
+         * with ten of fourteen containers dead for the rest of the unit.
+         * takenBy is per character; depth caps how many people a container
+         * can serve, for the few things that genuinely must be scarce. */
+        if ((f.kind === 'chest' || f.kind === 'body') && this.openTo(f, st))
+          promoted.push(this.lootAction(f, hx));
         /* A portal is walked through, not "acted" on — see Room#enter. Offering
          * it as an action too would charge a student their turn for a door. */
         if (f.kind === 'door' && !f.to) promoted.push(this.doorAction(f, hx));
@@ -302,6 +322,16 @@ class Engine {
   }
 
   /* Searching is an ACTION — it costs you the turn, like anything else. */
+  /* Can this student still open this container? The one place that question
+   * is answered, so the offer path and the resolve path cannot drift. */
+  openTo(f, st) {
+    if (!f) return false;
+    const taken = f.takenBy || {};
+    if (taken[st.characterId]) return false;
+    if (f.depth && Object.keys(taken).length >= f.depth) return false;
+    return true;
+  }
+
   lootAction(f, hx) {
     return {
       id: 'LOOT:' + f.id,

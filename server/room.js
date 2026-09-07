@@ -647,6 +647,31 @@ class Room {
         if (c) c.filled = Math.min(c.segments, c.filled + s.clocks[k]);
       });
     }
+    /* THE DROP.
+     *
+     * A segment can hand every student an item. drop_by_calling gives a
+     * TRADER a different one from a RIFLEMAN, with `drop` as the fallback
+     * for anybody the table does not name.
+     *
+     * WHY IT IS A SET AND NOT A UNIFORM HANDOUT. One object for everyone
+     * means thirty identical kits by session six, which is content
+     * unlocking rather than character progression. Split by Calling and by
+     * March a TRADER's kit and a RIFLEMAN's kit are different VERBS.
+     *
+     * The guarantee is unchanged and is the point: nobody rolls for this,
+     * nobody is unlucky, nothing is scarce, and being absent yesterday costs
+     * you nothing — you get yours when you are next in the room.
+     *
+     * Slot rules are enforced here as well as at pickup, so a drop cannot
+     * put a second thing in a hand that is already full. */
+    if (s && (s.drop || s.drop_by_calling)) {
+      this.liveStudents().forEach((st) => {
+        const want = (s.drop_by_calling || {})[st.calling] || s.drop;
+        if (!want) return;
+        [].concat(want).forEach((id) => this.giveItem(st, id));
+      });
+    }
+
     /* THE BAR IS SIZED AGAINST THE ROOM THAT IS ACTUALLY IN IT.
      *
      * decision 11: class sizes vary a lot between this teacher's own
@@ -1184,14 +1209,59 @@ class Room {
   /* MOVE is a stat, derived and visible, not a fixed number per Calling.
    * Calling sets the floor, LAND is the body doing the walking, and a horse is
    * a horse. */
+  /* FIVE SLOTS, UNEQUAL, AND NO SWAPPING.
+   *
+   * hand (the event drop, a verb in every scene of its kind) · belt
+   * (situational) · pocket (one-shot) · under (effect.move only) · carried
+   * (uncapped, set fodder).
+   *
+   * A full slot DECLINES the second item, in one line, and there is no swap
+   * screen. A swap screen is a sixty-second decision by twenty-six
+   * twelve-year-olds in the middle of a window, and it manufactures exactly
+   * the which-is-bigger comparison this whole design exists to avoid. The
+   * real choice lives in ROUTING instead: two hand items on opposite sides
+   * of one map, and yours is whichever you reached first.
+   *
+   * Returns the item's name if it went in, or null if it was declined. */
+  giveItem(st, id) {
+    st.items = st.items || [];
+    if (st.items.indexOf(id) !== -1) return null;      // already yours
+    const it = this.item(id);
+    if (!it) return null;
+    const slot = it.slot || 'carried';
+    const CAP = { hand: 1, belt: 1, pocket: 1, under: 1 };
+    if (CAP[slot]) {
+      const held = st.items.filter((x) => ((this.item(x) || {}).slot || 'carried') === slot);
+      if (held.length >= CAP[slot]) return null;
+    }
+    const moveWas = st.move;
+    st.items.push(id);
+    st.move = this.effective(st).move;
+    st.moveLeft += (st.move - moveWas);
+    return it.name;
+  }
+
+  /* HORIZONTAL PROGRESSION ONLY.
+   *
+   * Items used to add to a stat here, and engine.js is the one line where a
+   * number joins 2d6 — so an item was a permanent bonus to every roll a
+   * student would ever make. Against three fixed tiers, no level scaling and
+   * six periods, that made almost everything a strong result by session five
+   * and nothing cost anything any more. ITEM_KEG_POWDER was arms +2 against a
+   * roster where seventeen of thirty characters have arms 0.
+   *
+   * effect.move survives, and only move. Move is not a bonus, it is a budget:
+   * it changes where you can stand, which changes which requires.adjacent_*
+   * and cost.move checks pass. It never reaches the dice.
+   *
+   * An item's power is requires.item on an authored action — see meets().
+   * check-content fails the build if any item declares effect.stat again. */
   effective(st) {
     const stats = Object.assign({}, st.stats);
     let move = st.moveBase + (stats.land || 0);
     (st.items || []).forEach((id) => {
       const it = this.item(id);
-      if (!it || !it.effect) return;
-      if (it.effect.move) move += it.effect.move;
-      Object.keys(it.effect.stat || {}).forEach((k) => { stats[k] = (stats[k] || 0) + it.effect.stat[k]; });
+      if (it && it.effect && it.effect.move) move += it.effect.move;
     });
     return { stats, move };
   }
@@ -1247,20 +1317,33 @@ class Room {
     /* World actions: searching a container, working a door. */
     if (r.action.loot) {
       const f = this.feature(r.action.loot);
-      if (!f || f.searched) return { ok: false, error: 'already-searched' };
+      if (!this.engine.openTo(f, st)) return { ok: false, error: 'already-searched' };
+      /* PER CHARACTER, NOT PER ROOM. The old single boolean was campaign
+       * persisted, so period two opened with most of the town already
+       * emptied by period one. f.searched is still written for anything
+       * that reads it as "has anyone been here". */
+      f.takenBy = f.takenBy || {};
+      f.takenBy[st.characterId] = true;
       f.searched = true;
-      st.items = Array.from(new Set((st.items || []).concat(f.contents || [])));
-      const names = (f.contents || []).map((i) => (this.item(i) || {}).name).filter(Boolean);
-      const moveWas = st.move;
-      st.move = this.effective(st).move;
-      st.moveLeft += (st.move - moveWas);
+      /* Through giveItem, so the slot rule cannot be walked around by a
+       * chest — it is the one door items come through. */
+      const names = [];
+      const declined = [];
+      (f.contents || []).forEach((id) => {
+        const got = this.giveItem(st, id);
+        if (got) names.push(got);
+        else { const it = this.item(id); if (it) declined.push(it.name); }
+      });
       r.outcome = Object.assign({}, r.outcome, {
         narrate: names.length
           ? 'You go through it. ' + names.join(', and ') + '.'
-          : 'Somebody has already been through this.',
+          : (declined.length
+            ? 'You leave ' + declined.join(' and ') + '. Your hands are full.'
+            : 'Somebody has already been through this.'),
         legacy: 1,
       });
       r.gained = names;
+      r.declined = declined;
     }
     if (r.action.door) {
       const f = this.feature(r.action.door);
@@ -1614,7 +1697,7 @@ class Room {
         retired: this.retired,
         standIns: this.standIns,
         attended: this.attended,
-        features: Object.values(this._featIx).map((e) => ({ id: e.f.id, open: e.f.open, searched: e.f.searched })),
+        features: Object.values(this._featIx).map((e) => ({ id: e.f.id, open: e.f.open, searched: e.f.searched, takenBy: e.f.takenBy || {} })),
         spotlighted: this.spotlighted,
       },
       students: Object.keys(this.students).map((sid) => {
@@ -1658,6 +1741,7 @@ class Room {
       if (!f) return;
       if (sf.open !== undefined) f.open = sf.open;
       if (sf.searched !== undefined) f.searched = sf.searched;
+      if (sf.takenBy) f.takenBy = sf.takenBy;
     });
     this.spotlighted = c.spotlighted || {};
     this.history = d.history || [];
@@ -1876,7 +1960,13 @@ class Room {
       items: (st.items || []).map((id) => this.item(id)).filter(Boolean),
       features: (mp.features || []).map((f) => ({
         id: f.id, kind: f.kind, hex: f.hex, label: f.label,
-        open: f.open, searched: f.searched, to: f.to || null })),
+        open: f.open,
+        /* PER VIEWER. hexmap.js, play.js and the legend all draw the
+         * chest-done glyph from this field; sending the room-wide value
+         * would grey out chests this student has never touched. */
+        searched: (f.kind === 'chest' || f.kind === 'body')
+          ? !this.engine.openTo(f, st) : f.searched,
+        to: f.to || null })),
       townsfolk: this.townsfolk().filter((t) => t.place === mp.id),
       /* Only the people who are in the same PLACE as this student. Somebody
        * inside the store is not in the square, and must not be drawn there. */

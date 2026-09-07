@@ -188,7 +188,8 @@
       "label": "Something buried",
       "searched": false,
       "contents": [
-        "ITEM_SPADE"
+        "ITEM_SPADE",
+        "ITEM_BROWN_BESS"
       ],
       "note": "Somebody has been digging here already.",
       "searchLabel": "Dig where somebody has already been digging."
@@ -200,7 +201,8 @@
       "label": "A pack left at the ford",
       "searched": false,
       "contents": [
-        "ITEM_GOOD_HORSE"
+        "ITEM_GOOD_HORSE",
+        "ITEM_LONG_RIFLE"
       ],
       "note": "Whoever left it was in a hurry, and did not come back for it.",
       "searchLabel": "Go through the pack left at the ford."
@@ -210,108 +212,99 @@
     {
       "id": "ITEM_POWDER_HORN",
       "name": "A full powder horn",
-      "slot": "carried",
-      "effect": {
-        "stat": {
-          "arms": 1
-        }
-      },
-      "blurb": "Dry powder, properly stoppered. Worth more than money here."
+      "slot": "belt",
+      "blurb": "Dry powder, properly stoppered. Worth more than money here.",
+      "rarity": "SOUND"
     },
     {
       "id": "ITEM_LEDGER_BOOK",
       "name": "Zumwalt's ledger",
       "slot": "carried",
-      "effect": {
-        "stat": {
-          "talk": 1
-        }
-      },
-      "blurb": "Every debt in this town, in one book. People are careful around whoever is holding it."
+      "blurb": "Every debt in this town, in one book. People are careful around whoever is holding it.",
+      "rarity": "SOUND"
     },
     {
       "id": "ITEM_GOOD_TOOLS",
       "name": "A smith's good tools",
-      "slot": "carried",
-      "effect": {
-        "stat": {
-          "arms": 1
-        }
-      },
-      "blurb": "Files, punches, and a hammer that fits your hand."
+      "slot": "belt",
+      "blurb": "Files, punches, and a hammer that fits your hand.",
+      "rarity": "KNOWN"
     },
     {
       "id": "ITEM_COLONY_PAPERS",
       "name": "The colony papers",
       "slot": "carried",
-      "effect": {
-        "stat": {
-          "word": 1
-        }
-      },
-      "blurb": "Titles, grants, and the oath everybody swore. Hard to argue with somebody holding these."
+      "blurb": "Titles, grants, and the oath everybody swore. Hard to argue with somebody holding these.",
+      "rarity": "KNOWN"
     },
     {
       "id": "ITEM_SPADE",
       "name": "A good spade",
-      "slot": "carried",
+      "slot": "under",
       "effect": {
         "move": 1
       },
-      "blurb": "Somebody left it in the orchard. You can see why."
+      "blurb": "Somebody left it in the orchard. You can see why.",
+      "rarity": "PLAIN"
     },
     {
       "id": "ITEM_GOOD_HORSE",
       "name": "A sound horse",
-      "slot": "carried",
+      "slot": "under",
       "effect": {
         "move": 2
       },
-      "blurb": "Fed, shod, and left tied at the ford by somebody who did not come back for it."
+      "blurb": "Fed, shod, and left tied at the ford by somebody who did not come back for it.",
+      "rarity": "KNOWN"
     },
     {
       "id": "ITEM_WORN_FILES",
       "name": "A bundle of worn-out files",
       "slot": "carried",
-      "effect": {
-        "stat": {
-          "arms": 1
-        }
-      },
-      "blurb": "Blunt for iron, but the right steel. A shop like this one forged lance heads out of files like these."
+      "blurb": "Blunt for iron, but the right steel. A shop like this one forged lance heads out of files like these.",
+      "rarity": "PLAIN"
     },
     {
       "id": "ITEM_TORTILLA_STONE",
       "name": "A flat baking stone",
       "slot": "carried",
-      "effect": {
-        "stat": {
-          "talk": 1
-        }
-      },
-      "blurb": "You bake on it, and you share what comes off it. That is most of how anybody gets anything done."
+      "blurb": "You bake on it, and you share what comes off it. That is most of how anybody gets anything done.",
+      "rarity": "PLAIN"
     },
     {
       "id": "ITEM_SADDLEBAGS",
       "name": "A stranger's saddlebags",
       "slot": "carried",
-      "effect": {
-        "stat": {
-          "word": 1
-        }
-      },
-      "blurb": "Letters and a newspaper from San Felipe. Somebody upstairs knows something this town does not."
+      "blurb": "Letters and a newspaper from San Felipe. Somebody upstairs knows something this town does not.",
+      "rarity": "SOUND"
     },
     {
       "id": "ITEM_KEG_POWDER",
       "name": "A keg of powder",
-      "slot": "carried",
-      "effect": {
-        "stat": {
-          "arms": 2
-        }
-      },
-      "blurb": "From behind Zumwalt's counter, where the customers cannot reach it."
+      "slot": "hand",
+      "blurb": "From behind Zumwalt's counter, where the customers cannot reach it.",
+      "rarity": "NAMED"
+    },
+    {
+      "id": "ITEM_LONG_RIFLE",
+      "name": "A Kentucky long rifle",
+      "slot": "hand",
+      "rarity": "KNOWN",
+      "blurb": "Rifled, and accurate past two hundred yards. It takes a full minute to load, because the ball has to be patched and rammed against the grooves."
+    },
+    {
+      "id": "ITEM_BROWN_BESS",
+      "name": "A Brown Bess musket",
+      "slot": "hand",
+      "rarity": "SOUND",
+      "blurb": "Smoothbore surplus, good for fifty yards and not much past it. Paper cartridge, no patching — two or three shots a minute in trained hands."
+    },
+    {
+      "id": "ITEM_SCRAP_IRON",
+      "name": "A double handful of scrap iron",
+      "slot": "pocket",
+      "rarity": "PLAIN",
+      "blurb": "Nails, chain, broken hinges. It is what the town actually fired out of the cannon, and there is only enough here for one load."
     }
   ],
   "stations": {
@@ -324,5 +317,6 @@
     "HOUSEHOLDER": "M8",
     "RIFLEMAN": "P11",
     "_note": "Where each trade stands when no student is playing them. The smith is at the forge, the storekeeper beside his own door, the clerk at the well where the alcalde reads things out, the rancheros out on the Béxar road, the riders on the road east."
-  }
+  },
+  "_rarity": "FOUR RARITIES, COLOUR FIRST. PLAIN bone · SOUND green · KNOWN blue · NAMED ember. A Chromebook two tables away is a classroom event with no words in it, which is the whole reason the tier is a colour before it is a label."
 }

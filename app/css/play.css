@@ -1000,3 +1000,46 @@ button.who:hover .nm { text-decoration: underline; text-underline-offset: 3px; }
 .day-tier.tpartial { color: var(--wheat, #C39355); }
 .day-tier.tweak { color: var(--oxide); }
 .day-learned { font-size: 11.5px; color: var(--ink-soft); font-style: italic; }
+
+/* ------------------------------------------------------- LOOT: rarity, slot
+ *
+ * Four rarities, colour before label. A student two tables away sees the ember
+ * one land on somebody's screen and that is a classroom event with no words in
+ * it — which is most of what loot is for.
+ */
+.kit b {
+  display: inline-block; margin-right: 6px; font-weight: 500;
+  font-size: 8.5px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.kit[data-rarity="PLAIN"] { border-left-color: #B9B3A4; }
+.kit[data-rarity="SOUND"] { border-left-color: #5F7A52; }
+.kit[data-rarity="KNOWN"] { border-left-color: #4A6A88; }
+.kit[data-rarity="NAMED"] { border-left-color: var(--oxide); background: #FBF3EA; }
+
+/* The drop toast. Same shape as the document toast, so a student who has met
+ * one has met both. */
+/* Positioned exactly like .doc-toast, in the same stacking context and just
+ * above it, so a student who has met one has met both and the two can never
+ * be on screen in different places. */
+.kit-toast {
+  position: absolute; left: 50%; transform: translateX(-50%); bottom: 62px;
+  display: flex; align-items: center; gap: 10px; z-index: 26;
+  background: var(--field); border: 1px solid var(--rule-strong);
+  border-left: 3px solid var(--oxide);
+  box-shadow: 0 4px 18px rgba(20, 28, 33, .22);
+  padding: 9px 12px; max-width: calc(100% - 24px);
+  text-align: left; color: var(--ink);
+}
+.kit-toast[hidden] { display: none; }
+.kit-toast[data-rarity="PLAIN"] { border-left-color: #B9B3A4; }
+.kit-toast[data-rarity="SOUND"] { border-left-color: #5F7A52; }
+.kit-toast[data-rarity="KNOWN"] { border-left-color: #4A6A88; }
+.kit-toast[data-rarity="NAMED"] { border-left-color: var(--oxide); background: #FBF3EA; }
+.kt-slot {
+  font-size: 8.5px; letter-spacing: .12em; color: var(--ink-faint);
+  border: 1px solid var(--rule); padding: 3px 6px;
+}
+.kt-mid { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.kt-lead { font-size: 10px; letter-spacing: .06em; color: var(--ink-faint); text-transform: uppercase; }
+.kt-name { font-size: 14px; color: var(--ink); }

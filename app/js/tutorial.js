@@ -440,17 +440,24 @@ const Tutorial = (function () {
           if (!it) return;
           names.push(it.name);
           state.items.push(it);
-          if (it.effect && it.effect.stat) {
-            Object.keys(it.effect.stat).forEach(function (k) {
-              state.stats[k] = (state.stats[k] || 0) + it.effect.stat[k];
-            });
-          }
+          /* NO STAT BONUS, DELIBERATELY, AND THIS IS THE PLACE IT MATTERS MOST.
+           *
+           * This is a complete second implementation of pickup — the live one
+           * is Room#perform — and it used to read it.effect.stat off the same
+           * map JSON. Stripping that field from the schema would have left
+           * this branch running and doing nothing, so the one screen where a
+           * student is taught what SEEK is FOR would be the one screen where
+           * it has no effect. What loot does now is unlock authored actions
+           * (requires.item), and only move is still a number. */
           if (it.effect && it.effect.move) { state.move += it.effect.move; state.moveLeft += it.effect.move; }
         });
         state.lastOutcome = {
           label: a.label, verb: 'SEEK',
-          narrate: names.length ? 'You go through it. ' + names.join(', and ') + '.'
-                                : 'Somebody has already been through this.',
+          narrate: names.length
+            ? 'You go through it. ' + names.join(', and ') +
+              '. It does not make you better at anything. It gives you something' +
+              ' to do that nobody around you can.'
+            : 'Somebody has already been through this.',
           legacy: 1, flags: [],
         };
         state.moveLeft = 0;      // searching costs the turn, and it must LOOK like it

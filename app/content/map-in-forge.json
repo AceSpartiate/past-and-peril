@@ -71,7 +71,8 @@
       "label": "The forge chest",
       "searched": false,
       "contents": [
-        "ITEM_GOOD_TOOLS"
+        "ITEM_GOOD_TOOLS",
+        "ITEM_SCRAP_IRON"
       ],
       "note": "Files, punches, and a hammer that fits your hand.",
       "searchLabel": "Go through the forge chest."

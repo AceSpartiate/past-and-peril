@@ -455,6 +455,30 @@
           "aid_target": true
         }
       }
+    },
+    {
+      "id": "S21_KIT_SCRAP",
+      "verb": "ACT",
+      "label": "Empty your pockets into the cannon.",
+      "detail": "Nails, chain, broken hinges. One load, and then it is gone.",
+      "requires": {
+        "item": [
+          "ITEM_SCRAP_IRON"
+        ]
+      },
+      "outcomes": {
+        "all": {
+          "narrate": "It is not shot and it was never meant to be. It is what the town has, and the town is what is loading it.",
+          "broadcast": "The gun goes in loaded with scrap iron.",
+          "teach": [
+            "FACT_SCRAP_IRON"
+          ],
+          "world": {
+            "GUN_LOADED": true
+          },
+          "legacy": 2
+        }
+      }
     }
   ],
   "time": "NIGHT",
