@@ -1,0 +1,165 @@
+#!/usr/bin/env node
+'use strict';
+
+const assert = require('assert/strict');
+const fs = require('fs');
+const path = require('path');
+const { Room } = require('../server/room.js');
+const HexMap = require('../app/js/hexmap.js');
+
+const CONTENT = path.join(__dirname, '..', 'app', 'content');
+const load = (name) => JSON.parse(fs.readFileSync(path.join(CONTENT, name), 'utf8'));
+const terrain = load('terrain.json');
+const maps = fs.readdirSync(CONTENT).filter((f) => /^map-.*\.json$/.test(f)).sort()
+  .map((f) => HexMap.hydrate(load(f), terrain));
+const scenes = fs.readdirSync(CONTENT).filter((f) => /^scene-s.*\.json$/.test(f)).sort().map(load);
+const sessions = [load('session-1.json'), load('session-2.json')];
+const roster = load('roster-s1.json');
+const facts = load('facts-s1.json');
+const common = load('actions-common.json');
+let now = 1000000;
+let passed = 0;
+const rooms = [];
+
+function build(sessionData = sessions, students = 1) {
+  const room = new Room('ADVENTURE-TEST', sessionData, maps, roster, scenes, facts,
+    { manual: true, clock: () => now, common, callingCaps: false });
+  rooms.push(room);
+  for (let i = 0; i < students; i++) assert.equal(room.join('s' + i, roster.roster[i].id).ok, true);
+  return room;
+}
+function test(name, fn) {
+  fn();
+  passed++;
+  console.log('  ok  ' + name);
+}
+function words(text) { return String(text || '').trim().split(/\s+/).filter(Boolean).length; }
+
+test('the opening starts play immediately and keeps housekeeping and cinema brief', () => {
+  const room = build();
+  assert.equal(room.snapshot().playMode, 'waiting');
+  assert.equal(sessions[0].timeline[0].seconds <= 15, true);
+  assert.equal(sessions[0].timeline[1].seconds <= 35, true);
+  for (const session of sessions) {
+    assert.equal(session.timeline[0].seconds <= 15, true);
+    assert.equal(session.timeline[1].seconds <= 35, true);
+    assert.equal(session.timeline[1].shots.reduce((n, shot) => n + words(shot.voice.text), 0) <= 50, true);
+  }
+  room.command('start');
+  const view = room.privateFor('s0');
+  assert.equal(room.snapshot().playMode, 'explore');
+  assert.equal(room.turnOpen, true);
+  assert.equal(view.movementFree, true);
+  assert.ok(view.actions.length > 0);
+  assert.ok(view.guidance.options.length <= 3);
+  assert.ok(view.guidance.options.some((x) => x.kind === 'job' || x.kind === 'chest'));
+  assert.equal(new Set(view.guidance.options.map((x) => x.reward)).size, view.guidance.options.length);
+  for (const option of view.guidance.options) {
+    if (option.atTarget) assert.ok(view.actions.some((a) => a.id === option.actionId));
+    else assert.ok(view.reach.some((h) => h.hex === option.hex));
+  }
+});
+
+test('free exploration permits repeat actions and reports actual effects with unique ids', () => {
+  const room = build();
+  room.command('start');
+  const st = room.students.s0;
+  room.clocks.TEST = { label: 'TEST PROGRESS', segments: 2, filled: 0 };
+  room.ledger.test = { label: 'Test stores', value: 1, unit: 'crate' };
+  room.engine.actions.TEST_REPEAT = {
+    id: 'TEST_REPEAT', label: 'Test the result.', verb: 'ACT', repeatable: true,
+    cost: { move: 2, word: 1 }, roll: { stat: 'land', dc: 7 },
+    outcomes: { strong: {}, partial: {}, weak: {} },
+  };
+  for (const outcome of Object.values(room.engine.actions.TEST_REPEAT.outcomes)) {
+    Object.assign(outcome, { narrate: 'The test changes the room.', clocks: { TEST: 2 },
+      resource: { test: -2 }, resolve: 1, legacy: 2, grant_item: 'ITEM_LEDGER_BOOK' });
+  }
+  const moveWas = st.moveLeft;
+  const first = room.perform('s0', 'TEST_REPEAT');
+  const second = room.perform('s0', 'TEST_REPEAT');
+  assert.equal(first.ok && second.ok, true);
+  assert.notEqual(first.outcome.id, second.outcome.id);
+  assert.equal(st.moveLeft, moveWas);
+  assert.equal(st.declared, false);
+  assert.equal(st.actionsLeft, 0);
+  const effect = Object.fromEntries(first.outcome.effects.map((x) => [x.label, x.value]));
+  assert.deepEqual(effect, {
+    'TEST PROGRESS': 2, 'Test stores': -1, Strain: 1,
+    Contribution: 2, Words: -1, Found: "Zumwalt's ledger",
+  });
+  assert.equal(room.privateFor('s0').guidance.completed, 2);
+});
+
+test('a challenge refreshes movement, permits three actions, then closes actions only', () => {
+  const room = build();
+  room.command('start');
+  const boss = room.segs.findIndex((s) => s.boss);
+  room.command('goto', { index: boss });
+  const st = room.students.s0;
+  assert.equal(room.snapshot().playMode, 'challenge');
+  assert.equal(room.movementFree, false);
+  assert.equal(st.actionsLeft, 3);
+  room.engine.actions.TEST_CHALLENGE = {
+    id: 'TEST_CHALLENGE', label: 'Hold your place.', repeatable: true,
+    outcomes: { all: { narrate: 'You hold.' } },
+  };
+  assert.equal(room.perform('s0', 'TEST_CHALLENGE').ok, true);
+  assert.equal(room.perform('s0', 'TEST_CHALLENGE').ok, true);
+  assert.equal(room.perform('s0', 'TEST_CHALLENGE').ok, true);
+  assert.equal(room.perform('s0', 'TEST_CHALLENGE').error, 'already-declared');
+  assert.equal(st.actionsLeft, 0);
+  const destination = room.privateFor('s0').reach.find((x) => x.cost > 0);
+  assert.ok(destination);
+  const before = st.moveLeft;
+  assert.equal(room.move('s0', destination.hex).ok, true);
+  assert.equal(st.moveLeft, before - destination.cost);
+});
+
+test('challenge outcomes award honestly, survive replay and save, and carry forward', () => {
+  const room = build(sessions, 3);
+  room.command('start');
+  const after = room.segs.findIndex((s) => s.challengeResult);
+  const def = room.segs[after].challengeResult;
+  assert.equal(def.progress, 'MUSTER');
+  assert.equal(def.pressure, 'PATIENCE');
+  room.giveItem(room.students.s1, def.reward);
+  room.giveItem(room.students.s2, 'ITEM_POWDER_HORN');
+  room.clocks.MUSTER.filled = room.clocks.MUSTER.segments;
+  room.clocks.PATIENCE.filled = 0;
+  room.command('goto', { index: after });
+  const result = room.challengeResult;
+  assert.equal(result.won, true);
+  assert.match(result.awarded.p01, /^Awarded: A length of good rope\.$/);
+  assert.match(result.awarded.p02, /^Already carried:/);
+  assert.match(result.awarded.p03, /^Pack full:/);
+  const itemCounts = room._allStudents().map((st) => st.items.length);
+  room.command('replay');
+  assert.deepEqual(room._allStudents().map((st) => st.items.length), itemCounts);
+  assert.deepEqual(room.challengeResult, result);
+  const saved = JSON.parse(JSON.stringify(room.toJSON()));
+  const restored = build(sessions, 0);
+  assert.equal(restored.restore(saved), true);
+  assert.deepEqual(restored.challengeResult, result);
+  assert.equal(restored.loadSession(1), true);
+  assert.deepEqual(restored.challengeResult, result);
+});
+
+test('both bosses assess clocks without rewriting the historical outcome', () => {
+  for (const session of sessions) {
+    const after = session.timeline.find((s) => s.challengeResult);
+    assert.ok(after && after.challengeResult.progress && after.challengeResult.pressure);
+  }
+  const room = build(sessions[1]);
+  room.command('start');
+  const after = room.segs.findIndex((s) => s.challengeResult);
+  room.clocks.PLAZA.filled = 0;
+  room.clocks.TOLL.filled = room.clocks.TOLL.segments;
+  room.command('goto', { index: after });
+  assert.equal(room.challengeResult.won, false);
+  assert.match(room.challengeResult.summary, /work still left/i);
+  assert.equal(room.students.s0.items.includes('ITEM_CANVAS'), false);
+});
+
+rooms.forEach((room) => room.destroy());
+console.log('\n' + passed + ' adventure regression scenarios passed.');

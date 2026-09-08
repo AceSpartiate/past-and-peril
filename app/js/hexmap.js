@@ -1648,6 +1648,12 @@ function figurine(ctx, cx, cy, size, calling, fill, rim, hollow) {
     return {
       draw: draw, hitTest: hitTest, layout: layout,
       setView: setView, getView: getView, centreOn: centreOn,
+      screenPoint: function (hex) {
+        const h = map.parse(hex);
+        if (!h) return null;
+        const p = centre(h.c, h.r);
+        return { x: (p[0] * view.s + view.x) / dpr, y: (p[1] * view.s + view.y) / dpr };
+      },
       get radius() { return R; },
       /* the on-screen size of a hex in CSS pixels, which is what decides
        * whether a thumb can hit one */

@@ -286,30 +286,21 @@ console.log('');
 
 console.log('');
 /* ------------------------------------------------------------------ 10
- * MOVEMENT IS A BUDGET, AND A TURN CYCLE ISSUES EXACTLY ONE.
- *
- * Every cycle in the shipped timeline is [roam read][roam read][YOUR MOVE].
- * All three used to refresh in full, so a student crossed three times their
- * budget between one decision and the next - a Rider covered 21 hexes and
- * the longest walk on the town map is 18. Where they went cost nothing.
- *
- * The probe written when a teacher first reported this cleared the server,
- * because it measured inside ONE window and never crossed a boundary. So
- * this test crosses them. */
+ * EXPLORATION STAYS OPEN ACROSS NARRATION AND WINDOW BOUNDARIES.
+ * Boss budgets are covered by test-adventure.js. Never drain an unlimited
+ * exploration budget in an unbounded loop. */
 {
   const { room } = build(8);
   const st = room.liveStudents()[0];
 
-  const drain = () => {
-    let spent = 0;
-    for (;;) {
-      const reach = (room.privateFor(st.sid).reach || []).filter((h) => h.cost <= st.moveLeft);
-      const step = reach.sort((a, b) => b.cost - a.cost)[0];
-      if (!step) return spent;
-      const before = st.moveLeft;
-      if (!room.move(st.sid, step.hex).ok) return spent;
-      spent += before - st.moveLeft;
-    }
+  const crossTown = () => {
+    const you = room.privateFor(st.sid);
+    const step = you.reach.slice().sort((a, b) => b.cost - a.cost)[0];
+    ok(you.movementFree, 'exploration explicitly reports free movement');
+    ok(step && step.cost > st.move, 'a destination beyond a challenge budget is reachable');
+    const before = st.moveLeft;
+    ok(step && room.move(st.sid, step.hex).ok, 'the server accepts the long walk');
+    ok(st.moveLeft === before, 'walking does not spend challenge movement');
   };
 
   const win = sessions[0].timeline.findIndex((x) => x.window);
@@ -317,21 +308,17 @@ console.log('');
      'a turn window really is followed by two roaming reads');
 
   room.command('goto', { index: win });
-  const inWindow = drain();
-  ok(inWindow === st.move || inWindow === room.effective(st).move,
-     'the window issues exactly one budget (' + inWindow + ')');
+  crossTown();
+  crossTown();
 
   room.command('goto', { index: win + 1 });
-  const roamA = drain();
-  ok(roamA > 0 && roamA <= Room.ROAM_FLOOR,
-     'a roaming read lifts a stranded student off the floor, no further (' + roamA + ')');
+  crossTown();
 
   room.command('goto', { index: win + 2 });
-  ok(drain() === 0,
-     'and the SECOND roaming read gives nothing - the floor is once per cycle');
+  crossTown();
 
   room.command('goto', { index: win + 3 });
-  ok(drain() > 0, "the next window issues the next budget");
+  crossTown();
   room.destroy();
 }
 

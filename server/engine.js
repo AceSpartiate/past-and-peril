@@ -14,6 +14,8 @@
  *                        worth doing
  */
 
+const Adventure = require('./adventure.js');
+
 class Engine {
   constructor(scene, facts, map, common) {
     this.scene = scene;
@@ -146,7 +148,7 @@ class Engine {
      * must never be shown. design/09: no greyed-out teases, it reads as
      * punishment. */
     const cost = a.cost || {};
-    if (cost.move && st.moveLeft < cost.move) return false;
+    if (cost.move && !ctx.movementFree && st.moveLeft < cost.move) return false;
     if (cost.word && (st.words - st.wordsSpent) < cost.word) return false;
 
     return true;
@@ -483,12 +485,14 @@ class Engine {
       label: sub(a.label),
       detail: sub(a.detail),
       cost: a.cost || {},
+      preview: Adventure.preview(a, ctx),
       roll: a.roll || null,
       gate: this.gateLabel(a),
       promoted: !!promoted,
       fallback: !!a.fallback_for,
       dynamic: !!a.dynamic,
       loot: a.loot || null,
+      job: a.job || null,
       door: a.door || null,
       target: (a.requires && a.requires.adjacent_character && near.length) ? near[0].name : null,
     };

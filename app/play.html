@@ -3,10 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>The Slate — Past &amp; Peril</title>
+<title>Your Adventure — Past &amp; Peril</title>
 <link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/app.css">
 <link rel="stylesheet" href="css/play.css">
+<link rel="stylesheet" href="css/adventure.css">
 </head>
 <body class="play">
 
@@ -23,8 +24,13 @@
     <div class="mono brandline">PAST &amp; PERIL</div>
     <p class="mono pick-when" id="pick-when">GONZALES · SEPTEMBER 1835</p>
     <h1>Soldiers are coming for the town&rsquo;s cannon.</h1>
-    <p class="pick-ask">You live here. Who are you?</p>
+    <p class="pick-ask">A town on the edge. A role only you can play.</p>
+    <div class="pick-entry">
+      <button class="btn primary" id="pick-quick" type="button">Find me a role <span aria-hidden="true">&#8594;</span></button>
+      <span class="pick-entry-note">Or choose your own story below.</span>
+    </div>
     <p class="pick-need" id="pick-need" hidden></p>
+    <div class="pick-filters" id="pick-filters" role="group" aria-label="Choose a kind of role"></div>
     <div class="pick-grid" id="pick-grid"></div>
     <p class="mono sub" id="pick-sub">GONZALES-7B · SESSION 1</p>
   </div>
@@ -114,6 +120,7 @@
       <div class="mono lbl">MOVE</div>
       <div class="mono val" id="hud-move">0</div>
     </div>
+    <div class="hud-actions" id="hud-actions" role="status" aria-live="polite"></div>
     <button class="readme mono" id="readme" type="button"
             title="Read what happens out loud, just to me">
       <span class="rm-ico"></span><span class="rm-txt">READ TO ME</span>
@@ -136,9 +143,35 @@
   <div class="spacer-removed" hidden>
   </div>
 
+  <div class="adventure-layout">
+    <aside class="mission-panel" id="mission-panel" aria-labelledby="mission-title">
+      <div class="mission-head">
+        <span class="mission-emblem" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none"><path d="m16 3 4 9 9 4-9 4-4 9-4-9-9-4 9-4Z" stroke="currentColor" stroke-width="1.6"/><path d="m16 10 2 4 4 2-4 2-2 4-2-4-4-2 4-2Z" fill="currentColor"/></svg>
+        </span>
+        <span class="mono mission-kicker" id="mission-kicker">YOUR MISSION</span>
+      </div>
+      <h1 class="mission-title" id="mission-title">Your next move matters.</h1>
+      <p class="mission-brief" id="mission-brief">Choose a destination, find your way there, and change what happens next.</p>
+      <div class="mission-progress" id="mission-progress"></div>
+      <div class="mission-meter" id="mission-meter"></div>
+      <div class="mission-challenge" id="mission-challenge" hidden></div>
+      <div class="mission-danger" id="mission-danger" role="status" aria-live="polite" hidden></div>
+      <button class="mission-cover" id="mission-cover" type="button" hidden>Find cover →</button>
+      <div class="mission-options" id="mission-options" aria-label="Things you can do next"></div>
+      <p class="mission-hint" id="mission-hint">Pick a destination to see it on the map.</p>
+      <div class="mission-notice" id="mission-notice" role="status" aria-live="polite" hidden></div>
+      <div class="mission-signature mono" aria-hidden="true">PAST &amp; PERIL <span>YOUR PART IN HISTORY</span></div>
+    </aside>
+
+    <div class="adventure-field">
   <!-- the world -->
   <main class="board">
     <canvas id="map"></canvas>
+    <div class="waypoint" id="waypoint" hidden aria-hidden="true">
+      <span id="waypoint-label"></span>
+      <span class="waypoint-pin"></span>
+    </div>
 
     <!-- where you are, and what time it is. Both read at a glance; neither
          needs to be read at all, because the map itself is lit for the hour. -->
@@ -192,6 +225,7 @@
         <div class="mono scrim-kicker" id="scrim-kicker">EYES UP FRONT</div>
         <div class="scrim-title" id="scrim-title">Watch the board.</div>
         <div class="scrim-note mono" id="scrim-note"></div>
+
         <button class="scrim-tut" id="tut-offer" type="button" hidden>Show me how to play</button>
       </div>
     </div>
@@ -262,10 +296,13 @@
 
   <!-- the ability bar -->
   <footer class="bar">
+    <div class="bar-heading"><span>Make your move</span><span class="mono">ACTIONS HERE</span></div>
     <div class="acts" id="acts"></div>
   </footer>
+    </div>
+  </div>
 
-  <div class="outcome" id="outcome" hidden>
+  <div class="outcome" id="outcome" role="dialog" aria-modal="true" aria-labelledby="oc-tier" hidden>
     <div class="oc-in">
       <div class="oc-roll" id="oc-roll" hidden>
         <svg class="die" id="oc-d1" viewBox="0 0 48 48"></svg>
@@ -275,9 +312,11 @@
       </div>
       <div class="mono oc-tier" id="oc-tier"></div>
       <div class="oc-text" id="oc-text"></div>
+      <div class="oc-effects" id="oc-effects"></div>
       <div class="oc-learn" id="oc-learn" hidden>
         <div class="mono oc-learn-cap">you found something out</div>
         <div class="oc-learn-body" id="oc-learn-body"></div>
+        <details class="oc-more-facts" id="oc-more-facts" hidden><summary id="oc-more-label">More discoveries</summary><div id="oc-more-body"></div></details>
         <div class="mono oc-learn-note">this is true, and it is in the record</div>
         <!-- "it is in the record" was a claim with nothing behind it. When the
              fact rests on a document the student has, this opens it. -->
@@ -308,10 +347,12 @@
     </div>
   </div>
 
-  <div class="commit" id="commit" hidden>
+  <div class="commit" id="commit" role="dialog" aria-modal="true" aria-labelledby="c-text" hidden>
     <div class="commit-in">
       <div class="mono c-kicker" id="c-kicker">ACT</div>
       <div class="c-text" id="c-text">—</div>
+      <p class="c-detail" id="c-detail"></p>
+      <div class="c-cost" id="c-cost"></div>
       <div class="c-row">
         <button class="btn" id="c-cancel" type="button">Change my mind</button>
         <button class="btn primary" id="c-do" type="button">Do it</button>
@@ -351,6 +392,7 @@
 <!-- coach marks: before tutorial.js, which points with them -->
 <script src="js/coach.js"></script>
 <script src="js/tutorial.js"></script>
+<script src="js/adventure-ui.js"></script>
 <script src="js/play.js"></script>
 </body>
 </html>

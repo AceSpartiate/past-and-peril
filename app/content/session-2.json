@@ -55,7 +55,7 @@
     {
       "id": "dispatch_read",
       "kind": "checklist",
-      "seconds": 180,
+      "seconds": 15,
       "eyebrow": "LAST TIME",
       "title": "Where we left it.",
       "items": [
@@ -78,7 +78,7 @@
       "id": "cold_open",
       "handout": "03",
       "kind": "sequence",
-      "seconds": 240,
+      "seconds": 35,
       "eyebrow": "COLD OPEN",
       "shots": [
         {
@@ -98,7 +98,7 @@
           ],
           "voice": {
             "speaker": "NARRATOR",
-            "text": "Stephen Austin writes that war is the only recourse. This is the man who spent ten years telling colonists to stay loyal, obey Mexican law, and avoid exactly this."
+            "text": "Austin writes war is the only recourse. He spent years telling colonists to stay loyal."
           }
         },
         {
@@ -119,7 +119,7 @@
           ],
           "voice": {
             "speaker": "NARRATOR",
-            "text": "He wrote it after eighteen months in a Mexican prison. Ask yourself what changed — the situation, or the man. That question is the whole of this session."
+            "text": "He wrote it after eighteen months in a Mexican prison. Ask what changed — the situation, or the man."
           }
         },
         {
@@ -139,7 +139,7 @@
           ],
           "voice": {
             "speaker": "NARRATOR",
-            "text": "It is before dawn on the second of October, and there is fog on the Guadalupe. On the far bank are a hundred dragoons who want the cannon back."
+            "text": "Before dawn, fog covers the Guadalupe. A hundred dragoons across the river want the cannon back."
           }
         }
       ],
@@ -494,7 +494,16 @@
         "speaker": "HISTORIAN",
         "text": "Cos asked for terms and marched south under parole. For a few weeks there was no Mexican army in Texas at all and the war looked over. It was winter, and there were farms, and most of them wanted to go home."
       },
-      "roam": true
+      "roam": true,
+      "challengeResult": {
+        "id": "storming-bexar",
+        "title": "THE STORMING OF BÉXAR",
+        "progress": "PLAZA",
+        "pressure": "TOLL",
+        "reward": "ITEM_CANVAS",
+        "win": "Your class reached the plaza before the cost caught up.",
+        "loss": "Your class finished with work still left on the plaza."
+      }
     },
     {
       "id": "tally",

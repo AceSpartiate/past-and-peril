@@ -16,6 +16,7 @@
 const HexMap = require('../app/js/hexmap.js');
 const { Bots } = require('./bots.js');
 const { Engine } = require('./engine.js');
+const Adventure = require('./adventure.js');
 
 const TICK_MS = 250;
 
@@ -109,6 +110,8 @@ class Room {
     this.engine = this.engines[this.sceneId];
     this.scene = this.scenes[this.sceneId];
     this.world = {};                     // world flags
+    this.challengeResults = {};
+    this.challengeResult = null;
     this.npcHex = {};
     (this.scene.npcs || []).forEach((n) => { this.npcHex[n.id] = n.hex; });
     this.feed = [];                      // what the console shows, newest first
@@ -125,6 +128,7 @@ class Room {
     this.segmentRevision = 0;
     this.manualRead = false;
     this.lastRoll = null;
+    this.outcomeSeq = 0;
 
     this.clocks = {};
     (session.clocks || []).forEach((c) => { this.clocks[c.id] = Object.assign({}, c); });
@@ -703,6 +707,8 @@ class Room {
     this.segStamp = this.now();
     const s = this._seg();
 
+    if (s && s.challengeResult) Adventure.resolveChallenge(this, s.challengeResult);
+
     if (s && s.clocks) {
       Object.keys(s.clocks).forEach((k) => {
         const c = this.clocks[k];
@@ -873,7 +879,7 @@ class Room {
         st.move = this.effective(st).move;
         st.moveLeft = st.move;
         st.roamed = false;                   // the floor is available again
-        st.actionsLeft = this.actionsPerWindow;
+        st.actionsLeft = this.challengeOpen ? this.actionLimit : this.actionsPerWindow;
         st.declared = false;
         st.acted = false;
         st.verb = null;
@@ -918,6 +924,17 @@ class Room {
    * whether the frozen half was holding the lesson together or holding it
    * back. */
   static EYES_UP = ['sequence', 'tally'];
+  get challengeOpen() {
+    const s = this._seg();
+    return !!(s && (s.boss || s.challenge));
+  }
+  get actionLimit() { return this.challengeOpen ? 3 : 0; }
+  get movementFree() { return this.roamOpen && !this.challengeOpen; }
+  get playMode() {
+    if (!this.started) return 'waiting';
+    if (!this.running || !this.turnOpen) return 'paused';
+    return this.challengeOpen ? 'challenge' : 'explore';
+  }
   get turnOpen() {
     if (!this.started || !this.running) return false;
     const s = this._seg();
@@ -1010,6 +1027,7 @@ class Room {
         this.tally[payload.key] = Math.max(0, (this.tally[payload.key] || 0) + (payload.d | 0));
         this._emit();
         break;
+
       case 'grantWord': {
         const st = this._byCharacter(payload.characterId);
         if (st) st.words += 1;
@@ -1198,7 +1216,7 @@ class Room {
       declared: existing ? existing.declared : false,
       acted: existing ? !!existing.acted : false,
       actionsLeft: existing && existing.actionsLeft !== undefined
-        ? existing.actionsLeft : this.actionsPerWindow,
+        ? existing.actionsLeft : this.actionLimit,
       used: existing ? existing.used : {},
       paidLegacy: existing ? (existing.paidLegacy || {}) : {},
       verb: existing ? existing.verb : null,
@@ -1318,11 +1336,11 @@ class Room {
     const target = mp.parse(hexLabel);
     if (!target || !mp.terrain(target.c, target.r)) return { ok: false, error: 'no-such-hex' };
 
-    const reach = mp.reachable(st.hex, st.moveLeft, this._moveOpts(st));
+    const reach = mp.reachable(st.hex, this.movementFree ? 10000 : st.moveLeft, this._moveOpts(st));
     const cost = reach[target.c + ',' + target.r];
     if (cost === undefined) return { ok: false, error: 'out-of-range' };
 
-    st.moveLeft -= cost;
+    if (!this.movementFree) st.moveLeft -= cost;
     st.hex = hexLabel;
     st.seen = this.now();
     this._emit();
@@ -1362,7 +1380,7 @@ class Room {
     if (this.featurePlace(featureId) !== this.placeId(st)) return { ok: false, error: 'not-here' };
     if (st.hex !== f.hex) return { ok: false, error: 'not-on-it' };
     if (f.open === false) return { ok: false, error: 'shut' };
-    if (st.moveLeft < 1) return { ok: false, error: 'no-move-left' };
+    if (!this.movementFree && st.moveLeft < 1) return { ok: false, error: 'no-move-left' };
 
     const dest = this.maps[f.to.place];
     const landing = f.to.hex && dest.parse(f.to.hex) ? f.to.hex : (dest.data.entry || f.to.hex);
@@ -1376,7 +1394,7 @@ class Room {
     st.anchor = dest.indoors ? { place: this.placeId(st), hex: f.hex } : null;
     st.place = f.to.place;
     st.hex = landing;
-    st.moveLeft -= 1;
+    if (!this.movementFree) st.moveLeft -= 1;
     st.seen = this.now();
     this._emit();
     return { ok: true, place: st.place, hex: st.hex, moveLeft: st.moveLeft };
@@ -1484,6 +1502,13 @@ class Room {
     const view = Object.assign(Object.create(Object.getPrototypeOf(st)), st, { stats: eff.stats });
     return {
       student: view,
+      movementFree: this.movementFree,
+      clockLabels: Object.fromEntries(Object.entries(this.clocks).map(([k, c]) => [k, c.label])),
+      riskClocks: ((((this._seg() || {}).boss || {}).bars) || []).slice(1),
+      resourceLabels: Object.fromEntries(Object.entries(this.ledger).map(([k, c]) => [k, c.label])),
+      itemNames: Object.fromEntries(Object.entries(this._itemIx).map(([k, item]) => [k, item.name])),
+      lootNames: Object.fromEntries(Object.entries(this._featIx).map(([k, e]) =>
+        [k, (e.f.contents || []).map((id) => (this.item(id) || {}).name).filter(Boolean)])),
       real: st,
       map: this.mapFor(st),
       others: this.liveStudents(),
@@ -1509,7 +1534,7 @@ class Room {
   offerFor(sid) {
     const st = this.students[sid];
     if (!st) return [];
-    if (!this.turnOpen || st.declared) return [];
+    if (!this.turnOpen || (this.challengeOpen && st.declared)) return [];
     return this.engine.offer(this.ctxFor(st));
   }
 
@@ -1519,9 +1544,10 @@ class Room {
     const st = this.students[sid];
     if (!st) return { ok: false, error: 'not-joined' };
     if (!this.turnOpen) return { ok: false, error: 'closed' };
-    if (st.declared) return { ok: false, error: 'already-declared' };
+    if (this.challengeOpen && st.declared) return { ok: false, error: 'already-declared' };
 
     const ctx = this.ctxFor(st);
+    const before = Adventure.capture(this, st);
     const r = this.engine.resolve(actionId, ctx, { aidBonus: st.aidBonus, tierUp: st.tierUp });
     if (!r.ok) return r;
     /* World actions: searching a container, working a door. */
@@ -1579,7 +1605,7 @@ class Room {
     ctx.repeatable = !!r.action.repeatable;
 
     // pay
-    if (r.cost.move) st.moveLeft -= r.cost.move;
+    if (r.cost.move && !this.movementFree) st.moveLeft -= r.cost.move;
     if (r.cost.word) st.wordsSpent += r.cost.word;
 
     this.applyOutcome(st, r.outcome, ctx);
@@ -1613,10 +1639,10 @@ class Room {
 
     st.used[actionId] = true;
     st.acted = true;                 // has had their turn — see the note above
-    if (this.actionsPerWindow > 0) {
+    if (this.actionLimit > 0) {
       st.actionsLeft = Math.max(0, st.actionsLeft - 1);
       st.declared = st.actionsLeft <= 0;
-    }
+    } else st.declared = false;
     st.verb = r.action.verb || 'ACT';
     st.lastActionId = actionId;
     /* An aid a NEIGHBOUR gave you is consumed by the roll you just made.
@@ -1625,6 +1651,7 @@ class Room {
     st.aidBonus = (r.outcome && r.outcome.aid_self) || 0;
     if (r.steadied) st.tierUp = 0;   // spent only when it changed the tier
     st.lastOutcome = {
+      id: ++this.outcomeSeq,
       label: this.engine.fillIn(r.action.label, ctx),
       verb: st.verb,
       tier: r.tier,
@@ -1639,6 +1666,7 @@ class Room {
                        handout: f.handout || null })),
       flags: r.outcome.set_flags || [],
       legacy: r.outcome.legacy || 0,
+      effects: Adventure.effects(this, st, before),
     };
     st.seen = this.now();
 
@@ -2105,6 +2133,9 @@ class Room {
         startedAt: this.startedAt,
         manualRead: this.manualRead,
         segmentRevision: this.segmentRevision,
+        outcomeSeq: this.outcomeSeq,
+        challengeResult: this.challengeResult,
+
         finished: !!this.closedOut,
       },
       campaign: {
@@ -2112,6 +2143,7 @@ class Room {
         ledger: this.ledger,
         standing: this.standing || {},
         world: this.world,
+        challengeResults: this.challengeResults,
         tally: this.tally,
         retired: this.retired,
         standIns: this.standIns,
@@ -2160,6 +2192,7 @@ class Room {
     if (c.ledger) this.ledger = c.ledger;
     this.standing = c.standing || {};
     this.world = c.world || {};
+    this.challengeResults = c.challengeResults || {};
     this.tally = c.tally || {};
     this.retired = c.retired || {};
     this.standIns = c.standIns || {};
@@ -2194,6 +2227,9 @@ class Room {
     this.startedAt = p.startedAt || 0;
     this.manualRead = !!p.manualRead;
     this.segmentRevision = p.segmentRevision || 0;
+    this.outcomeSeq = p.outcomeSeq || 0;
+    this.challengeResult = p.challengeResult || null;
+
     /* Older saves marked any pause on the final segment as finished. Require
      * its completed history entry, which also makes closeOut idempotent after
      * restarting an actually completed period. */
@@ -2291,6 +2327,8 @@ class Room {
       },
       started: this.started,
       running: this.running,
+      playMode: this.playMode,
+      challengeResult: this.challengeResult,
       roamOpen: this.roamOpen,
       /* A period that was REHEARSED must never be mistaken for one that
        * happened. Every screen gets this. */
@@ -2395,10 +2433,11 @@ class Room {
     const mp = this.mapFor(st);
     /* Reach is drawn whenever walking is allowed, which now includes a
      * roaming read segment. */
-    const reach = this.roamOpen && st.moveLeft > 0
-      ? mp.reachable(st.hex, st.moveLeft, this._moveOpts(st))
+    const reach = this.roamOpen && (this.movementFree || st.moveLeft > 0)
+      ? mp.reachable(st.hex, this.movementFree ? 10000 : st.moveLeft, this._moveOpts(st))
       : {};
     const portal = mp.portalAt(st.hex);
+    const actions = this.offerFor(sid);
     return {
       characterId: st.characterId, name: st.name, role: st.role, calling: st.calling,
       tint: st.tint || st.color, tintIndex: st.tintIndex,
@@ -2409,17 +2448,20 @@ class Room {
       companyName: st.companyName, color: st.color,
       ability: st.ability, abilityBlurb: st.abilityBlurb,
       hex: st.hex, move: st.move, moveLeft: st.moveLeft,
+      movementFree: this.movementFree,
+      guidance: Adventure.guidance(this, st, actions),
       /* the dashed ring hexmap.js has been ready to draw all along */
       target: this.targetFor(st),
       place: mp.id, placeTitle: mp.title, indoors: !!mp.indoors,
       /* The way out of where you are, if you are standing on it. This is what
        * the GO INSIDE / GO OUT button is made of. */
-      portal: (portal && portal.open !== false && st.moveLeft > 0) ? {
+      portal: (portal && portal.open !== false && (this.movementFree || st.moveLeft > 0)) ? {
         id: portal.id, label: portal.to.label || 'Go through',
         into: (this.maps[portal.to.place] || {}).title || portal.to.place,
         out: !!(this.maps[portal.to.place] && !this.maps[portal.to.place].indoors),
       } : null,
       light: this.light(),
+
       /* E3 · the bars, on the student's own device. privateFor sent no
        * clocks at all, so a student in a fight could only find out how it
        * was going by looking away from their own screen at the wall. */
@@ -2457,7 +2499,7 @@ class Room {
       })),
       words: st.words, wordsSpent: st.wordsSpent,
       resolve: st.resolve, resolveUsed: st.resolveUsed,
-      legacy: st.legacy, declared: st.declared, acted: !!st.acted, verb: st.verb,
+      legacy: st.legacy, declared: this.challengeOpen && st.declared, acted: !!st.acted, verb: st.verb,
       actionsLeft: st.actionsLeft,
       stats: this.effective(st).stats,
       items: (st.items || []).map((id) => this.item(id)).filter(Boolean),
@@ -2480,7 +2522,7 @@ class Room {
         const p = k.split(',').map(Number);
         return { hex: mp.label(p[0], p[1]), cost: reach[k] };
       }),
-      actions: this.offerFor(sid),
+      actions,
       lastOutcome: st.lastOutcome,
       /* shown once, then cleared, so a reload does not replay it */
       caughtUp: st.caughtUp || null,

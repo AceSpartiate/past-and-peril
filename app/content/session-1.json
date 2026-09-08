@@ -54,7 +54,7 @@
     {
       "id": "recall",
       "kind": "checklist",
-      "seconds": 120,
+      "seconds": 15,
       "eyebrow": "BEFORE WE START",
       "title": "Everyone in.",
       "items": [
@@ -77,7 +77,7 @@
       "id": "cold_open",
       "handout": "01",
       "kind": "sequence",
-      "seconds": 180,
+      "seconds": 35,
       "eyebrow": "COLD OPEN",
       "shots": [
         {
@@ -97,7 +97,7 @@
           ],
           "voice": {
             "speaker": "NARRATOR",
-            "text": "Gonzales sits on the Guadalupe, seventy miles east of Béxar. Four days by oxcart. Two by fast horse. Everything that happens today happens at that distance."
+            "text": "Gonzales sits on the Guadalupe, seventy miles east of Béxar. Everything that happens today happens at that distance."
           }
         },
         {
@@ -117,7 +117,7 @@
           ],
           "voice": {
             "speaker": "UGARTECHEA",
-            "text": "Colonel Domingo de Ugartechea, commanding at Béxar, presents his compliments. The bronze cannon lent to your town for defence against the Comanche is the property of the government. You will return it. I await your answer."
+            "text": "The bronze cannon lent to your town is government property. You will return it. I await your answer."
           }
         },
         {
@@ -137,7 +137,7 @@
           ],
           "voice": {
             "speaker": "NARRATOR",
-            "text": "He is entitled to it. The cannon does belong to the government. Nothing about this demand is illegal, and every adult in Gonzales knows it."
+            "text": "The cannon does belong to the government. Nothing about this demand is illegal."
           }
         }
       ],
@@ -537,6 +537,15 @@
       "scene": "S1.6",
       "seconds": 45,
       "roam": true,
+      "challengeResult": {
+        "id": "before-they-come",
+        "title": "BEFORE THEY COME",
+        "progress": "MUSTER",
+        "pressure": "PATIENCE",
+        "reward": "ITEM_ROPE",
+        "win": "Your class finished its preparations before patience ran out.",
+        "loss": "Your class finished with preparations still incomplete."
+      },
       "eyebrow": "THE FIRST OF OCTOBER",
       "voice": {
         "speaker": "HISTORIAN",

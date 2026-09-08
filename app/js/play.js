@@ -32,6 +32,37 @@
   let wired = false;
   let keyOpen = false;
   let SIM = null;           // when set, the tutorial owns the screen
+  const esc = AdventureUI.escape;
+  const adventure = AdventureUI.mount(document, { choose: followLead, cover: findCover });
+
+  function findCover() {
+    const toll = WORLD && WORLD.segment && WORLD.segment.toll;
+    if (!toll || !ME || !MAP || !WORLD.turnOpen || !canAct()) return;
+    const safe = (ME.reach || []).filter(function (r) { return (toll.except_hex_in || []).indexOf(r.hex) !== -1; }).sort(function (a, b) { return a.cost - b.cost; })[0];
+    if (!safe) { adventure.notice('No cover is within your movement. A classmate may be able to guard you.'); return; }
+    moveWithFeedback(safe.hex, routeTo(MAP.parse(safe.hex)), 'You reached cover. Stay here until the threat passes.');
+  }
+
+  function followLead(option) {
+    if (!ME || !WORLD || !WORLD.turnOpen || !canAct()) return;
+    if (option.atTarget) {
+      if (option.kind === 'portal') doEnter(option.id);
+      else arm(option.actionId);
+      return;
+    }
+    if (!MAP || option.place !== ME.place) return;
+    const h = MAP.parse(option.hex), route = h && routeTo(h);
+    if (!route) { adventure.notice('You cannot reach that spot yet. Try another lead or wait for a clear path.'); return; }
+    moveWithFeedback(option.hex, route);
+  }
+
+  function moveWithFeedback(hex, route, message) {
+    const response = doMove(hex);
+    if (response && typeof response.then === 'function') response.then(function (r) {
+      if (r && r.ok) { walkAlong(route); adventure.notice(message || 'You arrived. Choose “Do this” to take the next step.'); }
+    });
+    else walkAlong(route); // Local practice responds synchronously.
+  }
 
   /* READ IT TO ME.
    *
@@ -130,6 +161,23 @@
   window.addEventListener('resize', function () { if (!joined) paintPickMap(); });
 
   let rosterCache = [];
+  let roleFilter = 'all';
+  const filters = [['all', 'All roles'], ['talk', 'Talk & persuade'], ['scout', 'Scout & ride'], ['build', 'Build & supply']];
+  $('pick-filters').innerHTML = filters.map(function (f) {
+    return '<button class="pick-filter" type="button" data-filter="' + f[0] + '" aria-pressed="' + (f[0] === roleFilter) + '">' + esc(f[1]) + '</button>';
+  }).join('');
+  $('pick-filters').addEventListener('click', function (e) {
+    const b = e.target.closest('[data-filter]');
+    if (!b) return;
+    roleFilter = b.getAttribute('data-filter');
+    Array.from($('pick-filters').children).forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+    loadRoster();
+  });
+  $('pick-quick').addEventListener('click', function () {
+    const eligible = rosterCache.filter(function (p) { return !p.taken && !p.retired && !p.blocked && (roleFilter === 'all' || AdventureUI.role(p.calling)[0] === roleFilter); });
+    const person = eligible.find(function (p) { return p.wanted; }) || eligible[0];
+    if (person) startMaking(person);
+  });
   function loadRoster() {
     Net.roster().then(function (res) {
       if (!res.ok) return;
@@ -138,7 +186,7 @@
        * screen steers with this, it does not forbid with it */
       tints = res.tints || [];
       taken = res.tintsTaken || {};
-      $('pick-sub').textContent = Net.room + ' · SESSION 1';
+      $('pick-sub').textContent = Net.room + ' · CHOOSE YOUR ROLE';
 
       /* WHAT THE TOWN STILL NEEDS.
        * A nudge before a rule: the trades nobody has taken are named at the
@@ -162,11 +210,13 @@
         return 0;
       });
 
-      $('pick-grid').innerHTML = order.map(function (p) {
+      const filtered = order.filter(function (p) { return roleFilter === 'all' || AdventureUI.role(p.calling)[0] === roleFilter; });
+      $('pick-quick').disabled = !filtered.some(function (p) { return !p.taken && !p.retired && !p.blocked; });
+      $('pick-grid').innerHTML = filtered.map(function (p) {
         const off = p.taken || p.retired || p.blocked;
         const why = p.retired ? 'RETIRED' : p.taken ? 'TAKEN'
                   : p.blocked ? 'FULL FOR NOW'
-                  : p.role.toUpperCase() + ' · ' + p.calling + ' · MOVE ' + p.move;
+                  : p.calling + ' · ' + AdventureUI.role(p.calling)[1];
         return '<button class="pcard' + (p.blocked ? ' full' : '') + (p.wanted && !off ? ' wanted' : '') +
           '" data-id="' + p.id + '"' + (off ? ' disabled' : '') +
           (p.blockedWhy ? ' title="' + p.blockedWhy + '"' : '') +
@@ -174,7 +224,7 @@
           (p.taken || p.retired ? ';opacity:.42' : '') + '">' +
           (p.wanted && !off ? '<span class="pw">THE TOWN NEEDS ONE</span>' : '') +
           '<span class="pn">' + p.name + '</span>' +
-          '<span class="pr">' + why + '</span></button>';
+          '<span class="pr">' + esc(why) + '</span></button>';
       }).join('');
     });
   }
@@ -227,8 +277,7 @@
     if (!making) return;
     const p = making;
     $('make-name').textContent = p.name;
-    $('make-role').textContent = [p.role, p.calling, 'MOVE ' + p.move]
-      .filter(Boolean).join(' · ').toUpperCase();
+    $('make-role').textContent = p.calling + ' · ' + AdventureUI.role(p.calling)[1];
     $('make-lede').textContent = p.abilityBlurb
       ? '“' + p.ability + '” — ' + p.abilityBlurb
       : 'A ' + String(p.calling || '').toLowerCase() + ' of Gonzales.';
@@ -376,6 +425,8 @@
     renderPlace();
     renderActions();
     drawPips();
+    adventure.render(ME, WORLD);
+    if (WORLD) renderTurn();
     renderDayBtn();
     maybeDocs(you);
     draw();
@@ -486,6 +537,7 @@
     if (window.Tutorial && !Tutorial.running) showTutorialOffer();
     renderTurn();
     renderActions();
+    adventure.render(ME, WORLD);
     draw();
   }
 
@@ -560,6 +612,8 @@
     return p.then(function (res) {
       if (res && res.ok === false && res.error === 'offline') {
         showOffline(false, 'That did not reach the server. Nothing has changed.');
+      } else if (res && res.ok === false) {
+        adventure.notice(res.message || 'That choice is no longer available. Pick a new lead or try another action.');
       }
       return res;
     });
@@ -614,9 +668,7 @@
     /* Never over the catch-up sheet — mechanics first, then the story, and one
      * thing on screen at a time. */
     if (!$('catchup').hidden) return;
-    const started = !!(WORLD && WORLD.started);
-    if (started || Tutorial.done) { showTutorialOffer(); return; }
-    startTutorial();
+    showTutorialOffer();
   }
 
   function startTutorial() {
@@ -829,7 +881,7 @@
     /* h is null whenever nothing is hovered or selected — which on a touch
      * screen is most of the time, since there is no hover to fall back on. */
     if (!h || !ME || !MAP || reachSet[h.c + ',' + h.r] === undefined) return null;
-    return MAP.pathTo(ME.hex, MAP.label(h.c, h.r), ME.moveLeft || 0,
+    return MAP.pathTo(ME.hex, MAP.label(h.c, h.r), ME.movementFree ? Infinity : (ME.moveLeft || 0),
                       { occupied: occupiedHexes(), cheapTerrain: moveHelp() });
   }
 
@@ -849,7 +901,7 @@
   let walking = null;
   function walkAlong(route) {
     if (!route || route.length < 2) { walking = null; return; }
-    const ms = 110 * (route.length - 1);
+    const ms = Math.min(900, 90 * (route.length - 1));
     const t0 = (window.performance || Date).now();
     walking = { route: route, t: 0 };
     (function step() {
@@ -875,6 +927,7 @@
       /* Out of range: nothing happens, no scolding. On touch, clear any
        * selection so a stray tap does not leave a route pointing nowhere. */
       if (armedHex) { armedHex = null; draw(); }
+      adventure.notice(ME.movementFree ? 'That ground is blocked. Choose a path around it.' : 'That spot is beyond your movement. Choose a closer hex or wait for the next phase.');
       return;
     }
 
@@ -896,11 +949,7 @@
     }
 
     const route = routeTo(h);
-    doMove(MAP.label(h.c, h.r));                            // the server decides
-    /* Started after the intent, not before: if the server refuses, the token
-     * has not moved and there is nothing to animate. applyYou redraws from
-     * server truth either way. */
-    walkAlong(route);
+    moveWithFeedback(MAP.label(h.c, h.r), route);
   }
 
   function draw() {
@@ -908,7 +957,7 @@
     R.draw({ you: ME.hex, reach: reachSet, hover: hover, tokens: otherTokens(),
              npcs: ME.npcs || [], features: ME.features,
              occupied: occupiedHexes(), light: ME.light,
-             target: ME.target || null,
+             target: (adventure.current() && adventure.current().place === ME.place ? adventure.current().hex : null) || ME.target || null,
              /* hover on a pointer; the selected hex on a touch screen, which
               * has no hover at all */
              /* whichever the student last used: the selected hex after a tap,
@@ -919,6 +968,7 @@
              /* so your own figurine is your Calling in the colour you chose,
               * rather than a black dot that looks like nobody in particular */
              calling: ME.calling, tint: ME.tint || null });
+    adventure.waypoint(R, $('map'));
   }
 
   /* "GONZALES · 29 SEPTEMBER 1835" — where and when, and nothing else.
@@ -944,6 +994,7 @@
   function drawPips() {
     const box = $('tb-move');
     if (!box || !ME) return;
+    if (ME.movementFree) { box.hidden = false; box.innerHTML = '<span class="pip-label">WALK FREELY</span>'; box.title = 'Exploring costs no movement'; return; }
     const total = ME.move || 0;
     const left = Math.max(0, ME.moveLeft === undefined ? 0 : ME.moveLeft);
     if (!total) { box.hidden = true; return; }
@@ -1196,8 +1247,9 @@
     for (let i = 0; i < ME.resolve; i++) r += '<i class="' + (i < ME.resolveUsed ? 'spent' : '') + '"></i>';
     $('hud-resolve').innerHTML = r;
     const mv = $('hud-move');
-    mv.textContent = ME.moveLeft + '/' + ME.move;
-    mv.classList.toggle('none', ME.moveLeft === 0);
+    mv.textContent = ME.movementFree ? 'FREE' : ME.moveLeft + '/' + ME.move;
+    mv.classList.toggle('none', !ME.movementFree && ME.moveLeft === 0);
+    $('hud-actions').textContent = !WORLD || !WORLD.started ? 'Ready to begin' : !WORLD.turnOpen ? (WORLD.running ? 'Story moment' : 'Paused') : ME.movementFree ? 'Explore freely' : (ME.actionsLeft == null ? '' : ME.actionsLeft + ' actions left');
     const st = ME.stats || {};
     $('hud-stats').innerHTML = ['arms', 'talk', 'land', 'word'].map(function (k) {
       return '<span class="stat"><b>' + k.toUpperCase().slice(0, 1) + '</b>' + (st[k] || 0) + '</span>';
@@ -1247,12 +1299,14 @@
   /* Stays open once a student opens it, until the turn changes — reopening
    * it every repaint would be a fight with the server's quarter-second. */
   let foldOpen = false;
+  let actionsHTML = null;
 
   function renderActions() {
     if (!ME) return;
     const acts = (WORLD && WORLD.turnOpen && !ME.declared) ? (ME.actions || []) : [];
     if (!acts.length) {
-      $('acts').innerHTML = '';
+      if (actionsHTML !== '') $('acts').innerHTML = '';
+      actionsHTML = '';
       return;
     }
     /* THE FOLD. Which cards collapse is decided by the SERVER, so the
@@ -1261,22 +1315,26 @@
      * folding anything — a flat cut hides the Calling card in 79% of
      * student-windows, measured, which deletes the one button only you have. */
     const card = function (a) {
+      const preview = a.preview || {};
       return '<button class="act ' + (a.promoted ? 'promoted' : '') + '" data-act="' + a.id + '">' +
         '<span class="a-top"><span class="a-verb">' + a.verb + '</span>' +
         (a.gate ? '<span class="a-gate">' + a.gate + '</span>' : '') + '</span>' +
         '<span class="a-label">' + a.label + '</span>' +
-        '<span class="a-detail">' + (a.detail || '') + '</span></button>';
+        '<span class="a-detail">' + esc(a.detail || '') + '</span>' +
+        '<span class="a-stakes"><span class="a-benefit">' + esc(preview.benefit || '') + '</span>' +
+        '<span class="a-risk">' + esc(preview.cost || 'Free') + (preview.risk ? ' · ' + esc(preview.risk) : '') + '</span></span></button>';
     };
     const shown = acts.filter(function (a) { return !a.fold; });
     const rest = acts.filter(function (a) { return a.fold; });
-    $('acts').innerHTML = shown.map(card).join('') +
+    const html = shown.map(card).join('') +
       (rest.length
         ? '<button class="act more" data-more="1">' +
-          '<span class="a-label">' + rest.length + ' more things you could do</span>' +
-          '<span class="a-detail">Nothing here is hidden from you. This is just the short list.</span>' +
+          '<span class="a-label">' + rest.length + ' more choices</span>' +
+          '<span class="a-detail">Explore all your options.</span>' +
           '</button><span class="folded"' + (foldOpen ? '' : ' hidden') + '>' +
           rest.map(card).join('') + '</span>'
         : '');
+    if (html !== actionsHTML) { $('acts').innerHTML = html; actionsHTML = html; }
   }
 
   function renderTurn() {
@@ -1300,15 +1358,10 @@
       /* acted, not declared: with an uncapped window a student may take
        * another action, and telling them they are finished when they are not
        * is worse than saying nothing. */
-      $('tb-hint').textContent = ME.declared
-        ? (ME.moveLeft > 0
-            ? 'You chose ' + ME.verb + '. You can still move — ' + ME.moveLeft + ' left.'
-            : 'You chose ' + ME.verb + '. Watch the board.')
-        : ME.acted
-          ? (ME.moveLeft > 0
-              ? 'You have gone once. You can move and go again — ' + ME.moveLeft + ' movement left.'
-              : 'You have gone once. Keep going while the clock runs.')
-          : (ME.moveLeft > 0 ? 'Tap a hex to move. Then choose what you do.' : 'Choose what you do.');
+      $('tb-hint').textContent = ME.movementFree
+        ? 'Pick a lead or tap the map to explore.'
+        : ME.declared ? 'Choices made. Use remaining movement to reach cover.'
+        : (ME.actionsLeft == null ? 'Choose your next action.' : ME.actionsLeft + ' actions this phase. Every choice counts.');
       return;
     }
 
@@ -1360,6 +1413,8 @@
   document.addEventListener('click', function (e) {
     const b = e.target.closest ? e.target.closest('[data-act]') : null;
     if (b) arm(b.getAttribute('data-act'));
+
+
   });
   $('c-cancel').addEventListener('click', function () { armed = null; $('commit').hidden = true; });
   $('c-do').addEventListener('click', function () {
@@ -1381,14 +1436,31 @@
     $('outcome').hidden = true;
     if (window.Narrator) Narrator.stop();
   });
+  document.addEventListener('keydown', function (e) {
+    if (!$('docs').hidden) return; // The source reader owns its own focus.
+    const modal = !$('commit').hidden ? $('commit') : !$('outcome').hidden ? $('outcome') : null;
+    if (!modal) return;
+    if (e.key === 'Escape') { e.preventDefault(); (modal.id === 'commit' ? $('c-cancel') : $('oc-close')).click(); return; }
+    if (e.key !== 'Tab') return;
+    const buttons = Array.from(modal.querySelectorAll('button, summary')).filter(function (b) { return b.getClientRects().length && !b.disabled; });
+    const i = buttons.indexOf(document.activeElement);
+    if (buttons.length && (i < 0 || (!e.shiftKey && i === buttons.length - 1) || (e.shiftKey && i === 0))) {
+      e.preventDefault(); buttons[e.shiftKey ? buttons.length - 1 : 0].focus();
+    }
+  });
 
   function arm(id) {
+    if (!ME || !WORLD || !WORLD.turnOpen) return;
     const a = (ME.actions || []).filter(function (x) { return x.id === id; })[0];
     if (!a) return;
     armed = id;
     $('c-kicker').textContent = a.verb + (a.gate ? ' · ' + a.gate : '');
     $('c-text').textContent = a.label;
+    const preview = a.preview || {};
+    $('c-detail').textContent = [a.detail, preview.benefit, preview.risk].filter(Boolean).join(' · ');
+    $('c-cost').textContent = 'Cost: ' + (preview.cost || 'Free') + (!ME.movementFree && ME.actionsLeft != null ? ' · 1 of your ' + ME.actionsLeft + ' remaining actions' : '');
     $('commit').hidden = false;
+    $('c-do').focus();
   }
 
   /* ------------------------------------------------------------ outcome
@@ -1419,8 +1491,9 @@
 
   let shownOutcome = null;
   function showOutcome(o) {
-    if (!o || shownOutcome === o.label + o.narrate) return;
-    shownOutcome = o.label + o.narrate;
+    const outcomeKey = o && (o.id || JSON.stringify([o.label, o.narrate, o.d1, o.d2, (ME.trail || []).length]));
+    if (!o || shownOutcome === outcomeKey) return;
+    shownOutcome = outcomeKey;
 
     const roll = $('oc-roll');
     if (o.d1) {
@@ -1452,7 +1525,11 @@
     const learn = $('oc-learn');
     if (o.taught && o.taught.length) {
       learn.hidden = false;
-      $('oc-learn-body').textContent = o.taught.map(function (f) { return f.statement; }).join(' ');
+      $('oc-learn-body').textContent = o.taught[0].statement;
+      $('oc-more-facts').hidden = o.taught.length < 2;
+      $('oc-more-facts').open = false;
+      $('oc-more-label').textContent = (o.taught.length - 1) + ' more ' + (o.taught.length === 2 ? 'discovery' : 'discoveries');
+      $('oc-more-body').innerHTML = o.taught.slice(1).map(function (f) { return '<p>' + esc(f.statement) + '</p>'; }).join('');
 
       /* THE RECEIPT.
        *
@@ -1480,12 +1557,14 @@
     }
 
     const earn = $('oc-earn');
-    const bits = (o.flags || []).map(function (f) { return '<span>✦ ' + f.replace(/_/g, ' ') + '</span>'; });
-    if (o.legacy) bits.push('<span>+' + o.legacy + ' LEGACY</span>');
-    earn.hidden = !bits.length;
-    earn.innerHTML = bits.join('');
+    earn.hidden = true;
+    earn.innerHTML = '';
+    $('oc-effects').innerHTML = AdventureUI.effectsHTML(o.effects);
+    $('oc-effects').hidden = !(o.effects || []).length;
 
     $('outcome').hidden = false;
+    adventure.notice('');
+    $('oc-close').focus();
   }
 
   function mmss(sec) {
