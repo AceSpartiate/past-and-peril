@@ -38,6 +38,7 @@
       <span class="fl-test" id="m-test" hidden>REHEARSAL</span>
     </div>
   </div>
+  <div class="c-cap mono" id="m-version" title="Which build this machine is running"></div>
   <div class="c-bell">
     <div class="c-cap">bell in</div>
     <div class="n mono" id="m-bell">47:00</div>
@@ -45,6 +46,28 @@
   </div>
 </div>
 <div class="ambient idle" id="ambient"></div>
+
+<!-- WHOSE PERIOD IS THIS? Asked before anything is opened.
+     The console used to pick a class for you - whichever room the server
+     last touched - and show it already loaded with a Resume button. For a
+     teacher running five periods a day that is a trap: the muscle memory is
+     to press the big button, and the big button was resuming yesterday. -->
+<div class="chooser" id="chooser" hidden>
+  <div class="chooser-in">
+    <h1 id="ch-h">Whose period is this?</h1>
+    <p class="ch-sub" id="ch-sub">Pick a class to carry on with, or start a new one. Nothing opens until you choose.</p>
+    <div class="ch-list" id="ch-list"></div>
+    <div class="ch-new">
+      <label class="c-cap" for="ch-code">Start a new class</label>
+      <div class="row" style="margin-top:8px">
+        <input class="cl-input mono" id="ch-code" maxlength="12" autocomplete="off"
+               spellcheck="false" placeholder="7A">
+        <button class="btn primary" id="ch-make">Create</button>
+      </div>
+      <div class="cl-note">A short code you will recognise tomorrow &mdash; a period number is plenty.</div>
+    </div>
+  </div>
+</div>
 
 <div class="c-body" id="running">
   <div class="c-main">

@@ -28,29 +28,31 @@
     items.push([voiceOk ? '✓' : '⚠', 'Narration', v]);
     if (LAST && LAST.resumedFromDisk) {
       items.push(['⚠', 'This period was interrupted',
-        'Picked up at segment ' + (LAST.index + 1) + ' of ' + LAST.count +
+        'Picked up at beat ' + (LAST.index + 1) + ' of ' + LAST.count +
         ' — everything is where it was. Press Resume when the room is ready.']);
     }
     if (LAST && LAST.priorSessions) {
       items.push(['✓', 'Campaign in progress',
-        LAST.priorSessions + ' session' + (LAST.priorSessions > 1 ? 's' : '') +
-        ' already played by this class. Their ledger and Legacy carried forward.']);
+        LAST.priorSessions + (LAST.priorSessions === 1 ? ' session' : ' sessions') +
+        ' already played by this class. What they earned came with them.']);
     }
     items.push([Net.isTeacher ? '✓' : '⚠', 'Teacher controls',
-      Net.isTeacher ? 'this console holds the key printed in your terminal'
-                    : 'NO KEY — open the ?key=… address from the terminal, or the buttons will be refused']);
-    items.push(['✓', 'Students join at /play.html',
-      'Class ' + Net.room + ' · they tap a name, nothing to type, nothing to install.']);
-    items.push(['⚠', 'The timers still cannot watch the room',
-      'Auto-extend needs the acted-count rule from design/14 wired up. Until then: E adds thirty seconds.']);
+      Net.isTeacher ? 'This screen can run the lesson. Keep the address to yourself.'
+                    : 'This screen can watch but not touch. Open the longer address from the black window that started the server.']);
+    items.push(['✓', 'How students get in',
+      'Class ' + Net.room + ' — they tap a name. Nothing to type, nothing to install.']);
+    items.push(['✓', 'The timers watch the room',
+      'A turn window gives itself another 30 seconds when fewer than 70% of the ' +
+      'class have got going — up to a minute and a half, never past the bell. ' +
+      'E still adds thirty seconds by hand.']);
 
     const total = SESSION.timeline.reduce(function (a, s) { return a + s.seconds; }, 0);
     const allowed = (SESSION.periodMinutes - SESSION.bellSlackMin) * 60;
-    items.push([total <= allowed ? '✓' : '⚠', 'Session fits the bell',
-      mmss(total) + ' authored · ' + mmss(allowed) + ' allowed · ' +
-      (total <= allowed ? mmss(allowed - total) + ' spare' : mmss(total - allowed) + ' OVER')]);
+    items.push([total <= allowed ? '✓' : '⚠', 'Today fits the bell',
+      mmss(total) + ' of lesson in a ' + mmss(allowed) + ' period · ' +
+      (total <= allowed ? mmss(allowed - total) + ' to spare' : mmss(total - allowed) + ' TOO LONG')]);
 
-    items.push(['○', 'Images', 'None on disk. Sequences will show marked placeholders — by design.']);
+    items.push(['○', 'Pictures', 'None yet. The picture sequences will show labelled placeholders instead.']);
 
     $('preflight').innerHTML = items.map(function (i) {
       const col = i[0] === '✓' ? 'var(--d-teal)' : (i[0] === '⚠' ? 'var(--wheat)' : 'var(--d-faint)');
@@ -504,6 +506,19 @@
         if (LAST) renderSessions(LAST);
       });
     });
+    $('ch-list').addEventListener('click', function (e) {
+      const b = e.target.closest && e.target.closest('[data-room]');
+      if (b) goToRoom(b.getAttribute('data-room'));
+    });
+    if ($('ch-make')) {
+      const mk = function () {
+        const raw = ($('ch-code').value || '').trim().toUpperCase()
+          .replace(/[^A-Z0-9-]/g, '').slice(0, 12);
+        if (raw) goToRoom(raw);
+      };
+      $('ch-make').addEventListener('click', mk);
+      $('ch-code').addEventListener('keydown', function (e) { if (e.key === 'Enter') mk(); });
+    }
     $('b-stage-inline').addEventListener('click', function () { Overlay.open(); });
     $('b-focus').addEventListener('click', function () { Overlay.toggle(); });
 
@@ -577,6 +592,12 @@
    * on whatever Net defaulted to, and marking nothing as current made the list
    * read as though no class were open. Ask Net, which is the thing that
    * actually connected. */
+  /* An explicit ?room= means a human chose this class. Without one the
+   * console is showing whatever the server last touched, which is not the
+   * same thing and must not be treated as a decision. */
+  function roomChosen() {
+    return !!new URLSearchParams(location.search).get('room');
+  }
   function roomInUrl() {
     const q = (new URLSearchParams(location.search).get('room') || '').toUpperCase();
     return q || (Net.room || '').toUpperCase();
@@ -603,6 +624,38 @@
     return days === 1 ? 'yesterday' : days + ' days ago';
   }
 
+  /* THE FIRST SCREEN. What a teacher needs before anything opens is not a
+   * dashboard, it is one question: whose period is this? Each row says what
+   * pressing it will actually do, because "session 1, part way through" and
+   * "session 1 finished" lead to very different next minutes. */
+  function renderChooser(list) {
+    const box = $('ch-list');
+    if (!box) return;
+    if (!list.length) {
+      box.innerHTML = '<div class="cl-empty">No class has been played on this ' +
+        'computer yet. Make one below and today becomes its first period.</div>';
+      return;
+    }
+    box.innerHTML = list.map(function (p) {
+      const act = p.finished ? 'Start the next session'
+        : p.segment > 0 ? 'Carry on where it stopped'
+        : 'Begin session ' + p.session;
+      const state = p.finished ? 'session ' + p.session + ' finished'
+        : p.segment > 0 ? 'session ' + p.session + ', part way through'
+        : 'session ' + p.session + ', not started yet';
+      const who = p.characters
+        ? p.characters + (p.characters === 1 ? ' student has a name' : ' students have names')
+        : 'nobody has joined yet';
+      return '<button class="ch-row" data-room="' + p.code + '">' +
+        '<span class="ch-code mono">' + p.code + '</span>' +
+        '<span class="ch-mid"><span class="ch-do">' + act + '</span>' +
+        '<span class="ch-state c-cap">' + state + ' &middot; ' + who +
+          (p.rehearsal ? ' &middot; <b class="cl-test">rehearsal</b>' : '') + '</span></span>' +
+        '<span class="ch-when c-cap">' + whenSaved(p.savedAt) + '</span>' +
+        '</button>';
+    }).join('');
+  }
+
   function loadClasses() {
     const here = roomInUrl();
     $('cl-now').textContent = here ? 'now showing ' + here : '';
@@ -616,6 +669,7 @@
           return (Date.parse(b.savedAt || 0) || 0) - (Date.parse(a.savedAt || 0) || 0);
         });
         renderClasses(list, here);
+        renderChooser(list);
       })
       .catch(function () { renderClasses([], here); });
   }
@@ -648,7 +702,7 @@
         '<span class="cl-mid">' +
           '<span class="cl-where">' + where + '</span>' +
           '<span class="cl-who c-cap">' + mark + who +
-            (p.priorSessions ? ' · ' + p.priorSessions + ' session(s) behind them' : '') +
+            (p.priorSessions ? ' · ' + p.priorSessions + (p.priorSessions === 1 ? ' session' : ' sessions') + ' behind them' : '') +
           '</span>' +
         '</span>' +
         '<span class="cl-when c-cap">' + (on ? 'showing now' : whenSaved(p.savedAt)) + '</span>' +
@@ -708,6 +762,27 @@
   }
 
   Net.probe().then(function (hello) {
+    if (hello && hello.version) {
+      $('m-version').textContent = 'v' + hello.version;
+    }
+    /* NOTHING OPENS UNTIL A HUMAN CHOOSES. Without an explicit ?room= the
+     * console is showing whatever the server last touched — yesterday, most
+     * likely — with its period restored and a big Resume button under the
+     * teacher's thumb. Ask first. */
+    if (hello && !roomChosen()) {
+      $('chooser').hidden = false;
+      $('running').hidden = true;
+      /* Nothing in the masthead is true yet. A bell counting down to the end
+       * of a period nobody has opened, over the name of a class nobody has
+       * picked, is the console asserting things it does not know. */
+      document.querySelector('.c-bell').hidden = true;
+      $('m-title').textContent = 'Past & Peril';
+      $('mast-sub-wrap') && ($('mast-sub-wrap').hidden = true);
+      document.querySelector('.mast-sub').hidden = true;
+      loadClasses();
+      bind();
+      return;
+    }
     if (!hello) {
       return fail('No classroom server answered.<br><br>Start it with ' +
         '<code>node server/serve.js</code> and open the address it prints. ' +

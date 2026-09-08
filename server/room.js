@@ -36,6 +36,29 @@ class Room {
   static MOVE_MIN = 3;
   static MOVE_MAX = 5;
 
+  /* What a beat is called on the teacher's plan when the content gives it no
+   * name of its own. */
+  static KIND_LABEL = {
+    read: 'Narration', sequence: 'Picture sequence', checklist: 'Housekeeping',
+    tally: 'The vote', record: 'Setting the record straight', beat: 'Your move',
+  };
+
+  /* THE TIMER WATCHES THE ROOM. design/14-autopilot.md calls
+   * extend_if_acted_below "the most important line in this file", and until
+   * now nothing read it: the console's own preflight told the teacher, in as
+   * many words, that the timers still cannot watch the room.
+   *
+   * A minute before a turn window closes, count the share of students who
+   * have taken at least two real actions in it. Below 70%, give the room
+   * another 30 seconds, up to 90 in total. Extensions are drawn from the
+   * bell slack and stop dead when it is gone, so this can lengthen a window
+   * but can never make a class late. */
+  static EXTEND_WHEN_ACTED_BELOW = 0.70;
+  static EXTEND_LOOK_AHEAD = 60;   // seconds before the window ends
+  static EXTEND_STEP = 30;
+  static EXTEND_MAX = 90;          // per window
+  static EXTEND_ACTS = 2;          // "meaningful actions" per design/14
+
   constructor(code, session, mapData, rosterData, sceneData, factsData, opts) {
     opts = opts || {};
     /* `session` may be one session or the whole campaign. A class that has
@@ -682,11 +705,40 @@ class Room {
   _seg() { return this.segs[this.idx] || null; }
   _len() { const s = this._seg(); return s ? s.seconds + this.extra : 0; }
 
+  /* Would another half minute be used? Only asked of a turn window, only in
+   * its last minute, and only while the bell can still afford it. */
+  _autoExtend() {
+    const seg = this._seg();
+    if (!seg || !this._isTurn(seg)) return;
+    if (this.extra >= Room.EXTEND_MAX) return;
+    const left = this._len() - this.elapsed;
+    if (left > Room.EXTEND_LOOK_AHEAD || left <= 0) return;
+
+    /* Never at the cost of the bell. bellSlackMin is what a period holds in
+     * reserve; once it is spent the window ends on time whatever the room
+     * is doing, because a class that runs past the bell is a worse failure
+     * than a scene nobody finished. */
+    const slack = (this.data.bellSlackMin || 0) * 60;
+    if ((this.extendedTotal || 0) + Room.EXTEND_STEP > slack) return;
+
+    const live = this.liveStudents();
+    if (!live.length) return;                 // an empty room needs no more time
+    const busy = live.filter((st) => (st.actsThisWindow || 0) >= Room.EXTEND_ACTS).length;
+    if (busy / live.length >= Room.EXTEND_WHEN_ACTED_BELOW) return;
+
+    this.extra += Room.EXTEND_STEP;
+    this.extendedTotal = (this.extendedTotal || 0) + Room.EXTEND_STEP;
+    this.autoExtended = (this.autoExtended || 0) + Room.EXTEND_STEP;
+    this.note(busy + ' of ' + live.length +
+      ' have really got going, so the room gets another 30 seconds.', null);
+  }
+
   _tick() {
     if (!this.running) return;
     this._driftTownsfolk();
     this.elapsed = (this.now() - this.segStamp) / 1000;
     this._toll();
+    this._autoExtend();
     if (this.bots) this.bots.tick();
     if (this.elapsed >= this._len()) {
       if (this.idx >= this.segs.length - 1) {
@@ -702,6 +754,7 @@ class Room {
 
   _enter(i) {
     this.segmentRevision += 1;
+    this.autoExtended = 0;
     this.idx = Math.max(0, Math.min(this.segs.length - 1, i));
     this.elapsed = 0;
     this.extra = 0;
@@ -881,6 +934,7 @@ class Room {
         st.moveLeft = st.move;
         st.roamed = false;                   // the floor is available again
         st.actionsLeft = this.challengeOpen ? this.actionLimit : this.actionsPerWindow;
+        st.actsThisWindow = 0;
         st.declared = false;
         st.acted = false;
         st.verb = null;
@@ -1349,6 +1403,14 @@ class Room {
     return out;
   }
 
+  /* Lesson time actually used: the whole segments behind us plus the part
+   * of this one. Not wall clock. */
+  _consumedMs() {
+    let s = 0;
+    for (let i = 0; i < this.idx && i < this.segs.length; i++) s += this.segs[i].seconds;
+    return (s + this.elapsed) * 1000;
+  }
+
   ping(sid) { const st = this.students[sid]; if (st) st.seen = this.now(); }
 
   /* They have read it. It does not come back on a reload. */
@@ -1687,6 +1749,7 @@ class Room {
 
     st.used[actionId] = true;
     st.acted = true;                 // has had their turn — see the note above
+    st.actsThisWindow = (st.actsThisWindow || 0) + 1;
     if (this.actionLimit > 0) {
       st.actionsLeft = Math.max(0, st.actionsLeft - 1);
       st.declared = st.actionsLeft <= 0;
@@ -2276,6 +2339,22 @@ class Room {
     this.elapsed = p.elapsed || 0;
     this.extra = p.extra || 0;
     this.startedAt = p.startedAt || 0;
+    /* THE BELL IS NOT A WALL CLOCK ACROSS A RESTORE.
+     *
+     * toBell is periodMinutes minus (now - startedAt), which is right inside
+     * one sitting: if a fire drill eats ten minutes, the real bell still
+     * comes and the teacher needs to see that. It is nonsense the morning
+     * after. A period saved at 2pm and reopened at 11am showed
+     * "BELL IN -4552:53" and "4570:49 MORE SESSION THAN PERIOD" across the
+     * top of the console, which is the first thing a teacher sees and reads
+     * as the software being broken.
+     *
+     * So the anchor moves forward by however long the room was closed,
+     * preserving lesson time already used and discarding the gap. Only
+     * on restore - a pause within a sitting still costs you the clock. */
+    if (this.started && this.startedAt) {
+      this.startedAt = this.now() - this._consumedMs();
+    }
     this.manualRead = !!p.manualRead;
     this.segmentRevision = p.segmentRevision || 0;
     this.outcomeSeq = p.outcomeSeq || 0;
@@ -2385,6 +2464,9 @@ class Room {
       /* A period that was REHEARSED must never be mistaken for one that
        * happened. Every screen gets this. */
       testMode: !!this.testMode,
+      /* Seconds this window gained because the room was still working. The
+       * console says so, so an extension never looks like a stuck clock. */
+      autoExtended: this.autoExtended || 0,
       manualRead: this.manualRead,
       resumedFromDisk: !!this.resumedFromDisk,
       priorSessions: (this.history || []).length,
@@ -2474,7 +2556,13 @@ class Room {
         })(),
       },
       outline: this.segs.map((x, i) => ({
-        id: x.id, kind: x.kind, label: x.label || x.eyebrow || x.title || x.id,
+        id: x.id,
+        kind: x.kind,
+        /* NEVER THE RAW ID. The tally had no label and no eyebrow, so the
+         * teacher's plan of the period listed a row called "t5_tally". A
+         * kind-shaped fallback is a worse label than a human one and a far
+         * better one than a database key. */
+        label: x.label || x.eyebrow || x.title || x.question || Room.KIND_LABEL[x.kind] || x.kind,
         turn: x.turn || null, seconds: x.seconds,
         state: i < this.idx ? 'done' : (i === this.idx ? 'live' : 'ahead'),
       })),

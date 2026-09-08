@@ -535,3 +535,36 @@ body.console {
 .screens { margin: 0; }
 .screens-box { margin-bottom: 20px; }
 .screens-box .screens { border: 0; background: transparent; padding: 0 14px 14px; }
+
+/* ================================================== THE FIRST SCREEN
+ * Whose period is this? Asked before anything opens, because the console
+ * used to choose for you and put a Resume button under your thumb. */
+.chooser { flex-grow: 1; display: flex; justify-content: center; overflow-y: auto; padding: 24px; }
+.chooser-in { width: 620px; max-width: 94vw; margin: auto; }
+.chooser h1 {
+  font-family: var(--serif); font-weight: 400; font-size: 38px; line-height: 1.05;
+  margin: 0 0 10px; text-wrap: balance;
+}
+.chooser .ch-sub { font-size: 15px; color: var(--d-soft); margin: 0 0 26px; line-height: 1.55; }
+.ch-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 30px; }
+.ch-row {
+  display: flex; align-items: center; gap: 16px; width: 100%; cursor: pointer;
+  padding: 15px 17px; text-align: left; font: inherit;
+  background: var(--d-field, #F2F3EE); color: var(--ink);
+  border: 1px solid var(--rule-strong); border-left: 3px solid var(--rule-strong);
+  border-radius: 3px;
+}
+.ch-row:hover { background: #fff; border-left-color: var(--teal); }
+.ch-row:focus-visible { outline: 2px solid var(--d-teal); outline-offset: 2px; }
+.ch-code { font-size: 17px; font-weight: 600; letter-spacing: .06em; flex-shrink: 0; min-width: 5.5em; }
+.ch-mid { display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0; }
+.ch-do { font-size: 15px; font-weight: 600; }
+.ch-state { color: var(--ink-faint); }
+.ch-when { color: var(--ink-faint); flex-shrink: 0; }
+.ch-new { border-top: 1px solid var(--d-rule); padding-top: 22px; }
+
+
+/* The build number sits in the masthead corner, beside the bell rather than
+   inside it, so it survives the bell being hidden on the first screen. */
+#m-version { margin-left: auto; align-self: flex-start; color: var(--d-faint); letter-spacing: .12em; }
+.c-bell { margin-left: 14px; }

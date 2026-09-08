@@ -61,6 +61,12 @@ const mapData = MAP_FILES.map((f) =>
   HexMapMod.hydrate(JSON.parse(fs.readFileSync(path.join(ROOT, 'content', f), 'utf8')), terrainData));
 console.log('  · ' + mapData.length + ' places: ' + mapData.map((m) => m.id).join(', '));
 const roster = JSON.parse(fs.readFileSync(path.join(ROOT, 'content/roster-s1.json'), 'utf8'));
+/* The build number, read once. Shown in the corner of the console so a
+ * teacher with three machines can tell which of them has been updated. */
+const VERSION = (() => {
+  try { return fs.readFileSync(path.join(__dirname, '..', 'VERSION'), 'utf8').trim(); }
+  catch (e) { return ''; }
+})();
 /* Every scene on disk, in session then scene order. This was a hand-kept
  * list of ten, so a new scene file was loaded by nothing and failed
  * silently. Sorted numerically, so scene 10 never lands before scene 2. */
@@ -287,6 +293,10 @@ const server = http.createServer(async (req, res) => {
     return json(res, 200, {
       ok: true, server: 'gonzales', classCode: roster.classCode,
       session: session.session, title: session.title,
+      /* Which build is this? A teacher who has just updated one of three
+       * machines has no way to tell them apart, and "am I looking at the new
+       * one" is not a question the software should leave them guessing at. */
+      version: VERSION,
     });
   }
 

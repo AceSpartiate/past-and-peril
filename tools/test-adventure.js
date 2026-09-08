@@ -221,5 +221,59 @@ test('the town votes on its own devices, and the hand count still counts', () =>
   (seg.options || []).forEach((o) => assert.equal(o.teach, undefined));
 });
 
+test('the timer watches the room and buys it time, but never past the bell', () => {
+  const room = build(sessions, 4);
+  room.command('start');
+  const win = room.segs.findIndex((x) => x.window);
+  room.command('goto', { index: win });
+  const seg = room.segs[win];
+
+  /* Not yet: the window has only just opened. */
+  room.elapsed = 0;
+  room._autoExtend();
+  assert.equal(room.extra, 0);
+
+  /* A minute out with a room that has barely started: buy it 30 seconds. */
+  room.elapsed = seg.seconds - 30;
+  room._autoExtend();
+  assert.equal(room.extra, Room.EXTEND_STEP);
+  assert.equal(room.snapshot().autoExtended, Room.EXTEND_STEP);
+
+  /* A busy room is left alone. Four students, all working. */
+  room.extra = 0;
+  room.liveStudents().forEach((st) => { st.actsThisWindow = Room.EXTEND_ACTS; });
+  room.elapsed = seg.seconds - 30;
+  room._autoExtend();
+  assert.equal(room.extra, 0, 'a room that is already working gets nothing');
+
+  /* Below the threshold it fires again: one of four is 25%. */
+  room.liveStudents().forEach((st, i) => { st.actsThisWindow = i === 0 ? Room.EXTEND_ACTS : 0; });
+  room._autoExtend();
+  assert.equal(room.extra, Room.EXTEND_STEP);
+
+  /* IT STOPS. Not more than EXTEND_MAX in one window, however idle the room. */
+  room.extendedTotal = 0;
+  for (let i = 0; i < 20; i++) { room.elapsed = room._len() - 30; room._autoExtend(); }
+  assert.ok(room.extra <= Room.EXTEND_MAX, room.extra + " is inside " + Room.EXTEND_MAX);
+
+  /* AND IT NEVER SPENDS MORE THAN THE BELL CAN AFFORD. Once the slack a
+   * period holds in reserve is gone, the window ends on time whatever the
+   * room is doing - a class that runs past the bell is the worse failure. */
+  const slack = (room.data.bellSlackMin || 0) * 60;
+  room.extendedTotal = slack;
+  room.extra = 0;
+  room.elapsed = seg.seconds - 30;
+  room._autoExtend();
+  assert.equal(room.extra, 0, 'no extension once the bell slack is spent');
+
+  /* An empty room is not a slow room. */
+  const solo = build(sessions, 0);
+  solo.command('start');
+  solo.command('goto', { index: win });
+  solo.elapsed = solo.segs[win].seconds - 30;
+  solo._autoExtend();
+  assert.equal(solo.extra, 0);
+});
+
 rooms.forEach((room) => room.destroy());
 console.log('\n' + passed + ' adventure regression scenarios passed.');

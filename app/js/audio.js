@@ -221,8 +221,8 @@ const Narrator = (function () {
     describe: function () {
       /* The honest answer, and it is now usually the good one. */
       const n = have ? Object.keys(have).length : 0;
-      if (n) return n + ' lines are recorded in real neural voices (see VOICE_LICENSES.md)' +
-        (synth && voices.length ? ' · anything not yet rendered falls back to ' +
+      if (n) return n + ' lines are recorded in real voices' +
+        (synth && voices.length ? ' · anything not yet recorded is read by ' +
           ((pickVoice('en-US', SPEAKERS.NARRATOR.prefer) || {}).name || 'the browser voice') : '');
       if (!synth) return 'no speech synthesis on this browser — read aloud yourself';
       if (!voices.length) return 'speech synthesis warming up…';
