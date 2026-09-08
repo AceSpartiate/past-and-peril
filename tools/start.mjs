@@ -143,7 +143,11 @@ async function maybeUpdate() {
   try { mod = await import('./update.mjs'); }
   catch (e) { return; }                    // updater absent: not an error
   try {
-    const r = await mod.checkAndApply({ root: ROOT, log: say });
+    /* --force reaches here from START-CLASS.cmd, for a playtest machine
+     * whose own test saves would otherwise defer every update six hours. */
+    const r = await mod.checkAndApply({
+      root: ROOT, log: say, force: process.argv.includes('--force'),
+    });
     if (r && r.applied) {
       say('');
       say('Updated to ' + r.to + '. Starting the new version.');

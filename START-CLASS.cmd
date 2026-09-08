@@ -46,7 +46,7 @@ rem  Better to say so plainly than to fail later with a stack trace.
 "%NODE%" --version >nul 2>nul
 if errorlevel 1 goto :blocked
 
-"%NODE%" "%~dp0tools\start.mjs"
+"%NODE%" "%~dp0tools\start.mjs" %*
 popd
 exit /b 0
 

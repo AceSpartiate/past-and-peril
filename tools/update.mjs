@@ -4,6 +4,7 @@
  *
  *     node tools\update.mjs              check and apply
  *     node tools\update.mjs --check      say what it would do, change nothing
+ *     node tools\update.mjs --force      apply even mid-unit (rule 3 only)
  *
  * CONFIGURATION lives in update.json at the project root:
  *
@@ -27,10 +28,18 @@
  *    and it is the single most likely way for this file to do harm.
  *
  * 3. NOT IN THE MIDDLE OF A UNIT.
- *    If a period was saved in the last few hours, a lesson sequence is in
+ *    If a period was saved in the last six hours, a lesson sequence is in
  *    progress and the code underneath it is left alone until tomorrow. Content
  *    ids are what a saved period points at; changing them mid-sequence is how
  *    you lose a class's work.
+ *
+ *    --force overrides THIS RULE AND ONLY THIS RULE. The guard cannot tell a
+ *    class's real progress from a developer's test save, so on a machine used
+ *    for playtesting every session leaves a fresh save that defers the next
+ *    update for six hours - a loop that never closes. Rules 1, 2 and 4 are not
+ *    negotiable and --force does not touch them: PROTECTED still protects,
+ *    the backup is still written, a failed network call still returns quietly.
+ *    Never put --force in START-CLASS.cmd on a machine a class actually uses.
  *
  * 4. IT MUST BE UNDOABLE.
  *    The version being replaced is kept in .backup/, and ROLLBACK.cmd puts it
@@ -155,6 +164,8 @@ export async function checkAndApply(opts) {
   const root = opts.root;
   const log = opts.log || (() => {});
   const dryRun = !!opts.dryRun;
+  /* Overrides rule 3 and nothing else. See the header. */
+  const force = !!opts.force;
 
   const cfg = readJson(path.join(root, 'update.json'), null);
   const repo = cfg && typeof cfg.repo === 'string' ? cfg.repo.trim() : '';
@@ -175,10 +186,16 @@ export async function checkAndApply(opts) {
   log('');
   log('An update is available: ' + have + '  ->  ' + want);
 
-  if (unitInProgress(root)) {
+  const midUnit = unitInProgress(root);
+  if (midUnit && !force) {
     log('A class is part-way through a lesson sequence, so this will wait');
     log('until tomorrow. Nothing has changed.');
+    log('If those saves are only tests, run it again with --force.');
     return { applied: false, reason: 'unit-in-progress', have, want };
+  }
+  if (midUnit) {
+    log('A period was saved in the last six hours; --force says go anyway.');
+    log('Saved periods are never touched by an update either way.');
   }
   if (dryRun) return { applied: false, reason: 'dry-run', have, want };
 
@@ -270,6 +287,7 @@ if (isMain) {
     root,
     log: (s) => console.log('  ' + s),
     dryRun: process.argv.includes('--check'),
+    force: process.argv.includes('--force'),
   });
   console.log('');
   console.log('  ' + JSON.stringify(r));
