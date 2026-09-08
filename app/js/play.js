@@ -1404,17 +1404,43 @@
       $('scrim-title').textContent =
         !seg ? 'Watch the board.'
         : seg.kind === 'read' ? 'Listen.'
-        : seg.kind === 'tally' ? 'Hands up when your letter is called.'
+        : seg.kind === 'tally' ? (seg.question || 'The town decides.')
         : 'Watch the board.';
     }
+    renderVote(seg);
+  }
+
+  /* THE VOTE, ON THE DEVICE.
+   *
+   * This beat used to be 90 seconds of "Hands up when your letter is
+   * called" while the teacher counted the room across four options. The
+   * count is instant now and the question is the headline, because the
+   * question is the most interesting thing in the session and it was being
+   * shown as a housekeeping instruction. */
+  function renderVote(seg) {
+    const box = $('votebox');
+    if (!box) return;
+    const open = !!(seg && seg.kind === 'tally' && WORLD.started && WORLD.running);
+    box.hidden = !open;
+    if (!open) return;
+    const mine = ME && ME.vote;
+    $('vote-opts').innerHTML = (seg.options || []).map(function (o) {
+      const on = mine === o.key ? ' on' : '';
+      return '<button type="button" class="vote-opt' + on +
+        '" data-vote="' + o.key + '"><span class="vk mono">' + o.key +
+        '</span><span class="vl">' + o.label + '</span></button>';
+    }).join('');
+    $('vote-hint').textContent = mine
+      ? 'Your vote is in. Tap it again to take it back.'
+      : 'Choose one. You can change your mind until the teacher moves on.';
   }
 
   /* ------------------------------------------------------------ commit */
   document.addEventListener('click', function (e) {
     const b = e.target.closest ? e.target.closest('[data-act]') : null;
     if (b) arm(b.getAttribute('data-act'));
-
-
+    const v = e.target.closest ? e.target.closest('[data-vote]') : null;
+    if (v) Net.vote(v.getAttribute('data-vote'));
   });
   $('c-cancel').addEventListener('click', function () { armed = null; $('commit').hidden = true; });
   $('c-do').addEventListener('click', function () {

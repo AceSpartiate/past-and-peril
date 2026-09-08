@@ -508,7 +508,7 @@
     {
       "id": "tally",
       "kind": "tally",
-      "seconds": 60,
+      "seconds": 35,
       "question": "What happens to the army?",
       "options": [
         {
@@ -528,7 +528,7 @@
           "label": "Nobody could agree"
         }
       ],
-      "instruction": "Call it company by company. Delegate last. Write the result on the Ledger."
+      "instruction": "They vote on their own screens. Count hands for anyone without one, then write the result on the Ledger."
     },
     {
       "id": "dispatch",

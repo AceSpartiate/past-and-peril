@@ -444,6 +444,7 @@ const server = http.createServer(async (req, res) => {
     else if (b.type === 'act') r = room.perform(b.sid, b.actionId);
     else if (b.type === 'enter') r = room.enter(b.sid, b.featureId);
     else if (b.type === 'caughtUp') r = room.seenCatchUp(b.sid);
+    else if (b.type === 'vote') r = room.vote(b.sid, b.key === null ? null : b.key);
     else if (b.type === 'ping') r = { ok: true };
     else r = { ok: false, error: 'unknown' };
     if (r.ok) r.you = room.privateFor(b.sid);

@@ -1089,3 +1089,27 @@ button.who:hover .nm { text-decoration: underline; text-underline-offset: 3px; }
 .act.more { border-style: dashed; opacity: .8; }
 .folded { display: contents; }
 .folded[hidden] { display: none; }
+
+/* THE VOTE, on the student's own screen. The tally used to be the longest
+   dead beat in the session and the only one that made the teacher count
+   hands. The question is the headline now, because it is the most
+   interesting thing in the period. */
+.votebox { margin-top: 18px; width: 100%; max-width: 460px; }
+.vote-opts { display: grid; gap: 8px; }
+.vote-opt {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  padding: 13px 15px; text-align: left; cursor: pointer;
+  background: var(--field); color: var(--ink);
+  border: 1px solid var(--rule-strong); border-radius: 3px;
+  font: inherit; font-size: 15px; line-height: 1.35;
+}
+.vote-opt:hover { background: #fff; border-color: var(--ink-soft); }
+.vote-opt .vk {
+  flex-shrink: 0; font-size: 12px; font-weight: 600; letter-spacing: .08em;
+  color: var(--ink-faint); border: 1px solid var(--rule-strong);
+  border-radius: 2px; padding: 1px 7px;
+}
+.vote-opt.on { background: #fff; border-color: var(--teal); box-shadow: inset 3px 0 0 var(--teal); }
+.vote-opt.on .vk { color: var(--teal); border-color: var(--teal); }
+.vote-opt:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.vote-hint { margin-top: 10px; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); }

@@ -161,5 +161,65 @@ test('both bosses assess clocks without rewriting the historical outcome', () =>
   assert.equal(room.students.s0.items.includes('ITEM_CANVAS'), false);
 });
 
+test('the town votes on its own devices, and the hand count still counts', () => {
+  const room = build(sessions, 3);
+  room.command('start');
+  const at = room.segs.findIndex((x) => x.kind === 'tally');
+  assert.ok(at > -1);
+
+  /* CLOSED UNTIL ASKED. A vote is only legal on the beat that asks it. */
+  assert.equal(room.vote('s0', 'A').error, 'no-vote-open');
+
+  room.command('goto', { index: at });
+  const seg = room.segs[at];
+  assert.equal(room.vote('s0', 'ZZ').error, 'no-such-option');
+
+  assert.equal(room.vote('s0', seg.options[0].key).ok, true);
+  assert.equal(room.vote('s1', seg.options[0].key).ok, true);
+  assert.equal(room.vote('s2', seg.options[1].key).ok, true);
+  assert.equal(room.tallyCounts()[seg.options[0].key], 2);
+  assert.equal(room.tallyCounts()[seg.options[1].key], 1);
+
+  /* CHANGING YOUR MIND MOVES THE COUNT, IT DOES NOT ADD TO IT. Three
+   * students must never produce four votes however often they tap. */
+  assert.equal(room.vote('s2', seg.options[0].key).ok, true);
+  assert.equal(room.tallyCounts()[seg.options[0].key], 3);
+  assert.equal(room.tallyCounts()[seg.options[1].key], undefined);
+  const total = () => Object.values(room.tallyCounts()).reduce((a, b) => a + b, 0);
+  assert.equal(total(), 3);
+
+  /* Tapping your own choice takes it back. */
+  assert.equal(room.vote('s2', seg.options[0].key).vote, null);
+  assert.equal(total(), 2);
+  assert.equal(room.privateFor('s2').vote, null);
+  assert.equal(room.privateFor('s0').vote, seg.options[0].key);
+
+  /* THE STEPPERS STAY. A dead Chromebook still has a voice, and the
+   * teacher's manual count adds to the devices rather than replacing them. */
+  room.command('tally', { key: seg.options[1].key, d: 4 });
+  assert.equal(room.tallyCounts()[seg.options[1].key], 4);
+  assert.equal(total(), 6);
+  assert.equal(room.snapshot().tally[seg.options[1].key], 4);
+
+  /* It survives a save and restore, like every other part of a period. */
+  const saved = JSON.parse(JSON.stringify(room.toJSON()));
+  const back = build(sessions, 3);
+  back.restore(saved);
+  assert.equal(back.tallyCounts()[seg.options[0].key], 2);
+  assert.equal(back.tallyCounts()[seg.options[1].key], 4);
+
+  /* And it is what carries forward as the decision this town made. */
+  room.command('goto', { index: room.segs.length - 1 });
+  room.closeOut();
+  const decision = room.history[room.history.length - 1].decision;
+  assert.equal(decision[seg.options[0].key], 2);
+  assert.equal(decision[seg.options[1].key], 4);
+
+  /* A vote is never a fact. Nothing here teaches, so nobody who abstains,
+   * arrives late or has no device can be short a required fact for it. */
+  assert.equal(seg.teach, undefined);
+  (seg.options || []).forEach((o) => assert.equal(o.teach, undefined));
+});
+
 rooms.forEach((room) => room.destroy());
 console.log('\n' + passed + ' adventure regression scenarios passed.');

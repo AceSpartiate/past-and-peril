@@ -209,12 +209,19 @@ function guidance(room, st, offered) {
   const boss = seg.boss;
   const value = {
     title: boss ? 'Boss · ' + boss.name : (room.scene.title || 'Explore the town'),
-    brief: seg.instruction || (seg.voice && seg.voice.text)
+    /* A TALLY'S instruction IS THE TEACHER'S RUN SHEET - "count hands for
+     * anyone without one" - and a student must never be handed that as their
+     * brief. Theirs is the question the town is actually being asked. */
+    brief: seg.kind === 'tally' ? (seg.question || 'The town is deciding.')
+      : seg.instruction || (seg.voice && seg.voice.text)
       || (boss ? 'Fill the town’s progress bar before pressure catches up.' : 'Pick a lead. Walk there. Choose what happens next.'),
     completed, total: completed + choices.size, options,
     hint: room.playMode === 'waiting' ? 'Your adventure begins when the teacher starts.'
       : !room.running ? 'The teacher has paused the game.'
-
+      /* Before the generic pause line: during a tally there IS something to
+       * do, and telling them to watch while a live vote sits on their screen
+       * is the same contradiction the scrim used to make. */
+      : seg.kind === 'tally' ? 'The town is deciding. Choose on your screen.'
       : room.playMode === 'paused' ? 'Watch the scene. Your next move opens in a moment.'
       : room.challengeOpen && st.declared ? 'Your three choices are in. Move into cover before the next phase.'
       : room.movementFree ? 'Explore freely. Your Words are limited; walking is free.'

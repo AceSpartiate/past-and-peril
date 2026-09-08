@@ -342,7 +342,7 @@
     {
       "id": "t5_tally",
       "kind": "tally",
-      "seconds": 90,
+      "seconds": 35,
       "turn": 5,
       "question": "Do we return the cannon?",
       "options": [
@@ -363,7 +363,7 @@
           "label": "Somebody fed the horses"
         }
       ],
-      "instruction": "Call it company by company. Delegate last.",
+      "instruction": "They vote on their own screens. Count hands for anyone without one.",
       "scene": "S1.5"
     },
     {

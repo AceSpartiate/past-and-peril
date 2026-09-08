@@ -135,6 +135,7 @@ class Room {
     this.ledger = {};
     (session.ledger || []).forEach((l) => { this.ledger[l.id] = Object.assign({}, l); });
     this.tally = {};
+    this.votes = {};          // characterId -> option key, cast on a device
 
     /* How many actions a student may take in one turn window. The paper design
      * assumed one, because writing on a Slate is slow; a tap is not. The right
@@ -613,7 +614,7 @@ class Room {
 
     this.idx = 0; this.elapsed = 0; this.extra = 0;
     this.started = false; this.running = false; this.startedAt = 0;
-    this.closedOut = false; this.tally = {}; this.spotlighted = {};
+    this.closedOut = false; this.tally = {}; this.votes = {}; this.spotlighted = {};
     this.resumedFromDisk = false;
 
     const first = this.segs.filter((x) => x.scene)[0];
@@ -1027,7 +1028,10 @@ class Room {
         this.tally[payload.key] = Math.max(0, (this.tally[payload.key] || 0) + (payload.d | 0));
         this._emit();
         break;
-
+      case 'clearVotes':
+        this.votes = {};
+        this._emit();
+        break;
       case 'grantWord': {
         const st = this._byCharacter(payload.characterId);
         if (st) st.words += 1;
@@ -1299,6 +1303,50 @@ class Room {
       wanted: this.callingsWanted(),
       callings: Object.values(bal).sort((a, b) => a.calling.localeCompare(b.calling)),
     };
+  }
+
+  /* THE VOTE HAPPENS ON THE DEVICE.
+   *
+   * The tally was the longest dead stretch in either session - 90 seconds
+   * in session 1, 60 in session 2 - and the only thing left in the timeline
+   * breaking the 35-second limit on a beat a student cannot touch. It was
+   * also the one moment that made the teacher adjudicate: counting 26 hands
+   * across four options, company by company, from console steppers, while
+   * everybody waited. CLAUDE.md is explicit that a feature needing mid-period
+   * adjudication will not survive a real room.
+   *
+   * So students cast it themselves and the count is instant and true.
+   *
+   * THE STEPPERS STAY. tallyCounts() adds hands the teacher counted to votes
+   * cast on devices, so a dead Chromebook still has a voice and the console
+   * keeps working exactly as it did. Nothing here is required for a fact:
+   * the tally teaches nothing, it RECORDS what this town decided, and
+   * closeOut carries that forward to the session that asks about it. */
+  vote(sid, key) {
+    const st = this.students[sid];
+    if (!st) return { ok: false, error: 'not-joined' };
+    if (!this.started || !this.running) return { ok: false, error: 'closed' };
+    const seg = this._seg();
+    if (!seg || seg.kind !== 'tally') return { ok: false, error: 'no-vote-open' };
+    const legal = (seg.options || []).some((o) => o.key === key);
+    if (key !== null && !legal) return { ok: false, error: 'no-such-option' };
+    /* Tapping the one you already chose takes it back. A student may change
+     * their mind for as long as the question is open, which is the whole
+     * point of asking the room rather than announcing an answer. */
+    if (key === null || this.votes[st.characterId] === key) delete this.votes[st.characterId];
+    else this.votes[st.characterId] = key;
+    this._emit();
+    return { ok: true, vote: this.votes[st.characterId] || null, counts: this.tallyCounts() };
+  }
+
+  /* What the room sees: hands the teacher counted PLUS devices. */
+  tallyCounts() {
+    const out = Object.assign({}, this.tally);
+    Object.keys(this.votes || {}).forEach((id) => {
+      const k = this.votes[id];
+      out[k] = (out[k] || 0) + 1;
+    });
+    return out;
   }
 
   ping(sid) { const st = this.students[sid]; if (st) st.seen = this.now(); }
@@ -2135,7 +2183,7 @@ class Room {
         segmentRevision: this.segmentRevision,
         outcomeSeq: this.outcomeSeq,
         challengeResult: this.challengeResult,
-
+        votes: this.votes,
         finished: !!this.closedOut,
       },
       campaign: {
@@ -2144,6 +2192,9 @@ class Room {
         standing: this.standing || {},
         world: this.world,
         challengeResults: this.challengeResults,
+        /* THE MANUAL LAYER ONLY. Device votes persist separately in
+         * period.votes; saving the combined figure here would add them a
+         * second time on restore. */
         tally: this.tally,
         retired: this.retired,
         standIns: this.standIns,
@@ -2229,7 +2280,7 @@ class Room {
     this.segmentRevision = p.segmentRevision || 0;
     this.outcomeSeq = p.outcomeSeq || 0;
     this.challengeResult = p.challengeResult || null;
-
+    this.votes = p.votes || {};
     /* Older saves marked any pause on the final segment as finished. Require
      * its completed history entry, which also makes closeOut idempotent after
      * restarting an actually completed period. */
@@ -2286,8 +2337,9 @@ class Room {
     this.note('session closed — carry-forward saved', null);
     /* The tally IS the consequence for the Matamoros question: no roll, just a
      * record of what this town decided, waiting for the session that asks. */
-    if (Object.keys(this.tally).length) {
-      this.history[this.history.length - 1].decision = Object.assign({}, this.tally);
+    const decided = this.tallyCounts();
+    if (Object.keys(decided).length) {
+      this.history[this.history.length - 1].decision = decided;
     }
   }
 
@@ -2350,7 +2402,10 @@ class Room {
       turnOpen: this.turnOpen,
       clocks: JSON.parse(JSON.stringify(this.clocks)),
       ledger: JSON.parse(JSON.stringify(this.ledger)),
-      tally: Object.assign({}, this.tally),
+      /* What the board shows: hands the teacher counted PLUS every vote
+       * cast on a device. Both renderers read this one map and neither had
+       * to change. */
+      tally: this.tallyCounts(),
       lastRoll: this.lastRoll,
 
       /* THE ROOM, computed server-side so the console never has to guess */
@@ -2461,7 +2516,10 @@ class Room {
         out: !!(this.maps[portal.to.place] && !this.maps[portal.to.place].indoors),
       } : null,
       light: this.light(),
-
+      /* Your own vote, so the card can show which one you chose and let you
+       * take it back. The COUNT is public on the board; who cast what is
+       * sent to nobody. */
+      vote: (this.votes || {})[st.characterId] || null,
       /* E3 · the bars, on the student's own device. privateFor sent no
        * clocks at all, so a student in a fight could only find out how it
        * was going by looking away from their own screen at the wall. */

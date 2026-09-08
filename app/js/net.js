@@ -118,6 +118,11 @@ const Net = (function () {
     enter: function (featureId) {
       return post('api/act', { room: room, sid: sid, type: 'enter', featureId: featureId });
     },
+    /* The town decides. Sent like any other intent; the server checks that a
+     * vote is actually open and that the option exists. */
+    vote: function (key) {
+      return post('api/act', { room: room, sid: sid, type: 'vote', key: key });
+    },
     /* "I have read the catch-up." */
     caughtUp: function () {
       return post('api/act', { room: room, sid: sid, type: 'caughtUp' });
