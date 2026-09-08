@@ -223,6 +223,12 @@
        {
         "t": "No marriage is documented. His occupation beyond farming, his personality, and his reasons for later enlisting are entirely open."
        }
+      ],
+      [
+       {
+        "t": "Joseph Martin's ledger records him as a customer buying on credit, not as a merchant. No trade of his own is documented. His TRADER Calling in the game is a game choice, not the record's.",
+        "b": true
+       }
       ]
      ]
     }
